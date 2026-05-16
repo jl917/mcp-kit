@@ -1,3 +1,9 @@
+## @julong/mono-rele2-utils 1.0.0 (2026-05-16)
+
+### Bug Fixes
+
+* 이관 ([9c997f9](https://github.com/jl917/mcp-kit/commit/9c997f9d7a0ebd0ffc2dafd0697d87f0b06ad795))
+
 ## @julong/mono-rele2-utils [1.17.0](https://github.com/mss-julong/mono-rele2/compare/@julong/mono-rele2-utils@1.16.0...@julong/mono-rele2-utils@1.17.0) (2026-05-09)
 
 ### Features
