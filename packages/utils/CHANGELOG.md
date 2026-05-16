@@ -1,3 +1,9 @@
+## @julong/mono-rele2-utils [1.17.1](https://github.com/jl917/mcp-kit/compare/@julong/mono-rele2-utils@1.17.0...@julong/mono-rele2-utils@1.17.1) (2026-05-16)
+
+### Bug Fixes
+
+* 17.0 버전 sync ([38fb296](https://github.com/jl917/mcp-kit/commit/38fb2964d5becb40b4821d3d216be1afc2cc9c60))
+
 ## @julong/mono-rele2-utils 1.0.0 (2026-05-16)
 
 ### Bug Fixes
