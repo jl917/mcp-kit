@@ -1,7 +1,6 @@
 import { z } from "zod";
 import type { AnyToolDef } from "./tool.js";
 
-// 테스트
 export type SkillTools = Record<string, AnyToolDef>;
 
 export function generateSkillMarkdown(opts: { binName: string; description: string; tools: SkillTools }): string {
