@@ -1,3 +1,10 @@
+## @julong/mono-rele2-utils [1.20.0](https://github.com/jl917/mcp-kit/compare/@julong/mono-rele2-utils@1.19.0...@julong/mono-rele2-utils@1.20.0) (2026-05-26)
+
+### Features
+
+* update common-update.md in core and utils [skip ci] ([a972781](https://github.com/jl917/mcp-kit/commit/a9727819cf55aeed7d65c835794a8ade8a42428f))
+* **utils:** add getUser tool with full RandomUser type specs in docs ([9c3bd6d](https://github.com/jl917/mcp-kit/commit/9c3bd6d23db3362aa28ecff8f6d5e903687ac0c9))
+
 ## @julong/mono-rele2-utils [1.19.0](https://github.com/jl917/mcp-kit/compare/@julong/mono-rele2-utils@1.18.0...@julong/mono-rele2-utils@1.19.0) (2026-05-26)
 
 ### Features
