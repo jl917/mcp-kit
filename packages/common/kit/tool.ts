@@ -15,6 +15,8 @@ type ToolDefShape<TSchema extends z.ZodRawShape> = {
   handler: (input: z.infer<z.ZodObject<TSchema>>) => Promise<ToolResult>;
   examples?: ToolExample[];
   guidelines?: string[];
+  typeLabels?: { [K in keyof TSchema]?: string };
+  typeDefs?: { [K in keyof TSchema]?: string };
 };
 
 export type AnyToolDef = {
@@ -25,6 +27,8 @@ export type AnyToolDef = {
   handler: (args: any) => Promise<ToolResult>;
   examples?: ToolExample[];
   guidelines?: string[];
+  typeLabels?: Record<string, string>;
+  typeDefs?: Record<string, string>;
 };
 
 export function toolDef<const TSchema extends z.ZodRawShape>(def: ToolDefShape<TSchema>) {

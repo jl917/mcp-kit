@@ -35,14 +35,22 @@ function renderSkills(tools: SkillTools): string {
   return Object.entries(tools)
     .map(([key, tool]) => {
       const rows = Object.entries(tool.inputSchema)
-        .map(([field, schema]) => `| \`${field}\` | ${describeField(schema as z.ZodTypeAny)} |`)
+        .map(([field, schema]) => {
+          const label = tool.typeLabels?.[field];
+          return `| \`${field}\` | ${describeField(schema as z.ZodTypeAny, label)} |`;
+        })
         .join("\n");
-      return `### ${key}\n\n${tool.description}\n\n| arg | description |\n|-----|-------------|\n${rows}`;
+      const defs = tool.typeDefs
+        ? Object.entries(tool.typeDefs)
+            .map(([field, def]) => `\n\n**\`${field}\`** type definition:\n\`\`\`typescript\n${def}\n\`\`\``)
+            .join("")
+        : "";
+      return `### ${key}\n\n${tool.description}\n\n| arg | description |\n|-----|-------------|\n${rows}${defs}`;
     })
     .join("\n\n");
 }
 
-function describeField(schema: z.ZodTypeAny): string {
+function describeField(schema: z.ZodTypeAny, typeLabel?: string): string {
   const baseDesc = schema.description ?? "";
   let inner: z.ZodTypeAny = schema;
   let defaultValue: unknown;
@@ -58,6 +66,7 @@ function describeField(schema: z.ZodTypeAny): string {
   }
 
   const parts: string[] = [];
+  if (typeLabel) parts.push(`Type: ${typeLabel}`);
   if (baseDesc) parts.push(baseDesc);
   if (inner instanceof z.ZodEnum) {
     const values = (inner.options as string[]).map((v) => `\`${v}\``).join(" \\| ");
@@ -122,7 +131,6 @@ function containsType(schema: z.ZodTypeAny, ctor: new (...a: any[]) => z.ZodType
 }
 
 export function generateReadmeSkills(opts: { binName: string; tools: SkillTools }): string {
-  console.log(opts.binName)
   const { binName, tools } = opts;
   return Object.entries(tools)
     .map(([key, tool]) => renderReadmeSkill(binName, key, tool))
@@ -142,7 +150,8 @@ function renderReadmeSkill(binName: string, key: string, tool: AnyToolDef): stri
 
   const rows = fields
     .map(([field, schema]) => {
-      const t = describeReadmeType(schema as z.ZodTypeAny);
+      const label = tool.typeLabels?.[field];
+      const t = describeReadmeType(schema as z.ZodTypeAny, label);
       const d = describeReadmeDesc(schema as z.ZodTypeAny);
       return `| \`${field}\` | ${t} | ${d} |`;
     })
@@ -157,6 +166,15 @@ function renderReadmeSkill(binName: string, key: string, tool: AnyToolDef): stri
     exampleBlock = `\n\n\`\`\`sh\n${lines.join("\n")}\n\`\`\``;
   }
 
+  const defs = tool.typeDefs
+    ? Object.entries(tool.typeDefs)
+        .map(
+          ([field, def]) =>
+            `\n\n**\`${field}\`** type definition:\n\n\`\`\`typescript\n${def}\n\`\`\``,
+        )
+        .join("")
+    : "";
+
   const tableBlock = rows ? `\n\n| arg | type | description |\n|-----|------|-------------|\n${rows}` : "";
 
   return `#### \`${key}\`
@@ -165,10 +183,12 @@ ${tool.description}.
 
 \`\`\`sh
 ${usage}
-\`\`\`${tableBlock}${exampleBlock}`;
+\`\`\`${tableBlock}${defs}${exampleBlock}`;
 }
 
-function describeReadmeType(schema: z.ZodTypeAny): string {
+function describeReadmeType(schema: z.ZodTypeAny, typeLabel?: string): string {
+  if (typeLabel) return typeLabel;
+
   let inner: z.ZodTypeAny = schema;
   while (inner instanceof z.ZodOptional || inner instanceof z.ZodDefault) {
     inner = (inner as z.ZodOptional<z.ZodTypeAny> | z.ZodDefault<z.ZodTypeAny>).unwrap() as z.ZodTypeAny;
@@ -180,6 +200,11 @@ function describeReadmeType(schema: z.ZodTypeAny): string {
   if (inner instanceof z.ZodString) return "string";
   if (inner instanceof z.ZodBoolean) return "boolean";
   if (inner instanceof z.ZodArray) return "JSON string (array)";
+  if (inner instanceof z.ZodUnion) {
+    const types = inner.options.map((o) => describeReadmeType(o as unknown as z.ZodTypeAny));
+    return types.join(" \\| ");
+  }
+  if (inner instanceof z.ZodRecord) return "JSON object";
   return "unknown";
 }
 

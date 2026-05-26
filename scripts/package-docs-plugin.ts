@@ -88,14 +88,6 @@ export function packageDocsPlugin(): RspressPlugin {
         ...packages.map((p) => ({ text: p.displayName, link: `/packages/${p.name}` })),
       ];
 
-      // // Populate nav "Packages" dropdown
-      // const nav = config.themeConfig?.nav as { text: string; items: unknown[] }[] | undefined;
-      // const packagesNav = nav?.find((n) => n.text === 'Packages');
-      // console.log(items)
-      // if (packagesNav) {
-      //   packagesNav.items = items;
-      // }
-
       // Populate sidebar for /packages
       const sidebar = config.themeConfig?.sidebar as Record<string, { text: string; items: unknown[] }[]> | undefined;
       const packagesSidebar = sidebar?.['/packages'];

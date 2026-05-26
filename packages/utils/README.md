@@ -90,7 +90,7 @@ mono-rele2-utils-cli objectFlattenTool <json>
 
 | arg | type | description |
 |-----|------|-------------|
-| `json` | string | JSON string of a nested object to flatten (unlimited depth) |
+| `json` | string \| JSON object | JSON string or parsed object to flatten (unlimited depth) |
 
 ```sh
 mono-rele2-utils-cli objectFlattenTool '{"user":{"name":"Alice","address":{"city":"Seoul","zip":"12345"}},"active":true}'    # {
@@ -102,6 +102,70 @@ mono-rele2-utils-cli objectFlattenTool '{"user":{"name":"Alice","address":{"city
 mono-rele2-utils-cli objectFlattenTool '{"a":{"b":{"c":{"d":{"e":"deep"}}}}}'                                                # {
   "a.b.c.d.e": "deep"
 }
+```
+
+#### `getUserTool`
+
+RandomUser API 형식의 사용자 객체를 받아 이름과 거주 도시로 구성된 한글 문장을 반환합니다. JSON 문자열 또는 파싱된 객체를 입력받습니다..
+
+```sh
+mono-rele2-utils-cli getUserTool <user>
+```
+
+| arg | type | description |
+|-----|------|-------------|
+| `user` | RandomUser | RandomUser 형식의 JSON 문자열 또는 객체 — name.first / name.last / location.city 필수 |
+
+**`user`** type definition:
+
+```typescript
+interface RandomUser {
+  gender: "male" | "female";
+  name: {
+    title: string;
+    first: string;
+    last: string;
+  };
+  location: {
+    street: {
+      number: number;
+      name: string;
+    };
+    city: string;
+    state: string;
+    country: string;
+    postcode: string | number;
+    coordinates: {
+      latitude: string;
+      longitude: string;
+    };
+    timezone: {
+      offset: string;
+      description: string;
+    };
+  };
+  email: string;
+  login: {
+    uuid: string;
+    username: string;
+  };
+  dob: {
+    date: string;
+    age: number;
+  };
+  phone: string;
+  cell: string;
+  picture: {
+    large: string;
+    medium: string;
+    thumbnail: string;
+  };
+  nat: string;
+}
+```
+
+```sh
+mono-rele2-utils-cli getUserTool '{"name":{"title":"Mr","first":"Alice","last":"Kim"},"location":{"city":"Seoul"},"gender":"female","email":"alice@example.com","nat":"KR"}'    # 이름은 Alice Kim 이고 현재 Seoul 에 살고 있습니다.
 ```
 
 ## MCP Server

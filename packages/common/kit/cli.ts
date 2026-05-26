@@ -28,11 +28,9 @@ function formatSkills(tools: CliTools): string {
 
 export async function runCli(tools: CliTools): Promise<void> {
   const [, , toolName, ...rawArgs] = process.argv;
-  console.log(process.argv);
 
   if (!toolName || !(toolName in tools)) {
     if (toolName) console.error(`Unknown skill: "${toolName}"\n`);
-    console.log(formatSkills(tools));
     process.exit(toolName ? 1 : 0);
   }
 
