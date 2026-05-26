@@ -18,13 +18,13 @@ npx @julong/mono-rele2-core-cli <toolName> [...args]
 mono-rele2-core-cli <toolName> [...args]
 ```
 
-Run without arguments to list all available skills:
+Run without arguments to list all available tools:
 
 ```sh
 mono-rele2-core-cli
 ```
 
-### Skills
+### Tools
 
 #### `echoTool`
 

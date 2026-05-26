@@ -18,13 +18,13 @@ npx @julong/mono-rele2-utils-cli <toolName> [...args]
 mono-rele2-utils-cli <toolName> [...args]
 ```
 
-Run without arguments to list all available skills:
+Run without arguments to list all available tools:
 
 ```sh
 mono-rele2-utils-cli
 ```
 
-### Skills
+### Tools
 
 #### `cnTool`
 
@@ -78,6 +78,30 @@ mono-rele2-utils-cli truncateTool <input> <maxLength> [suffix]
 ```sh
 mono-rele2-utils-cli truncateTool "hello world long text" 10    # hello w...
 mono-rele2-utils-cli truncateTool "hello world" 8 "…"           # hello w…
+```
+
+#### `objectFlattenTool`
+
+Flattens a nested JSON object of any depth into dot-notation key-value pairs. Accepts a JSON string and recursively flattens all levels. Arrays and primitives at any level are treated as leaf values..
+
+```sh
+mono-rele2-utils-cli objectFlattenTool <json>
+```
+
+| arg | type | description |
+|-----|------|-------------|
+| `json` | string | JSON string of a nested object to flatten (unlimited depth) |
+
+```sh
+mono-rele2-utils-cli objectFlattenTool '{"user":{"name":"Alice","address":{"city":"Seoul","zip":"12345"}},"active":true}'    # {
+  "user.name": "Alice",
+  "user.address.city": "Seoul",
+  "user.address.zip": "12345",
+  "active": true
+}
+mono-rele2-utils-cli objectFlattenTool '{"a":{"b":{"c":{"d":{"e":"deep"}}}}}'                                                # {
+  "a.b.c.d.e": "deep"
+}
 ```
 
 ## MCP Server
