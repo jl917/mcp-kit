@@ -106,6 +106,8 @@ export const tools = {
         result: JSON.stringify({ "a.b.c.d.e": "deep" }, null, 2),
       },
     ],
+    returnType: "JsonObject",
+    returnDescription: "Flattened object with dot-notation keys — e.g. { \"a.b.c\": value }",
     guidelines: [
       "Arrays and primitives at any level are always treated as leaf values — they are never traversed.",
       "The result is always a flat JSON object with dot-notation keys.",

@@ -17,6 +17,8 @@ type ToolDefShape<TSchema extends z.ZodRawShape> = {
   guidelines?: string[];
   typeLabels?: { [K in keyof TSchema]?: string };
   typeDefs?: { [K in keyof TSchema]?: string };
+  returnType?: string;
+  returnDescription?: string;
 };
 
 export type AnyToolDef = {
@@ -29,6 +31,8 @@ export type AnyToolDef = {
   guidelines?: string[];
   typeLabels?: Record<string, string>;
   typeDefs?: Record<string, string>;
+  returnType?: string;
+  returnDescription?: string;
 };
 
 export function toolDef<const TSchema extends z.ZodRawShape>(def: ToolDefShape<TSchema>) {

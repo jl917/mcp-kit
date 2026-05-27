@@ -138,6 +138,8 @@ export const tools = {
         "}",
       ].join("\n"),
     },
+    returnType: "string",
+    returnDescription: "\"이름은 {first} {last} 이고 현재 {city} 에 살고 있습니다.\" 형식의 한글 문장",
     handler: async ({ user }) => {
       try {
         const input: string | RandomUser =

@@ -9,6 +9,9 @@ export const tools = {
     inputSchema: {
       classes: z.array(z.string()).describe("List of class names to merge"),
     },
+    typeLabels: { classes: "string[]" },
+    returnType: "string",
+    returnDescription: "Merged class name string with falsy values filtered out",
     handler: async ({ classes }) => text(cn(...classes)),
     examples: [{ args: [`'["btn","active","large"]'`], result: "btn active large" }],
   }),
@@ -19,6 +22,12 @@ export const tools = {
       input: z.string().describe("Text to convert"),
       to: z.enum(["upper", "lower", "capitalize", "camel", "snake", "kebab"]).describe("Target case format"),
     },
+    typeLabels: {
+      input: "string",
+      to: '"upper" | "lower" | "capitalize" | "camel" | "snake" | "kebab"',
+    },
+    returnType: "string",
+    returnDescription: "Converted text in the target case format",
     handler: async ({ input, to }) => text(convert(input, to)),
     examples: [
       { args: [`"hello world"`, "camel"], result: "helloWorld" },
@@ -34,6 +43,13 @@ export const tools = {
       maxLength: z.number().int().positive().describe("Maximum character length"),
       suffix: z.string().default("...").describe("Suffix to append when truncated"),
     },
+    typeLabels: {
+      input: "string",
+      maxLength: "number",
+      suffix: "string",
+    },
+    returnType: "string",
+    returnDescription: "Truncated text with the configured suffix appended if truncated",
     handler: async ({ input, maxLength, suffix }) => {
       const result = input.length <= maxLength ? input : input.slice(0, maxLength - suffix.length) + suffix;
       return text(result);

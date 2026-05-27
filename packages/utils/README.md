@@ -2,6 +2,29 @@
 
 Use this skill to invoke text utility functions via the mono-rele2-utils CLI. Handles class name merging, case conversion, and text truncation.
 
+## MCP Server
+
+### Configuration
+
+Add to your `~/.reasonix/config.json` or MCP client config:
+
+```json
+{
+  "mcpServers": {
+    "@julong/mono-rele2-utils": {
+      "command": "npx",
+      "args": ["-y", "@julong/mono-rele2-utils"]
+    }
+  }
+}
+```
+
+### Run
+
+```sh
+npx -y @julong/mono-rele2-utils
+```
+
 ## CLI
 
 ### Installation
@@ -9,7 +32,7 @@ Use this skill to invoke text utility functions via the mono-rele2-utils CLI. Ha
 ```sh
 npm install -g @julong/mono-rele2-utils
 # or
-npx @julong/mono-rele2-utils-cli <toolName> [...args]
+npx mono-rele2-utils-cli <toolName> [...args]
 ```
 
 ### Usage
@@ -24,99 +47,217 @@ Run without arguments to list all available tools:
 mono-rele2-utils-cli
 ```
 
-### Tools
+## Tools API Reference
 
-#### `cnTool`
+### `cn(classes)`
+
+**Signature**
+
+```typescript
+function cn(classes: string[]): string
+```
 
 Merges class names, filtering out falsy values.
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `classes` | `string[]` | List of class names to merge |
+
+
+**Returns**
+
+`string` — Merged class name string with falsy values filtered out
+
+
+**CLI**
 
 ```sh
 mono-rele2-utils-cli cnTool <classes>
 ```
 
-| arg | type | description |
-|-----|------|-------------|
-| `classes` | JSON string (array) | List of class names to merge |
+
+
+**Examples**
 
 ```sh
-mono-rele2-utils-cli cnTool '["btn","active","large"]'    # btn active large
+mono-rele2-utils-cli cnTool '["btn","active","large"]'
+# → btn active large
 ```
 
-#### `caseConvertTool`
+### `case_convert(input, to)`
+
+**Signature**
+
+```typescript
+function case_convert(input: string, to: "upper" | "lower" | "capitalize" | "camel" | "snake" | "kebab"): string
+```
 
 Converts text to the specified case format.
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `input` | `string` | Text to convert |
+| `to` | `"upper" | "lower" | "capitalize" | "camel" | "snake" | "kebab"` | Target case format |
+
+
+**Returns**
+
+`string` — Converted text in the target case format
+
+
+**CLI**
 
 ```sh
 mono-rele2-utils-cli caseConvertTool <input> <to>
 ```
 
-| arg | type | description |
-|-----|------|-------------|
-| `input` | string | Text to convert |
-| `to` | `upper` \| `lower` \| `capitalize` \| `camel` \| `snake` \| `kebab` | Target case format |
+
+
+**Examples**
 
 ```sh
-mono-rele2-utils-cli caseConvertTool "hello world" camel    # helloWorld
-mono-rele2-utils-cli caseConvertTool "helloWorld" snake     # hello_world
-mono-rele2-utils-cli caseConvertTool "hello world" kebab    # hello-world
+mono-rele2-utils-cli caseConvertTool "hello world" camel
+# → helloWorld
+```
+```sh
+mono-rele2-utils-cli caseConvertTool "helloWorld" snake
+# → hello_world
+```
+```sh
+mono-rele2-utils-cli caseConvertTool "hello world" kebab
+# → hello-world
 ```
 
-#### `truncateTool`
+### `truncate(input, maxLength, suffix)`
+
+**Signature**
+
+```typescript
+function truncate(input: string, maxLength: number, suffix?: string): string
+```
 
 Truncates text to a maximum length and appends a suffix.
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `input` | `string` | Text to truncate |
+| `maxLength` | `number` | Maximum character length |
+| `suffix` | `string` | Suffix to append when truncated (default: `...`) |
+
+
+**Returns**
+
+`string` — Truncated text with the configured suffix appended if truncated
+
+
+**CLI**
 
 ```sh
 mono-rele2-utils-cli truncateTool <input> <maxLength> [suffix]
 ```
 
-| arg | type | description |
-|-----|------|-------------|
-| `input` | string | Text to truncate |
-| `maxLength` | number | Maximum character length |
-| `suffix` | string | Suffix to append when truncated (default: `...`) |
+
+
+**Examples**
 
 ```sh
-mono-rele2-utils-cli truncateTool "hello world long text" 10    # hello w...
-mono-rele2-utils-cli truncateTool "hello world" 8 "…"           # hello w…
+mono-rele2-utils-cli truncateTool "hello world long text" 10
+# → hello w...
+```
+```sh
+mono-rele2-utils-cli truncateTool "hello world" 8 "…"
+# → hello w…
 ```
 
-#### `objectFlattenTool`
+### `object_flatten(json)`
+
+**Signature**
+
+```typescript
+function object_flatten(json: string \| JSON object): JsonObject
+```
 
 Flattens a nested JSON object of any depth into dot-notation key-value pairs. Accepts a JSON string and recursively flattens all levels. Arrays and primitives at any level are treated as leaf values..
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `json` | `string \| JSON object` | JSON string or parsed object to flatten (unlimited depth) |
+
+
+**Returns**
+
+`JsonObject` — Flattened object with dot-notation keys — e.g. { "a.b.c": value }
+
+
+**CLI**
 
 ```sh
 mono-rele2-utils-cli objectFlattenTool <json>
 ```
 
-| arg | type | description |
-|-----|------|-------------|
-| `json` | string \| JSON object | JSON string or parsed object to flatten (unlimited depth) |
+
+
+**Examples**
 
 ```sh
-mono-rele2-utils-cli objectFlattenTool '{"user":{"name":"Alice","address":{"city":"Seoul","zip":"12345"}},"active":true}'    # {
+mono-rele2-utils-cli objectFlattenTool '{"user":{"name":"Alice","address":{"city":"Seoul","zip":"12345"}},"active":true}'
+# → {
   "user.name": "Alice",
   "user.address.city": "Seoul",
   "user.address.zip": "12345",
   "active": true
 }
-mono-rele2-utils-cli objectFlattenTool '{"a":{"b":{"c":{"d":{"e":"deep"}}}}}'                                                # {
+```
+```sh
+mono-rele2-utils-cli objectFlattenTool '{"a":{"b":{"c":{"d":{"e":"deep"}}}}}'
+# → {
   "a.b.c.d.e": "deep"
 }
 ```
 
-#### `getUserTool`
+### `getUser(user)`
+
+**Signature**
+
+```typescript
+function getUser(user: RandomUser): string
+```
 
 RandomUser API 형식의 사용자 객체를 받아 이름과 거주 도시로 구성된 한글 문장을 반환합니다. JSON 문자열 또는 파싱된 객체를 입력받습니다..
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `user` | `RandomUser` | RandomUser 형식의 JSON 문자열 또는 객체 — name.first / name.last / location.city 필수 |
+
+
+**Returns**
+
+`string` — "이름은 {first} {last} 이고 현재 {city} 에 살고 있습니다." 형식의 한글 문장
+
+
+**CLI**
 
 ```sh
 mono-rele2-utils-cli getUserTool <user>
 ```
 
-| arg | type | description |
-|-----|------|-------------|
-| `user` | RandomUser | RandomUser 형식의 JSON 문자열 또는 객체 — name.first / name.last / location.city 필수 |
 
-**`user`** type definition:
+**`user`** type definition
 
 ```typescript
 interface RandomUser {
@@ -164,12 +305,10 @@ interface RandomUser {
 }
 ```
 
-```sh
-mono-rele2-utils-cli getUserTool '{"name":{"title":"Mr","first":"Alice","last":"Kim"},"location":{"city":"Seoul"},"gender":"female","email":"alice@example.com","nat":"KR"}'    # 이름은 Alice Kim 이고 현재 Seoul 에 살고 있습니다.
-```
 
-## MCP Server
+**Examples**
 
 ```sh
-npx -y @julong/mono-rele2-utils
+mono-rele2-utils-cli getUserTool '{"name":{"title":"Mr","first":"Alice","last":"Kim"},"location":{"city":"Seoul"},"gender":"female","email":"alice@example.com","nat":"KR"}'
+# → 이름은 Alice Kim 이고 현재 Seoul 에 살고 있습니다.
 ```

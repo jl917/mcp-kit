@@ -1,9 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { generateReadmeSkills } from "../kit/skill.ts";
-
-const README_PATH = "./README.md";
+import { generateReadmeApiDocs } from "../kit/skill.ts";
 
 const pkg = JSON.parse(readFileSync("./package.json", "utf-8"));
 const pkgName = pkg.name;
@@ -13,11 +11,38 @@ const binCli = `${pkgName.split("/").pop()}-cli`;
 const toolsUrl = pathToFileURL(join(process.cwd(), "src/tools/index.ts")).href;
 const { tools } = await import(toolsUrl);
 
-const toolsText = generateReadmeSkills({ binName: binCli, tools });
+const cliBinName = Object.entries(pkg.bin ?? {}).find(([, v]) => String(v).endsWith("cli.js"))?.[0] ?? binCli;
+
+const mcpConfig = `{
+  "mcpServers": {
+    "${pkgName}": {
+      "command": "npx",
+      "args": ["-y", "${pkgName}"]
+    }
+  }
+}`;
+
+const toolsText = generateReadmeApiDocs({ binName: cliBinName, tools });
 
 const readme = `# ${pkgName}
 
 ${pkgDesc}
+
+## MCP Server
+
+### Configuration
+
+Add to your \`~/.reasonix/config.json\` or MCP client config:
+
+\`\`\`json
+${mcpConfig}
+\`\`\`
+
+### Run
+
+\`\`\`sh
+npx -y ${pkgName}
+\`\`\`
 
 ## CLI
 
@@ -26,31 +51,25 @@ ${pkgDesc}
 \`\`\`sh
 npm install -g ${pkgName}
 # or
-npx ${pkgName}-cli <toolName> [...args]
+npx ${cliBinName} <toolName> [...args]
 \`\`\`
 
 ### Usage
 
 \`\`\`sh
-${binCli} <toolName> [...args]
+${cliBinName} <toolName> [...args]
 \`\`\`
 
 Run without arguments to list all available tools:
 
 \`\`\`sh
-${binCli}
+${cliBinName}
 \`\`\`
 
-### Tools
+## Tools API Reference
 
 ${toolsText}
-
-## MCP Server
-
-\`\`\`sh
-npx -y ${pkgName}
-\`\`\`
 `;
 
-writeFileSync(README_PATH, readme);
-console.log(`[update-readme] ${README_PATH} updated`);
+writeFileSync("./README.md", readme);
+console.log(`[update-readme] ./README.md updated`);

@@ -2,6 +2,29 @@
 
 Use this skill to invoke core system utility functions via the mono-rele2-core CLI. Handles message echo, UTC timestamp generation, and environment variable lookup.
 
+## MCP Server
+
+### Configuration
+
+Add to your `~/.reasonix/config.json` or MCP client config:
+
+```json
+{
+  "mcpServers": {
+    "@julong/mono-rele2-core": {
+      "command": "npx",
+      "args": ["-y", "@julong/mono-rele2-core"]
+    }
+  }
+}
+```
+
+### Run
+
+```sh
+npx -y @julong/mono-rele2-core
+```
+
 ## CLI
 
 ### Installation
@@ -9,7 +32,7 @@ Use this skill to invoke core system utility functions via the mono-rele2-core C
 ```sh
 npm install -g @julong/mono-rele2-core
 # or
-npx @julong/mono-rele2-core-cli <toolName> [...args]
+npx mono-rele2-core-cli <toolName> [...args]
 ```
 
 ### Usage
@@ -24,72 +47,158 @@ Run without arguments to list all available tools:
 mono-rele2-core-cli
 ```
 
-### Tools
+## Tools API Reference
 
-#### `echoTool`
+### `echo(message)`
+
+**Signature**
+
+```typescript
+function echo(message: string): string
+```
 
 Returns the message as-is.
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `message` | `string` | Message to echo |
+
+
+**Returns**
+
+`string`
+
+
+**CLI**
 
 ```sh
 mono-rele2-core-cli echoTool <message>
 ```
 
-| arg | type | description |
-|-----|------|-------------|
-| `message` | string | Message to echo |
+
+
+**Examples**
 
 ```sh
-mono-rele2-core-cli echoTool "hello world"    # hello world
+mono-rele2-core-cli echoTool "hello world"
+# → hello world
 ```
 
-#### `timestampTool`
+### `timestamp(format)`
+
+**Signature**
+
+```typescript
+function timestamp(format?: `iso` \| `unix`): string
+```
 
 Returns the current UTC timestamp.
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `format` | ``iso` \| `unix`` | Timestamp format (default: `iso`) |
+
+
+**Returns**
+
+`string`
+
+
+**CLI**
 
 ```sh
 mono-rele2-core-cli timestampTool [format]
 ```
 
-| arg | type | description |
-|-----|------|-------------|
-| `format` | `iso` \| `unix` | Timestamp format (default: `iso`) |
+
+
+**Examples**
 
 ```sh
-mono-rele2-core-cli timestampTool         # 2026-05-02T00:00:00.000Z
-mono-rele2-core-cli timestampTool unix    # 1746144000000
+mono-rele2-core-cli timestampTool
+# → 2026-05-02T00:00:00.000Z
+```
+```sh
+mono-rele2-core-cli timestampTool unix
+# → 1746144000000
 ```
 
-#### `envTool`
+### `env(key)`
+
+**Signature**
+
+```typescript
+function env(key: string): string
+```
 
 Returns the value of an environment variable.
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `key` | `string` | Environment variable name |
+
+
+**Returns**
+
+`string`
+
+
+**CLI**
 
 ```sh
 mono-rele2-core-cli envTool <key>
 ```
 
-| arg | type | description |
-|-----|------|-------------|
-| `key` | string | Environment variable name |
+
+
+**Examples**
 
 ```sh
-mono-rele2-core-cli envTool HOME        # /Users/julong
-mono-rele2-core-cli envTool NODE_ENV    # development
+mono-rele2-core-cli envTool HOME
+# → /Users/julong
+```
+```sh
+mono-rele2-core-cli envTool NODE_ENV
+# → development
 ```
 
-#### `uuidTool`
+### `uuid()`
+
+**Signature**
+
+```typescript
+function uuid(): string
+```
 
 Generates a random UUID v4.
+
+
+
+**Returns**
+
+`string`
+
+
+**CLI**
 
 ```sh
 mono-rele2-core-cli uuidTool
 ```
 
-```sh
-mono-rele2-core-cli uuidTool    # 550e8400-e29b-41d4-a716-446655440000
-```
 
-## MCP Server
+
+**Examples**
 
 ```sh
-npx -y @julong/mono-rele2-core
+mono-rele2-core-cli uuidTool
+# → 550e8400-e29b-41d4-a716-446655440000
 ```

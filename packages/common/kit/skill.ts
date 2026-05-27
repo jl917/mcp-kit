@@ -208,6 +208,105 @@ function describeReadmeType(schema: z.ZodTypeAny, typeLabel?: string): string {
   return "unknown";
 }
 
+// ---------------------------------------------------------------------------
+// Lodash-style API docs renderer
+// ---------------------------------------------------------------------------
+
+/**
+ * Generates detailed API documentation for each tool in lodash/TypeDoc style.
+ * Each tool section includes: signature, description, parameters, return type,
+ * type definitions, CLI usage, and examples.
+ */
+export function generateReadmeApiDocs(opts: { binName: string; tools: SkillTools }): string {
+  const { binName, tools } = opts;
+  return Object.entries(tools)
+    .map(([key, tool]) => renderToolApiDoc(binName, key, tool))
+    .join("\n\n");
+}
+
+function renderToolApiDoc(binName: string, key: string, tool: AnyToolDef): string {
+  const fields = Object.entries(tool.inputSchema);
+  const toolName = tool.name;
+
+  // Build parameter list for signature: (a, b, c?)
+  const sigParams = fields
+    .map(([field, schema]) => {
+      const label = tool.typeLabels?.[field] ?? describeReadmeType(schema as z.ZodTypeAny);
+      const isOpt = schema instanceof z.ZodOptional || schema instanceof z.ZodDefault;
+      return `${field}${isOpt ? "?" : ""}: ${label}`;
+    })
+    .join(", ");
+
+  const returnType = tool.returnType ?? "string";
+  const signature = `function ${toolName}(${sigParams}): ${returnType}`;
+
+  // Parameter table
+  const paramRows = fields
+    .map(([field, schema]) => {
+      const label = tool.typeLabels?.[field] ?? describeReadmeType(schema as z.ZodTypeAny);
+      const desc = describeReadmeDesc(schema as z.ZodTypeAny);
+      return `| \`${field}\` | \`${label}\` | ${desc} |`;
+    })
+    .join("\n");
+  const paramBlock = paramRows
+    ? `\n\n**Parameters**\n\n| Name | Type | Description |\n|------|------|-------------|\n${paramRows}`
+    : "";
+
+  // Return block
+  const returnDesc = tool.returnDescription ?? "";
+  const returnBlock = returnDesc
+    ? `\n\n**Returns**\n\n\`${returnType}\` — ${returnDesc}`
+    : `\n\n**Returns**\n\n\`${returnType}\``;
+
+  // CLI usage
+  const usageArgs = fields
+    .map(([field, schema]) => {
+      const isOpt = schema instanceof z.ZodOptional || schema instanceof z.ZodDefault;
+      return isOpt ? `[${field}]` : `<${field}>`;
+    })
+    .join(" ");
+  const usage = [binName, key, usageArgs].filter(Boolean).join(" ");
+  const cliBlock = `\n\n**CLI**\n\n\`\`\`sh\n${usage}\n\`\`\``;
+
+  // Type definitions
+  const defsBlock = tool.typeDefs
+    ? "\n\n" +
+      Object.entries(tool.typeDefs)
+        .map(([field, def]) => `**\`${field}\`** type definition\n\n\`\`\`typescript\n${def}\n\`\`\``)
+        .join("\n\n")
+    : "";
+
+  // Examples
+  const examples = tool.examples ?? [];
+  const exBlock =
+    examples.length > 0
+      ? "\n\n**Examples**\n\n" +
+        examples
+          .map((ex) => {
+            const cmd = [binName, key, ...ex.args].join(" ");
+            return `\`\`\`sh\n${cmd}\n# → ${ex.result}\n\`\`\``;
+          })
+          .join("\n")
+      : "";
+
+  return [
+    `### \`${toolName}(${fields.map(([f]) => f).join(", ")})\``,
+    "",
+    "**Signature**",
+    "",
+    "```typescript",
+    signature,
+    "```",
+    "",
+    tool.description + ".",
+    paramBlock,
+    returnBlock,
+    cliBlock,
+    defsBlock,
+    exBlock,
+  ].join("\n");
+}
+
 function describeReadmeDesc(schema: z.ZodTypeAny): string {
   const baseDesc = schema.description ?? "";
   let inner: z.ZodTypeAny = schema;
