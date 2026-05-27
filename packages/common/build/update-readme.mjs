@@ -9,15 +9,20 @@ const pkgDesc = pkg.description;
 const binCli = `${pkgName.split("/").pop()}-cli`;
 
 const toolsUrl = pathToFileURL(join(process.cwd(), "src/tools/index.ts")).href;
-const { tools } = await import(toolsUrl);
+const { tools, UTILS_ENV_KEYS } = await import(toolsUrl);
 
 const cliBinName = Object.entries(pkg.bin ?? {}).find(([, v]) => String(v).endsWith("cli.js"))?.[0] ?? binCli;
+
+const envBlock =
+  UTILS_ENV_KEYS && UTILS_ENV_KEYS.length > 0
+    ? `,\n      "env": {\n${UTILS_ENV_KEYS.map((k) => `        "${k}": "<value>"`).join(",\n")}\n      }`
+    : "";
 
 const mcpConfig = `{
   "mcpServers": {
     "${pkgName}": {
       "command": "npx",
-      "args": ["-y", "${pkgName}"]
+      "args": ["-y", "${pkgName}"]${envBlock}
     }
   }
 }`;

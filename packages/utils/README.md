@@ -13,7 +13,10 @@ Add to your MCP client config:
   "mcpServers": {
     "@julong/mono-rele2-utils": {
       "command": "npx",
-      "args": ["-y", "@julong/mono-rele2-utils"]
+      "args": ["-y", "@julong/mono-rele2-utils"],
+      "env": {
+        "API_KEY": "<value>"
+      }
     }
   }
 }
@@ -311,4 +314,64 @@ interface RandomUser {
 ```sh
 mono-rele2-utils-cli getUserTool '{"name":{"title":"Mr","first":"Alice","last":"Kim"},"location":{"city":"Seoul"},"gender":"female","email":"alice@example.com","nat":"KR"}'
 # → 이름은 Alice Kim 이고 현재 Seoul 에 살고 있습니다.
+```
+
+### `env_get(keys)`
+
+**Signature**
+
+```typescript
+function env_get(keys: string[]): Record<string, string>
+```
+
+MCP 클라이언트 config의 env 필드를 통해 주입된 환경 변수 값을 조회합니다. 조회 가능한 키는 패키지에서 제공하는 환경 변수로 한정됩니다. 현재 지원: API_KEY..
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `keys` | `string[]` | 조회할 환경 변수 이름 목록 (유효 키: API_KEY) |
+
+
+**Returns**
+
+`Record<string, string>` — key: 환경 변수 이름, value: 해당 값 (설정되지 않은 변수는 결과에서 제외)
+
+
+**CLI**
+
+```sh
+mono-rele2-utils-cli envGetTool <keys>
+```
+
+
+**`keys`** type definition
+
+```typescript
+// @julong/mono-rele2-utils 환경 변수 키 목록
+//   "API_KEY"
+
+// MCP client config 예시:
+// {
+//   "mcpServers": {
+//     "@julong/mono-rele2-utils": {
+//       "command": "npx",
+//       "args": ["-y", "@julong/mono-rele2-utils"],
+//       "env": {
+//         "API_KEY": "<value>"
+//       }
+//     }
+//   }
+// }
+```
+
+
+**Examples**
+
+```sh
+mono-rele2-utils-cli envGetTool '["API_KEY"]'
+# → {
+  "API_KEY": "<value>"
+}
 ```
