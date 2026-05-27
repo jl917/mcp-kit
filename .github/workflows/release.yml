@@ -83,7 +83,7 @@ jobs:
           GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
 
       - name: Build docs
-        run: pnpm docs:build --filter=@julong/mcp-kit-site
+        run: pnpm docs:build
 
       - name: Deploy to Netlify
         run: |
