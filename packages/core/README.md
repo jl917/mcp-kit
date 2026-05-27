@@ -6,7 +6,7 @@ Use this skill to invoke core system utility functions via the mono-rele2-core C
 
 ### Configuration
 
-Add to your `~/.reasonix/config.json` or MCP client config:
+Add to your MCP client config:
 
 ```json
 {

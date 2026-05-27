@@ -32,7 +32,7 @@ ${pkgDesc}
 
 ### Configuration
 
-Add to your \`~/.reasonix/config.json\` or MCP client config:
+Add to your MCP client config:
 
 \`\`\`json
 ${mcpConfig}

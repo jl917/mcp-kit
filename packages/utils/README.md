@@ -6,7 +6,7 @@ Use this skill to invoke text utility functions via the mono-rele2-utils CLI. Ha
 
 ### Configuration
 
-Add to your `~/.reasonix/config.json` or MCP client config:
+Add to your MCP client config:
 
 ```json
 {
