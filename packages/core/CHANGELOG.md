@@ -1,3 +1,9 @@
+## @julong/mono-rele2-core [1.21.0](https://github.com/jl917/mcp-kit/compare/@julong/mono-rele2-core@1.20.0...@julong/mono-rele2-core@1.21.0) (2026-05-27)
+
+### Features
+
+* update common-update.md in core and utils [skip ci] ([5dff3e8](https://github.com/jl917/mcp-kit/commit/5dff3e8159f16a2871c9d61b566d3772bb5c2008))
+
 ## @julong/mono-rele2-core [1.20.0](https://github.com/jl917/mcp-kit/compare/@julong/mono-rele2-core@1.19.0...@julong/mono-rele2-core@1.20.0) (2026-05-26)
 
 ### Features
