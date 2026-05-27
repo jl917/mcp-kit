@@ -1,3 +1,10 @@
+## @julong/mono-rele2-utils [1.21.0](https://github.com/jl917/mcp-kit/compare/@julong/mono-rele2-utils@1.20.0...@julong/mono-rele2-utils@1.21.0) (2026-05-27)
+
+### Features
+
+* update common-update.md in core and utils [skip ci] ([5dff3e8](https://github.com/jl917/mcp-kit/commit/5dff3e8159f16a2871c9d61b566d3772bb5c2008))
+* **utils:** add env_get tool for MCP client-injected env vars ([cc2e8d0](https://github.com/jl917/mcp-kit/commit/cc2e8d0f7583aec37d3d7e97c8d9cd7cdca2a367))
+
 ## @julong/mono-rele2-utils [1.20.0](https://github.com/jl917/mcp-kit/compare/@julong/mono-rele2-utils@1.19.0...@julong/mono-rele2-utils@1.20.0) (2026-05-26)
 
 ### Features
