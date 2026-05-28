@@ -41,6 +41,14 @@ export const tools = {
     guidelines: [                        // CLI/Skill 문서에 표시될 가이드라인
       "이 도구는 ~할 때 사용합니다",
     ],
+    typeLabels: {                        // (선택) README/API 문서의 타입 레이블 오버라이드
+      param1: "MyCustomType",
+    },
+    typeDefs: {                          // (선택) 복잡한 타입의 TypeScript 정의
+      param1: "type MyCustomType = string | number",
+    },
+    returnType: "string",                // (선택) 반환 타입 (API 문서용)
+    returnDescription: "변환된 결과 문자열",  // (선택) 반환값 설명 (API 문서용)
   }),
 };
 ```
@@ -53,6 +61,18 @@ export const tools = {
 
 - **도구 정의 파일**: 최대 200줄 권장 (도구가 많아지면 별도 파일로 분리)
 - **핸들러 로직**: 가능한 한 도구 정의 파일 내에 인라인으로 작성. 공통 로직이 필요하면 별도 유틸리티 함수로 추출
+
+## 문서 생성 헬퍼
+
+`packages/common/kit/skill.ts`는 README와 Skill 문서를 생성하는 3가지 헬퍼를 제공합니다:
+
+| 함수 | 용도 |
+|------|------|
+| `generateSkillMarkdown()` | tsup의 `onSuccess`에서 호출, `dist/skills/<binName>/skill.md` 생성 |
+| `generateReadmeSkills()` | README에 간략한 도구 목록 표시 (더 이상 사용되지 않음) |
+| `generateReadmeApiDocs()` | README에 TypeDoc/API 문서 스타일의 상세 도구 문서 생성 (현재 사용) |
+
+`update-readme.mjs`는 `generateReadmeApiDocs()`를 사용하여 각 도구의 시그니처, 파라미터, 반환 타입, 타입 정의, CLI 사용법, 예제를 포함한 API 문서를 README.md에 생성합니다.
 
 ## import/export 규칙
 

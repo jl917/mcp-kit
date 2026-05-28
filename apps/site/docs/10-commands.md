@@ -1,6 +1,6 @@
 # 10. 프로젝트 전용 명령어
 
-> 모든 명령어는 루트 디렉토리(`/Users/julong/Documents/github/mcp-kit`)에서 실행합니다.
+> 모든 명령어는 루트 디렉토리에서 실행합니다.
 > `pnpm`은 `9.12.1` 버전을 사용합니다.
 
 ## 환경 설정
@@ -31,6 +31,12 @@ pnpm dev                          # turbo run dev
 
 # 클린 빌드 (캐시 및 dist 제거)
 pnpm clean
+
+# 린트 (타입 검사 기반, 현재 ESLint 미설정)
+pnpm lint                         # turbo run lint
+
+# 포맷 (Prettier 미설정 — 예비)
+pnpm format                       # turbo run format
 ```
 
 ## 타입 검사
@@ -53,6 +59,18 @@ pnpm readme
 # 특정 패키지만 README 업데이트
 pnpm --filter @julong/mono-rele2-core readme
 ```
+
+## 문서 사이트 (Rspress)
+
+```bash
+# 문서 사이트 로컬 개발 서버 실행
+pnpm docs:dev                      # turbo run docs:dev
+
+# 문서 사이트 정적 빌드 (doc_build/ 디렉토리 출력)
+pnpm docs:build                    # turbo run docs:build
+```
+
+문서 사이트는 `apps/site/` 디렉토리에 위치하며, Rspress 프레임워크로 동작합니다. 정적 문서는 `apps/site/docs/`의 `.md` 파일로, 패키지 문서는 `packages/*/README.md`에서 자동 생성됩니다.
 
 ## 테스트
 
@@ -90,6 +108,19 @@ node packages/utils/dist/server.js
 # MCP Inspector로 디버깅
 npx @modelcontextprotocol/inspector node packages/core/dist/server.js
 npx @modelcontextprotocol/inspector node packages/utils/dist/server.js
+
+# MCP Client Config (env 변수 포함 예시)
+# @julong/mono-rele2-utils는 API_KEY 환경 변수 전달 지원
+# MCP client config.json:
+# {
+#   "mcpServers": {
+#     "@julong/mono-rele2-utils": {
+#       "command": "npx",
+#       "args": ["-y", "@julong/mono-rele2-utils"],
+#       "env": { "API_KEY": "<value>" }
+#     }
+#   }
+# }
 ```
 
 ## CLI 도구 실행
@@ -97,15 +128,25 @@ npx @modelcontextprotocol/inspector node packages/utils/dist/server.js
 ```bash
 # 도구 목록 보기
 npx @julong/mono-rele2-core-cli
+npx @julong/mono-rele2-utils-cli
 
-# 특정 도구 실행
+# 특정 도구 실행 (core)
 npx @julong/mono-rele2-core-cli echoTool "hello world"
 npx @julong/mono-rele2-core-cli timestampTool unix
 npx @julong/mono-rele2-core-cli envTool HOME
 npx @julong/mono-rele2-core-cli uuidTool
 
+# 특정 도구 실행 (utils)
+npx @julong/mono-rele2-utils-cli cnTool '["btn","active"]'
+npx @julong/mono-rele2-utils-cli caseConvertTool "hello world" camel
+npx @julong/mono-rele2-utils-cli truncateTool "hello world" 8
+npx @julong/mono-rele2-utils-cli objectFlattenTool '{"user":{"name":"Alice"}}'
+npx @julong/mono-rele2-utils-cli getUserTool '{"name":{"first":"Alice","last":"Kim"},"location":{"city":"Seoul"}}'
+npx @julong/mono-rele2-utils-cli envGetTool '["API_KEY"]'
+
 # 로컬 빌드로 CLI 실행
 node packages/core/dist/cli.js echoTool "hello world"
+node packages/utils/dist/cli.js cnTool '["btn","active"]'
 ```
 
 ## Git 커밋
@@ -151,6 +192,9 @@ ls packages/utils/dist/
 # 생성된 스킬 문서 확인
 ls packages/core/dist/skills/
 ls packages/utils/dist/skills/
+
+# 문서 사이트 빌드 결과 확인
+ls apps/site/doc_build/
 ```
 
 ## 문제 해결

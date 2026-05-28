@@ -4,16 +4,18 @@
 
 ```
 mcp-kit/
+├── apps/
+│   └── site/           # Rspress 문서 사이트 (docs/ + README 동적 페이지)
 ├── packages/
 │   ├── common/         # 공유 키트 (npm 미배포, workspace 제외)
 │   ├── core/           # @julong/mono-rele2-core — 핵심 시스템 도구
-│   └── utils/          # @julong/mono-rele2-utils — 텍스트 유틸리티 도구
+│   └── utils/          # @julong/mono-rele2-utils — 텍스트/데이터 유틸리티 도구
 ├── .github/workflows/  # CI/CD 파이프라인
-├── docs/               # 프로젝트 문서
 ├── package.json        # 루트 설정 (workspace 정의)
 ├── turbo.json          # Turborepo 태스크 설정
-├── tsconfig.json       # 루트 TypeScript 설정 (주로 declaration 공유)
+├── tsconfig.json       # 루트 TypeScript 설정
 ├── .releaserc.json     # semantic-release 공유 설정 (패키지별 복사됨)
+├── CLAUDE.md           # AI 어시스턴트용 프로젝트 컨텍스트
 └── pnpm-workspace.yaml # 워크스페이스 범위 (common 제외)
 ```
 
@@ -59,15 +61,36 @@ core/
 utils/
 ├── src/
 │   ├── index.ts            # 라이브러리 진입점 (cn, tools, generate* re-export)
-│   ├── server.ts           # MCP 서버 진입점
+│   ├── server.ts           # MCP 서버 진입점 (6개 도구 등록)
 │   ├── cli.ts              # CLI 진입점
-│   ├── cn.ts               # cn() 유틸리티 함수
+│   ├── cn.ts               # cn() 유틸리티 함수 (classNames 필터링)
 │   └── tools/
-│       ├── index.ts        # tools re-export
-│       └── text.ts         # cnTool, caseConvertTool, truncateTool 정의
+│       ├── index.ts        # tools re-export (text + deep + user + env 병합)
+│       ├── text.ts         # cnTool, caseConvertTool, truncateTool 정의
+│       ├── deep.ts         # objectFlattenTool — 중첩 JSON dot-notation 평탄화
+│       ├── user.ts         # getUserTool — RandomUser 파싱 및 한글 문장 생성
+│       └── env.ts          # envGetTool — MCP client env 변수 조회 + UTILS_ENV_KEYS
 ├── tsup.config.ts
 └── package.json
 ```
+
+### `apps/site/` — Rspress 문서 사이트
+
+```
+site/
+├── docs/                    # 정적 마크다운 문서 (01-*.md ~ 10-*.md)
+│   ├── index.md             # 홈 페이지 (Rspress hero layout)
+│   ├── 01-project-overview.md
+│   ├── ...
+│   └── 10-commands.md
+├── scripts/
+│   └── package-docs-plugin.ts  # README → 동적 페이지 변환 플러그인
+├── rspress.config.ts        # Rspress 설정 (sidebar, nav, plugins)
+├── netlify.toml             # Netlify 배포 설정
+└── package.json             # @julong/mcp-kit-site (private)
+```
+
+`package-docs-plugin`이 `packages/*/README.md`를 탐색하여 `/packages/<name>` 라우트에 동적 페이지를 생성하고, `/packages` 개요 페이지에 패키지 목록 테이블을 자동 렌더링합니다.
 
 ## 전체 데이터 흐름
 
