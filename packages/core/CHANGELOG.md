@@ -1,3 +1,10 @@
+## @julong/mono-rele2-core [1.31.0](https://github.com/jl917/mcp-kit/compare/@julong/mono-rele2-core@1.30.0...@julong/mono-rele2-core@1.31.0) (2026-05-29)
+
+### Features
+
+* CJS 지원 및 dev watch 모드 추가 ([42ea348](https://github.com/jl917/mcp-kit/commit/42ea34864a563279b589e53adb48fde1a5d721d8))
+* update common-update.md in core and utils [skip ci] ([ac0d75c](https://github.com/jl917/mcp-kit/commit/ac0d75c1f2a7fa2281bb79e62cd2c5103c23749b))
+
 ## @julong/mono-rele2-core [1.30.0](https://github.com/jl917/mcp-kit/compare/@julong/mono-rele2-core@1.29.0...@julong/mono-rele2-core@1.30.0) (2026-05-27)
 
 ### Features
