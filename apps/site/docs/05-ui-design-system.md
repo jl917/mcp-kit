@@ -37,5 +37,6 @@ CLI는 `runCli()`를 통해 다음과 같은 형식으로 출력됩니다:
 ## 컴포넌트 재사용 주의사항
 
 - **`packages/common/kit/`의 함수는 모든 패키지에서 재사용**됨. 변경 시 모든 패키지에 영향이 가므로 주의
-- **동일한 도구 정의가 `readme-tools.mjs`와 `src/tools/*.ts`에 중복되지 않도록** 관리 — bun이 TS 소스를 직접 import하므로 중복 파일 생성 금지
+- **동일한 도구 정의가 `update-readme.mjs`와 `src/tools/*.ts`에 중복되지 않도록** 관리 — bun이 TS 소스를 직접 import하므로 중복 파일 생성 금지
 - 빌드 설정(`tsup.config.mjs`)은 모든 패키지가 공유하므로, 변경 전 반드시 다른 패키지에 미치는 영향 확인
+- 문서 생성 헬퍼(`skill.ts`의 `generateReadmeApiDocs()`)는 `typeLabels`, `typeDefs`, `returnType`, `returnDescription` 필드를 사용하여 풍부한 API 문서를 생성함. 도구 정의 시 이 필드들을 함께 작성할 것

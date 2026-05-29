@@ -1,0 +1,11 @@
+dist/
+.rslib/
+node_modules
+doc_build
+.next
+.nuxt
+.svelte-kit
+.turbo
+coverage
+*.tsbuildinfo
+pnpm-lock.yaml

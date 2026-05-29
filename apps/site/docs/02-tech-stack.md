@@ -16,6 +16,16 @@
 | `@modelcontextprotocol/sdk` | `^1.29.0` | MCP 서버 구현 (Server, StdioServerTransport, CallToolResult 등) |
 | `zod` | `^4.4.2` | 도구 입력 스키마 정의 및 런타임 검증 |
 
+## 문서 사이트
+
+| 도구 | 버전 | 용도 |
+|------|------|------|
+| **Rspress** (`@rspress/core`) | `^2.0.12` | 문서 사이트 프레임워크 (Vite/Rspack 기반) |
+| **@rspress/plugin-llms** | `^2.0.12` | llms.txt / llms-full.txt 자동 생성 |
+| **Netlify** | `netlify-cli ^26.0.2` | 문서 사이트 배포 |
+
+`apps/site/scripts/package-docs-plugin.ts` — 패키지 README를 동적으로 문서 페이지로 변환하는 커스텀 Rspress 플러그인
+
 ## 빌드 및 번들링
 
 | 도구 | 용도 |

@@ -18,6 +18,15 @@
 - **MCP 서버**: `npx {package.name}`로 stdio 기반 MCP 서버 실행
 - **CLI**: `npx {package.name}-cli <toolName> [args]`로 터미널에서 직접 도구 호출
 
+## 문서 사이트
+
+`apps/site/` 디렉토리에 Rspress 기반 문서 사이트가 운영됩니다:
+
+- **패키지 README 자동 연동**: `package-docs-plugin`이 `packages/*/README.md`를 탐색하여 `/packages` 페이지에 동적 렌더링
+- **static docs**: `apps/site/docs/`의 마크다운 파일이 정적 문서 페이지로 제공
+- **llms.txt 자동 생성**: `@rspress/plugin-llms` 플러그인으로 LLM 친화적 사이트맵(llms.txt, llms-full.txt) 자동 생성
+- **배포**: Netlify (`netlify.toml` 설정)로 배포
+
 ## 향후 개선 방향
 
 - 패키지 확장: 더 많은 도메인 영역의 MCP 서버 패키지 추가 가능

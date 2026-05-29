@@ -1,5 +1,5 @@
-import { defineTool, toolDef, text } from "@common";
-import { z } from "zod";
+import { defineTool, toolDef, text } from '@common';
+import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // Types — 명확한 스펙 문서화를 위해 JsonValue / JsonObject 재귀 타입 정의
@@ -11,7 +11,13 @@ import { z } from "zod";
  * - 배열: JsonValue[]
  * - 중첩 객체: { [key: string]: JsonValue }
  */
-export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
 
 /**
  * 최상위가 객체인 JSON — 모든 depth가 JsonValue로 재귀 타이핑됨.
@@ -38,12 +44,12 @@ export type JsonObject = { [key: string]: JsonValue };
  * // → { "a.b": 1 }
  */
 export function flatten(obj: string | JsonObject): JsonObject {
-  const source: JsonObject = typeof obj === "string" ? JSON.parse(obj) : obj;
+  const source: JsonObject = typeof obj === 'string' ? JSON.parse(obj) : obj;
 
   const result: JsonObject = {};
 
   function walk(value: JsonValue, prefix: string) {
-    if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) {
       result[prefix] = value;
       return;
     }
@@ -54,7 +60,7 @@ export function flatten(obj: string | JsonObject): JsonObject {
     }
   }
 
-  walk(source, "");
+  walk(source, '');
   return result;
 }
 
@@ -64,37 +70,38 @@ export function flatten(obj: string | JsonObject): JsonObject {
 
 export const tools = {
   objectFlattenTool: toolDef({
-    name: "object_flatten",
+    name: 'object_flatten',
     description:
-      "Flattens a nested JSON object of any depth into dot-notation key-value pairs. " +
-      "Accepts a JSON string and recursively flattens all levels. " +
-      "Arrays and primitives at any level are treated as leaf values.",
+      'Flattens a nested JSON object of any depth into dot-notation key-value pairs. ' +
+      'Accepts a JSON string and recursively flattens all levels. ' +
+      'Arrays and primitives at any level are treated as leaf values.',
     inputSchema: {
       json: z
         .union([z.string(), z.record(z.string(), z.any())])
-        .describe("JSON string or parsed object to flatten (unlimited depth)"),
+        .describe('JSON string or parsed object to flatten (unlimited depth)'),
     },
     handler: async ({ json }) => {
       try {
-        const input: string | JsonObject =
-          typeof json === "string" ? json : (json as JsonObject);
+        const input: string | JsonObject = typeof json === 'string' ? json : (json as JsonObject);
         const result = flatten(input);
         return text(JSON.stringify(result, null, 2));
       } catch (err) {
         if (err instanceof SyntaxError) {
-          return text("Error: invalid JSON string — unable to parse input");
+          return text('Error: invalid JSON string — unable to parse input');
         }
         return text(`Error: failed to flatten object — ${(err as Error).message}`);
       }
     },
     examples: [
       {
-        args: [`'{"user":{"name":"Alice","address":{"city":"Seoul","zip":"12345"}},"active":true}'`],
+        args: [
+          `'{"user":{"name":"Alice","address":{"city":"Seoul","zip":"12345"}},"active":true}'`,
+        ],
         result: JSON.stringify(
           {
-            "user.name": "Alice",
-            "user.address.city": "Seoul",
-            "user.address.zip": "12345",
+            'user.name': 'Alice',
+            'user.address.city': 'Seoul',
+            'user.address.zip': '12345',
             active: true,
           },
           null,
@@ -103,16 +110,16 @@ export const tools = {
       },
       {
         args: [`'{"a":{"b":{"c":{"d":{"e":"deep"}}}}}'`],
-        result: JSON.stringify({ "a.b.c.d.e": "deep" }, null, 2),
+        result: JSON.stringify({ 'a.b.c.d.e': 'deep' }, null, 2),
       },
     ],
-    returnType: "JsonObject",
-    returnDescription: "Flattened object with dot-notation keys — e.g. { \"a.b.c\": value }",
+    returnType: 'JsonObject',
+    returnDescription: 'Flattened object with dot-notation keys — e.g. { "a.b.c": value }',
     guidelines: [
-      "Arrays and primitives at any level are always treated as leaf values — they are never traversed.",
-      "The result is always a flat JSON object with dot-notation keys.",
-      "There is no depth limit — objects of any nesting level are fully flattened.",
-      "Input is accepted as a JSON string (MCP/CLI) and parsed internally.",
+      'Arrays and primitives at any level are always treated as leaf values — they are never traversed.',
+      'The result is always a flat JSON object with dot-notation keys.',
+      'There is no depth limit — objects of any nesting level are fully flattened.',
+      'Input is accepted as a JSON string (MCP/CLI) and parsed internally.',
     ],
   }),
 };

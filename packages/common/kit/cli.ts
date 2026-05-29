@@ -12,21 +12,6 @@ type CliTools = Record<
   }
 >;
 
-function formatSkills(tools: CliTools): string {
-  const sections = Object.entries(tools).map(([key, tool]) => {
-    const params = Object.entries(tool.inputSchema);
-    const maxLen = Math.max(...params.map(([f]) => f.length));
-    const paramLines = params
-      .map(([field, schema]) => {
-        const desc = (schema as any).description ?? "";
-        return `    ${field.padEnd(maxLen + 2)}${desc}`;
-      })
-      .join("\n");
-    return `  ${key}\n  ${tool.description}\n${paramLines}`;
-  });
-  return "Available skills:\n\n" + sections.join("\n\n");
-}
-
 export async function runCli(tools: CliTools): Promise<void> {
   const [, , toolName, ...rawArgs] = process.argv;
 

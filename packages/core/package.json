@@ -6,8 +6,9 @@
   "type": "module",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs"
     }
   },
   "bin": {
@@ -22,8 +23,12 @@
   },
   "scripts": {
     "build": "tsup",
+    "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rimraf dist",
+    "lint": "rslint --config ../../rslint.config.ts .",
+    "format": "prettier --write src/ --write '*.{ts,json,js}'",
+    "format:check": "prettier --check src/ --check '*.{ts,json,js}'",
     "readme": "bun ../common/build/update-readme.mjs"
   },
   "dependencies": {

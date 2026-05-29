@@ -57,31 +57,26 @@ mono-rele2-utils-cli
 **Signature**
 
 ```typescript
-function cn(classes: string[]): string
+function cn(classes: string[]): string;
 ```
 
 Merges class names, filtering out falsy values.
 
-
 **Parameters**
 
-| Name | Type | Description |
-|------|------|-------------|
+| Name      | Type       | Description                  |
+| --------- | ---------- | ---------------------------- |
 | `classes` | `string[]` | List of class names to merge |
-
 
 **Returns**
 
 `string` — Merged class name string with falsy values filtered out
-
 
 **CLI**
 
 ```sh
 mono-rele2-utils-cli cnTool <classes>
 ```
-
-
 
 **Examples**
 
@@ -95,24 +90,24 @@ mono-rele2-utils-cli cnTool '["btn","active","large"]'
 **Signature**
 
 ```typescript
-function case_convert(input: string, to: "upper" | "lower" | "capitalize" | "camel" | "snake" | "kebab"): string
+function case_convert(
+  input: string,
+  to: 'upper' | 'lower' | 'capitalize' | 'camel' | 'snake' | 'kebab',
+): string;
 ```
 
 Converts text to the specified case format.
 
-
 **Parameters**
 
-| Name | Type | Description |
-|------|------|-------------|
+| Name    | Type     | Description     |
+| ------- | -------- | --------------- | ------------ | ------- | ------- | -------- | ------------------ |
 | `input` | `string` | Text to convert |
-| `to` | `"upper" | "lower" | "capitalize" | "camel" | "snake" | "kebab"` | Target case format |
-
+| `to`    | `"upper" | "lower"         | "capitalize" | "camel" | "snake" | "kebab"` | Target case format |
 
 **Returns**
 
 `string` — Converted text in the target case format
-
 
 **CLI**
 
@@ -120,18 +115,18 @@ Converts text to the specified case format.
 mono-rele2-utils-cli caseConvertTool <input> <to>
 ```
 
-
-
 **Examples**
 
 ```sh
 mono-rele2-utils-cli caseConvertTool "hello world" camel
 # → helloWorld
 ```
+
 ```sh
 mono-rele2-utils-cli caseConvertTool "helloWorld" snake
 # → hello_world
 ```
+
 ```sh
 mono-rele2-utils-cli caseConvertTool "hello world" kebab
 # → hello-world
@@ -142,25 +137,22 @@ mono-rele2-utils-cli caseConvertTool "hello world" kebab
 **Signature**
 
 ```typescript
-function truncate(input: string, maxLength: number, suffix?: string): string
+function truncate(input: string, maxLength: number, suffix?: string): string;
 ```
 
 Truncates text to a maximum length and appends a suffix.
 
-
 **Parameters**
 
-| Name | Type | Description |
-|------|------|-------------|
-| `input` | `string` | Text to truncate |
-| `maxLength` | `number` | Maximum character length |
-| `suffix` | `string` | Suffix to append when truncated (default: `...`) |
-
+| Name        | Type     | Description                                      |
+| ----------- | -------- | ------------------------------------------------ |
+| `input`     | `string` | Text to truncate                                 |
+| `maxLength` | `number` | Maximum character length                         |
+| `suffix`    | `string` | Suffix to append when truncated (default: `...`) |
 
 **Returns**
 
 `string` — Truncated text with the configured suffix appended if truncated
-
 
 **CLI**
 
@@ -168,14 +160,13 @@ Truncates text to a maximum length and appends a suffix.
 mono-rele2-utils-cli truncateTool <input> <maxLength> [suffix]
 ```
 
-
-
 **Examples**
 
 ```sh
 mono-rele2-utils-cli truncateTool "hello world long text" 10
 # → hello w...
 ```
+
 ```sh
 mono-rele2-utils-cli truncateTool "hello world" 8 "…"
 # → hello w…
@@ -191,26 +182,21 @@ function object_flatten(json: string \| JSON object): JsonObject
 
 Flattens a nested JSON object of any depth into dot-notation key-value pairs. Accepts a JSON string and recursively flattens all levels. Arrays and primitives at any level are treated as leaf values..
 
-
 **Parameters**
 
-| Name | Type | Description |
-|------|------|-------------|
+| Name   | Type                    | Description                                               |
+| ------ | ----------------------- | --------------------------------------------------------- |
 | `json` | `string \| JSON object` | JSON string or parsed object to flatten (unlimited depth) |
-
 
 **Returns**
 
 `JsonObject` — Flattened object with dot-notation keys — e.g. { "a.b.c": value }
-
 
 **CLI**
 
 ```sh
 mono-rele2-utils-cli objectFlattenTool <json>
 ```
-
-
 
 **Examples**
 
@@ -223,6 +209,7 @@ mono-rele2-utils-cli objectFlattenTool '{"user":{"name":"Alice","address":{"city
   "active": true
 }
 ```
+
 ```sh
 mono-rele2-utils-cli objectFlattenTool '{"a":{"b":{"c":{"d":{"e":"deep"}}}}}'
 # → {
@@ -235,23 +222,20 @@ mono-rele2-utils-cli objectFlattenTool '{"a":{"b":{"c":{"d":{"e":"deep"}}}}}'
 **Signature**
 
 ```typescript
-function getUser(user: RandomUser): string
+function getUser(user: RandomUser): string;
 ```
 
 RandomUser API 형식의 사용자 객체를 받아 이름과 거주 도시로 구성된 한글 문장을 반환합니다. JSON 문자열 또는 파싱된 객체를 입력받습니다..
 
-
 **Parameters**
 
-| Name | Type | Description |
-|------|------|-------------|
+| Name   | Type         | Description                                                                           |
+| ------ | ------------ | ------------------------------------------------------------------------------------- |
 | `user` | `RandomUser` | RandomUser 형식의 JSON 문자열 또는 객체 — name.first / name.last / location.city 필수 |
-
 
 **Returns**
 
 `string` — "이름은 {first} {last} 이고 현재 {city} 에 살고 있습니다." 형식의 한글 문장
-
 
 **CLI**
 
@@ -259,12 +243,11 @@ RandomUser API 형식의 사용자 객체를 받아 이름과 거주 도시로 �
 mono-rele2-utils-cli getUserTool <user>
 ```
 
-
 **`user`** type definition
 
 ```typescript
 interface RandomUser {
-  gender: "male" | "female";
+  gender: 'male' | 'female';
   name: {
     title: string;
     first: string;
@@ -308,7 +291,6 @@ interface RandomUser {
 }
 ```
 
-
 **Examples**
 
 ```sh
@@ -321,30 +303,26 @@ mono-rele2-utils-cli getUserTool '{"name":{"title":"Mr","first":"Alice","last":"
 **Signature**
 
 ```typescript
-function env_get(keys: string[]): Record<string, string>
+function env_get(keys: string[]): Record<string, string>;
 ```
 
 MCP 클라이언트 config의 env 필드를 통해 주입된 환경 변수 값을 조회합니다. 조회 가능한 키는 패키지에서 제공하는 환경 변수로 한정됩니다. 현재 지원: API_KEY..
 
-
 **Parameters**
 
-| Name | Type | Description |
-|------|------|-------------|
+| Name   | Type       | Description                                   |
+| ------ | ---------- | --------------------------------------------- |
 | `keys` | `string[]` | 조회할 환경 변수 이름 목록 (유효 키: API_KEY) |
-
 
 **Returns**
 
 `Record<string, string>` — key: 환경 변수 이름, value: 해당 값 (설정되지 않은 변수는 결과에서 제외)
-
 
 **CLI**
 
 ```sh
 mono-rele2-utils-cli envGetTool <keys>
 ```
-
 
 **`keys`** type definition
 
@@ -365,7 +343,6 @@ mono-rele2-utils-cli envGetTool <keys>
 //   }
 // }
 ```
-
 
 **Examples**
 

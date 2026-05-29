@@ -11,7 +11,6 @@
 | 공유 키트 re-export | `packages/common/kit/index.ts` | 기존 파일에 export 추가 |
 | 공유 타입 | `packages/common/types.ts` | 기존 파일에 타입 추가 |
 | 공유 상수 | `packages/common/constants.ts` | 기존 파일에 상수 추가 |
-| 문서 | `docs/<number>-<name>.md` | `docs/11-deployment.md` |
 
 ## 패키지 신규 생성 시 필요한 파일
 

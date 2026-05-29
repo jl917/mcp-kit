@@ -1,4 +1,5 @@
 import { defineConfig } from "tsup";
+import { execSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -12,9 +13,10 @@ export function createTsupConfig() {
   const skillFile = `${skillDir}/skill.md`;
 
   const shared = {
-    format: ["esm"],
+    format: ["esm", "cjs"],
     external: ["@modelcontextprotocol/sdk", "zod"],
     noExternal: [/^@julong\//, /^@common$/],
+    // noExternal: [/./],
     minify: true,
   };
 
@@ -35,6 +37,12 @@ export function createTsupConfig() {
         mkdirSync(skillDir, { recursive: true });
         writeFileSync(skillFile, content);
         console.log(`Skills generated: ${skillFile}`);
+        if (process.env.npm_lifecycle_event === "dev") {
+          execSync("bun ../common/build/update-readme.mjs", {
+            cwd: resolve("."),
+            stdio: "inherit",
+          });
+        }
       },
     },
     {

@@ -1,5 +1,5 @@
-import { defineTool, toolDef, text } from "@common";
-import { z } from "zod";
+import { defineTool, toolDef, text } from '@common';
+import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // 패키지에서 제공(인식)하는 환경 변수 키 목록
@@ -26,7 +26,7 @@ import { z } from "zod";
  * }
  * ```
  */
-export const UTILS_ENV_KEYS = ["API_KEY"] as const;
+export const UTILS_ENV_KEYS = ['API_KEY'] as const;
 
 export type UtilsEnvKey = (typeof UTILS_ENV_KEYS)[number];
 
@@ -49,8 +49,8 @@ export function envGet(keys: string[]): Record<string, string> {
   const invalidKeys = keys.filter((k) => !(UTILS_ENV_KEYS as readonly string[]).includes(k));
   if (invalidKeys.length > 0) {
     throw new Error(
-      `Invalid env key(s): ${invalidKeys.join(", ")}. ` +
-        `Allowed keys: ${UTILS_ENV_KEYS.join(", ")}`,
+      `Invalid env key(s): ${invalidKeys.join(', ')}. ` +
+        `Allowed keys: ${UTILS_ENV_KEYS.join(', ')}`,
     );
   }
 
@@ -72,19 +72,19 @@ export function envGet(keys: string[]): Record<string, string> {
 
 export const tools = {
   envGetTool: toolDef({
-    name: "env_get",
+    name: 'env_get',
     description:
-      "MCP 클라이언트 config의 env 필드를 통해 주입된 환경 변수 값을 조회합니다. " +
-      "조회 가능한 키는 패키지에서 제공하는 환경 변수로 한정됩니다. " +
-      `현재 지원: ${UTILS_ENV_KEYS.join(", ")}.`,
+      'MCP 클라이언트 config의 env 필드를 통해 주입된 환경 변수 값을 조회합니다. ' +
+      '조회 가능한 키는 패키지에서 제공하는 환경 변수로 한정됩니다. ' +
+      `현재 지원: ${UTILS_ENV_KEYS.join(', ')}.`,
     inputSchema: {
       keys: z
         .array(z.string())
         .nonempty()
-        .describe(`조회할 환경 변수 이름 목록 (유효 키: ${UTILS_ENV_KEYS.join(", ")})`),
+        .describe(`조회할 환경 변수 이름 목록 (유효 키: ${UTILS_ENV_KEYS.join(', ')})`),
     },
     typeLabels: {
-      keys: "string[]",
+      keys: 'string[]',
     },
     typeDefs: {
       keys: [
@@ -105,14 +105,13 @@ export const tools = {
         '// }',
       ].join('\n'),
     },
-    returnType: "Record<string, string>",
-    returnDescription:
-      "key: 환경 변수 이름, value: 해당 값 (설정되지 않은 변수는 결과에서 제외)",
+    returnType: 'Record<string, string>',
+    returnDescription: 'key: 환경 변수 이름, value: 해당 값 (설정되지 않은 변수는 결과에서 제외)',
     handler: async ({ keys }) => {
       try {
         const result = envGet(keys);
         if (Object.keys(result).length === 0) {
-          return text("(no matching environment variables found)");
+          return text('(no matching environment variables found)');
         }
         return text(JSON.stringify(result, null, 2));
       } catch (err) {
@@ -122,14 +121,14 @@ export const tools = {
     examples: [
       {
         args: [`'["API_KEY"]'`],
-        result: JSON.stringify({ API_KEY: "<value>" }, null, 2),
+        result: JSON.stringify({ API_KEY: '<value>' }, null, 2),
       },
     ],
     guidelines: [
-      `조회 가능한 키: ${UTILS_ENV_KEYS.join(", ")}`,
-      "MCP client config.json의 env 필드에 위 키들만 설정할 수 있습니다.",
-      "유효하지 않은 키를 요청하면 에러 메시지에 허용된 키 목록이 표시됩니다.",
-      "설정되지 않은 환경 변수는 결과 객체에서 제외됩니다.",
+      `조회 가능한 키: ${UTILS_ENV_KEYS.join(', ')}`,
+      'MCP client config.json의 env 필드에 위 키들만 설정할 수 있습니다.',
+      '유효하지 않은 키를 요청하면 에러 메시지에 허용된 키 목록이 표시됩니다.',
+      '설정되지 않은 환경 변수는 결과 객체에서 제외됩니다.',
     ],
   }),
 };
