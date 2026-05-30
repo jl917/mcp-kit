@@ -9,7 +9,7 @@ export function createTsupConfig() {
   const cliBin = Object.entries(pkg.bin ?? {}).find(([, v]) => String(v).endsWith("cli.js"))?.[0];
   if (!cliBin) throw new Error("No CLI bin (./dist/cli.js) entry found in package.json");
   const binName = cliBin;
-  const skillDir = `dist/skills/${binName}`;
+  const skillDir = `skills/${binName}`;
   const skillFile = `${skillDir}/skill.md`;
 
   const shared = {
@@ -27,17 +27,17 @@ export function createTsupConfig() {
       dts: { resolve: [/^@julong\//, /^@common$/] },
       clean: true,
       onSuccess: async () => {
-        const distUrl = pathToFileURL(resolve("./dist/index.js")).href;
-        const { tools, generateSkillMarkdown } = await import(distUrl);
-        const content = generateSkillMarkdown({
-          binName,
-          description: pkg.description,
-          tools,
-        });
-        mkdirSync(skillDir, { recursive: true });
-        writeFileSync(skillFile, content);
-        console.log(`Skills generated: ${skillFile}`);
         if (process.env.npm_lifecycle_event === "dev") {
+          const distUrl = pathToFileURL(resolve("./dist/index.js")).href;
+          const { tools, generateSkillMarkdown } = await import(distUrl);
+          const content = generateSkillMarkdown({
+            binName,
+            description: pkg.description,
+            tools,
+          });
+          mkdirSync(skillDir, { recursive: true });
+          writeFileSync(skillFile, content);
+          console.log(`Skills generated: ${skillFile}`);
           execSync("bun ../common/build/update-readme.mjs", {
             cwd: resolve("."),
             stdio: "inherit",

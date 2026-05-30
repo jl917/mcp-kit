@@ -8,6 +8,13 @@ const pkgName = pkg.name;
 const pkgDesc = pkg.description;
 const binCli = `${pkgName.split("/").pop()}-cli`;
 
+// Derive skill install command from repository info
+const rootPkg = JSON.parse(readFileSync("../../package.json", "utf-8"));
+const repoBase = rootPkg.repository.url.replace(/^git\+/, "").replace(/\.git$/, "");
+const branch = "main";
+const pkgDir = process.cwd().split("/").pop();
+const skillInstallCmd = `npx skills add ${repoBase}/tree/${branch}/packages/${pkgDir}/skills`;
+
 const toolsUrl = pathToFileURL(join(process.cwd(), "src/tools/index.ts")).href;
 const { tools, UTILS_ENV_KEYS } = await import(toolsUrl);
 
@@ -70,6 +77,16 @@ Run without arguments to list all available tools:
 \`\`\`sh
 ${cliBinName}
 \`\`\`
+
+## Skill Installation
+
+Install the CLI as a reusable skill for your AI agent:
+
+\`\`\`sh
+${skillInstallCmd}
+\`\`\`
+
+This registers all tools as callable skills in your agent's environment.
 
 ## Tools API Reference
 

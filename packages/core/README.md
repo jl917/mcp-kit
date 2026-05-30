@@ -47,6 +47,16 @@ Run without arguments to list all available tools:
 mono-rele2-core-cli
 ```
 
+## Skill Installation
+
+Install the CLI as a reusable skill for your AI agent:
+
+```sh
+npx skills add https://github.com/jl917/mcp-kit/tree/main/packages/core/skills
+```
+
+This registers all tools as callable skills in your agent's environment.
+
 ## Tools API Reference
 
 ### `echo(message)`
