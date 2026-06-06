@@ -34,63 +34,22 @@ export function createTsupConfig() {
       dts: { entry: ["src/index.ts"], resolve: [/^@julong\//, /^@common$/] },
       clean: true,
       onSuccess: async () => {
-        const dist = "./dist";
-
-        // 1) Rename chunk-* → common.js / common.cjs and update import refs
-        for (const suffix of [".js", ".cjs"]) {
-          const chunks = readdirSync(dist).filter((f) => f.startsWith("chunk-") && f.endsWith(suffix));
-          if (chunks.length === 0) continue;
-
-          // Find the meaningful chunk (skip empty / "use strict"; artifacts)
-          const real = chunks.find((f) => {
-            const c = readFileSync(`${dist}/${f}`, "utf-8").trim();
-            return c.length > 0 && c !== '"use strict";';
-          });
-          if (!real) continue;
-
-          const chunkName = real;
-          const chunkContent = readFileSync(`${dist}/${chunkName}`, "utf-8");
-
-          // Update import paths in entry files: ./chunk-XXXXX.js → ./common.js
-          for (const entry of ["index", "server", "cli"]) {
-            const ePath = `${dist}/${entry}${suffix}`;
-            if (!existsSync(ePath)) continue;
-            const content = readFileSync(ePath, "utf-8");
-            const escaped = chunkName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-            writeFileSync(ePath, content.replace(new RegExp(`\\./${escaped}`, "g"), `./common${suffix}`));
-          }
-
-          // Write as common.js / common.cjs and remove old chunk
-          writeFileSync(`${dist}/common${suffix}`, chunkContent);
-          unlinkSync(`${dist}/${chunkName}`);
-        }
-
-        // 2) Clean up remaining empty / trivial chunk artifacts and their references
-        for (const f of readdirSync(dist)) {
-          if (!f.startsWith("chunk-")) continue;
-          const c = readFileSync(`${dist}/${f}`, "utf-8").trim();
-          if (c.length === 0 || c === '"use strict";') {
-            unlinkSync(`${dist}/${f}`);
-            // Remove stale import references to this chunk from entry files
-            const escaped = f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-            const staleImport = new RegExp(`import"\\./${escaped}"`, "g");
-            for (const suffix of [".js", ".cjs"]) {
-              for (const entry of ["index", "server", "cli"]) {
-                const ePath = `${dist}/${entry}${suffix}`;
-                if (!existsSync(ePath)) continue;
-                writeFileSync(ePath, readFileSync(ePath, "utf-8").replace(staleImport, ""));
-              }
-            }
-          }
-        }
-
-        // 3) Add shebangs to server and CLI entries
+        // Add shebangs to server and CLI entries (post-build)
         for (const name of ["server", "cli"]) {
           addShebang(`./dist/${name}.js`);
           addShebang(`./dist/${name}.cjs`);
         }
 
-        // 4) Generate skill markdown (dev only)
+        // Remove empty or trivial chunks (code splitting artifacts)
+        for (const file of readdirSync("./dist")) {
+          if (!file.startsWith("chunk-")) continue;
+          const content = readFileSync(`./dist/${file}`, "utf-8").trim();
+          if (content.length === 0 || content === '"use strict";') {
+            unlinkSync(`./dist/${file}`);
+          }
+        }
+
+        // Generate skill markdown (dev only)
         if (process.env.npm_lifecycle_event === "dev") {
           const distUrl = pathToFileURL(resolve("./dist/index.js")).href;
           const { tools, generateSkillMarkdown } = await import(distUrl);
