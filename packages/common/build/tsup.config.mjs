@@ -1,8 +1,16 @@
 import { defineConfig } from "tsup";
 import { execSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+
+function addShebang(path) {
+  if (!existsSync(path)) return;
+  const content = readFileSync(path, "utf-8");
+  if (!content.startsWith("#!/usr/bin/env node")) {
+    writeFileSync(path, `#!/usr/bin/env node\n${content}`);
+  }
+}
 
 export function createTsupConfig() {
   const pkg = JSON.parse(readFileSync("./package.json", "utf-8"));
@@ -12,21 +20,36 @@ export function createTsupConfig() {
   const skillDir = `skills/${binName}`;
   const skillFile = `${skillDir}/skill.md`;
 
-  const shared = {
-    format: ["esm", "cjs"],
-    external: ["@modelcontextprotocol/sdk", "zod"],
-    noExternal: [/^@julong\//, /^@common$/],
-    // noExternal: [/./],
-    minify: true,
-  };
-
   return defineConfig([
     {
-      ...shared,
-      entry: { index: "src/index.ts" },
-      dts: { resolve: [/^@julong\//, /^@common$/] },
+      format: ["esm", "cjs"],
+      minify: true,
+      noExternal: [/./],
+      splitting: true,
+      entry: {
+        index: "src/index.ts",
+        server: "src/server.ts",
+        cli: "src/cli.ts",
+      },
+      dts: { entry: ["src/index.ts"], resolve: [/^@julong\//, /^@common$/] },
       clean: true,
       onSuccess: async () => {
+        // Add shebangs to server and CLI entries (post-build)
+        for (const name of ["server", "cli"]) {
+          addShebang(`./dist/${name}.js`);
+          addShebang(`./dist/${name}.cjs`);
+        }
+
+        // Remove empty or trivial chunks (code splitting artifacts)
+        for (const file of readdirSync("./dist")) {
+          if (!file.startsWith("chunk-")) continue;
+          const content = readFileSync(`./dist/${file}`, "utf-8").trim();
+          if (content.length === 0 || content === '"use strict";') {
+            unlinkSync(`./dist/${file}`);
+          }
+        }
+
+        // Generate skill markdown (dev only)
         if (process.env.npm_lifecycle_event === "dev") {
           const distUrl = pathToFileURL(resolve("./dist/index.js")).href;
           const { tools, generateSkillMarkdown } = await import(distUrl);
@@ -44,20 +67,6 @@ export function createTsupConfig() {
           });
         }
       },
-    },
-    {
-      ...shared,
-      entry: { server: "src/server.ts" },
-      dts: false,
-      clean: false,
-      banner: { js: "#!/usr/bin/env node" },
-    },
-    {
-      ...shared,
-      entry: { cli: "src/cli.ts" },
-      dts: false,
-      clean: false,
-      banner: { js: "#!/usr/bin/env node" },
     },
   ]);
 }
