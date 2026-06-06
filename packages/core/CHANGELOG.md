@@ -1,3 +1,13 @@
+## @julong/mono-rele2-core [1.34.0](https://github.com/jl917/mcp-kit/compare/@julong/mono-rele2-core@1.33.0...@julong/mono-rele2-core@1.34.0) (2026-06-06)
+
+### Features
+
+* update common-update.md in core and utils [skip ci] ([da5861b](https://github.com/jl917/mcp-kit/commit/da5861b9cd47862b61296820a984cc30047ddc9a))
+
+### Bug Fixes
+
+* core cli.ts import 경로 통일 (./tools/system.js → ./tools/index.js) ([66a303f](https://github.com/jl917/mcp-kit/commit/66a303fc570325c21555be4fa48074591d8e7eaa))
+
 ## @julong/mono-rele2-core [1.33.0](https://github.com/jl917/mcp-kit/compare/@julong/mono-rele2-core@1.32.0...@julong/mono-rele2-core@1.33.0) (2026-06-06)
 
 ### Features
