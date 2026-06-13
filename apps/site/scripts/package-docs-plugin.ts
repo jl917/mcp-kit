@@ -68,14 +68,18 @@ export function packageDocsPlugin(): RspressPlugin {
     }
   }
 
-  function generateOverviewMarkdown(packages: PackageInfo[]): string {
+  function generateOverviewMarkdown(packages: PackageInfo[], lang: 'ko' | 'en'): string {
     const rows = packages
       .map((p) => {
         const meta = getPackageMeta(p.name);
-        return `| [${p.displayName}](/packages/${p.name}) | ${meta.version} | ${meta.description} |`;
+        const link = lang === 'en' ? `/en/packages/${p.name}` : `/packages/${p.name}`;
+        return `| [${p.displayName}](${link}) | ${meta.version} | ${meta.description} |`;
       })
       .join('\n');
 
+    if (lang === 'en') {
+      return `# Packages\n\nThe mcp-kit monorepo consists of the following packages.\n\n## Package List\n\n| Package | Version | Description |\n|---------|---------|-------------|\n${rows}\n\nEach package runs as an independent MCP server, providing both CLI tools and an MCP server interface.`;
+    }
     return `# Packages\n\nmcp-kit 모노레포는 다음 패키지들로 구성되어 있습니다.\n\n## 패키지 목록\n\n| 패키지 | 버전 | 설명 |\n|--------|------|------|\n${rows}\n\n각 패키지는 독립적인 MCP 서버로 동작하며, CLI 도구와 MCP 서버 인터페이스를 동시에 제공합니다.`;
   }
 
@@ -84,16 +88,26 @@ export function packageDocsPlugin(): RspressPlugin {
 
     config(config) {
       const packages = getPackages();
-      const items = [
-        { text: 'Overview', link: '/packages' },
-        ...packages.map((p) => ({ text: p.displayName, link: `/packages/${p.name}` })),
-      ];
+      const locales = (config.themeConfig as Record<string, unknown>)?.locales as
+        | { lang: string; sidebar: Record<string, { text: string; items: unknown[] }[]> }[]
+        | undefined;
 
-      // Populate sidebar for /packages
-      const sidebar = config.themeConfig?.sidebar as Record<string, { text: string; items: unknown[] }[]> | undefined;
-      const packagesSidebar = sidebar?.['/packages'];
-      if (packagesSidebar?.[0]) {
-        packagesSidebar[0].items = items;
+      if (locales) {
+        for (const locale of locales) {
+          const isEn = locale.lang === 'en';
+          const sidebarKey = isEn ? '/en/packages' : '/packages';
+          const linkPrefix = isEn ? '/en/packages' : '/packages';
+
+          const items = [
+            { text: 'Overview', link: `${linkPrefix}` },
+            ...packages.map((p) => ({ text: p.displayName, link: `${linkPrefix}/${p.name}` })),
+          ];
+
+          const packagesSidebar = locale.sidebar?.[sidebarKey];
+          if (packagesSidebar?.[0]) {
+            packagesSidebar[0].items = items;
+          }
+        }
       }
 
       return config;
@@ -103,16 +117,26 @@ export function packageDocsPlugin(): RspressPlugin {
       const packages = getPackages();
       const pages: { routePath: string; filepath?: string; content?: string }[] = [];
 
-      // Overview page: dynamically generated table of all packages
+      // Korean (default) locale — overview + individual package pages
       pages.push({
         routePath: '/packages',
-        content: generateOverviewMarkdown(packages),
+        content: generateOverviewMarkdown(packages, 'ko'),
       });
-
-      // Individual package pages: point directly to real README.md files
       for (const p of packages) {
         pages.push({
           routePath: `/packages/${p.name}`,
+          filepath: join(packagesDir, p.name, 'README.md'),
+        });
+      }
+
+      // English locale — same README files, English overview
+      pages.push({
+        routePath: '/en/packages',
+        content: generateOverviewMarkdown(packages, 'en'),
+      });
+      for (const p of packages) {
+        pages.push({
+          routePath: `/en/packages/${p.name}`,
           filepath: join(packagesDir, p.name, 'README.md'),
         });
       }
