@@ -35,7 +35,7 @@
 ## 비즈니스 제약사항 및 금지 규칙
 
 - `packages/common`은 내부 공유 라이브러리로, **절대 npm에 배포되지 않음** (pnpm workspace에서 `!packages/common`으로 제외)
-- 각 패키지는 **독립적으로 semantic-release**를 통해 버전 관리 및 배포됨
+- 각 패키지는 **독립적으로 release-please**를 통해 버전 관리 및 배포됨
 - `@modelcontextprotocol/sdk`와 `zod`는 모든 패키지의 **핵심 외부 의존성**으로, 함부로 버전을 올리거나 제거하지 않음
 - MCP 서버는 **stdio 전송 방식**만 사용 (HTTP/SSE 아직 미지원)
 - 모든 도구는 **비동기 핸들러(async handler)**로 작성되어야 함

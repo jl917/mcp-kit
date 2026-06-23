@@ -14,7 +14,8 @@ mcp-kit/
 ├── package.json        # Root config (workspace definition)
 ├── turbo.json          # Turborepo task configuration
 ├── tsconfig.json       # Root TypeScript config
-├── .releaserc.json     # Shared semantic-release config (copied per package)
+├── release-please-config.json      # release-please manifest config (per-package release setup)
+├── .release-please-manifest.json   # Tracks current versions per package
 ├── CLAUDE.md           # Project context for AI assistants
 └── pnpm-workspace.yaml # Workspace scope (excluding common)
 ```

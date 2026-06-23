@@ -10,7 +10,7 @@
 | `@modelcontextprotocol/sdk` 버전 | MCP 프로토콜 호환성에 직접 영향 |
 | `zod` 버전 | 모든 도구의 스키마 정의가 의존 |
 | `tsup.config.mjs`의 `external`/`noExternal` 설정 | 번들링 결과에 직접 영향 |
-| `.releaserc.json`의 `releaseRules` | 버전 관리 정책에 직접 영향 |
+| `release-please-config.json` / `.release-please-manifest.json` | 버전 관리 정책 및 추적되는 패키지 버전에 직접 영향 |
 | `packages/*/src/tools/`의 도구 `name` 필드 | MCP 프로토콜에 노출되는 도구 식별자로, 변경 시 클라이언트 호환성 깨짐 |
 
 ### 신중한 변경 필요 (영향도 확인 필수)
@@ -72,5 +72,5 @@
 
 - `develop` 브랜치: CI 통과 필수 (타입 검사 + 빌드)
 - `main` 브랜치: `develop`에서 Auto PR로만 병합 가능 (직접 push 금지)
-- `main`에 push되면 자동으로 semantic-release 실행
+- `main`에 push되면 release-please가 버전 Bump + CHANGELOG가 담긴 **릴리스 PR**을 열거나 업데이트하며, 실제 태그/GitHub Release/npm 배포는 그 릴리스 PR을 머지할 때만 수행됨
 - `[skip ci]`를 커밋 메시지에 포함하면 CI를 건너뛸 수 있음 (릴리스 커밋 등)

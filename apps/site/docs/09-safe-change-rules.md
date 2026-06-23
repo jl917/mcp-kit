@@ -10,7 +10,7 @@
 | `@modelcontextprotocol/sdk` version | Directly affects MCP protocol compatibility |
 | `zod` version | All tool schema definitions depend on it |
 | `tsup.config.mjs` `external`/`noExternal` settings | Directly affects bundling results |
-| `.releaserc.json` `releaseRules` | Directly affects version management policy |
+| `release-please-config.json` / `.release-please-manifest.json` | Directly affects version management policy and tracked package versions |
 | Tool `name` fields in `packages/*/src/tools/` | Tool identifiers exposed via MCP protocol — changes break client compatibility |
 
 ### Changes Requiring Caution (Must Verify Impact)
@@ -72,5 +72,5 @@ The following changes require team review or approval before execution:
 
 - `develop` branch: CI must pass (type check + build)
 - `main` branch: Only mergeable via Auto PR from `develop` (direct push prohibited)
-- Pushing to `main` automatically triggers semantic-release
+- Pushing to `main` triggers release-please, which opens/updates a **release PR** with version bumps + CHANGELOG; the actual tags, GitHub Releases, and npm publish happen only when that release PR is merged
 - Include `[skip ci]` in commit messages to skip CI (for release commits, etc.)

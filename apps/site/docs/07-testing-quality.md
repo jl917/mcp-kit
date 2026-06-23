@@ -54,14 +54,13 @@ pnpm build           # turbo run build
 
 - Verify tsup correctly bundles all 3 entry points (index, server, cli)
 - Verify DTS generation works correctly
-- CI validates release possibility with `multi-semantic-release --dry-run` after build
+- Releases are driven by release-please (release PR merge), so there is no release dry-run step in CI
 
 ### CI Pipeline (`.github/workflows/ci.yml`)
 
 1. `pnpm install --frozen-lockfile`
 2. `pnpm typecheck`
 3. `pnpm build`
-4. `pnpm exec multi-semantic-release --dry-run`
 
 ## Lint Standards
 

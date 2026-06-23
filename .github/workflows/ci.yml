@@ -42,6 +42,3 @@ jobs:
 
       - name: Build
         run: pnpm build
-
-      - name: Release Dry Run
-        run: pnpm exec multi-semantic-release --dry-run

@@ -10,17 +10,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Semantic Release
+  sync-common:
+    name: Sync common-update
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      issues: write
-      pull-requests: write
-      id-token: write
-
     steps:
-      - name: Checkout for common-update
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -34,7 +30,6 @@ jobs:
           echo "Changed files: $CHANGED"
           if echo "$CHANGED" | grep -q "^packages/common/"; then
             TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
-            COMMIT_MSG=$(git log -1 --pretty=%s)
             echo "$TIMESTAMP" > packages/core/common-update.md
             echo "$TIMESTAMP" > packages/utils/common-update.md
             git config user.name "github-actions[bot]"
@@ -46,14 +41,38 @@ jobs:
             echo "No changes in packages/common, skipping."
           fi
 
+  release-please:
+    name: Release Please
+    needs: sync-common
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      paths_released: ${{ steps.release.outputs.paths_released }}
+    steps:
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  publish:
+    name: Publish & Deploy
+    needs: release-please
+    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
-
-      - name: Pull latest main
-        run: git pull origin main
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -65,22 +84,33 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm build
 
-      - name: Release
-        run: pnpm release
+      - name: Publish to npm
+        run: pnpm -r publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Upload skill.md assets to releases
+        run: |
+          echo '${{ needs.release-please.outputs.paths_released }}' | jq -r '.[]' | while read -r path; do
+            name=$(node -p "require('./$path/package.json').name")
+            version=$(node -p "require('./$path/package.json').version")
+            tag="${name}@${version}"
+            echo "Uploading skill.md for $tag"
+            for skill in "$path"/skills/*/skill.md; do
+              [ -f "$skill" ] || continue
+              gh release upload "$tag" "$skill" --clobber || true
+            done
+          done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GIT_AUTHOR_NAME: github-actions[bot]
-          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
-          GIT_COMMITTER_NAME: github-actions[bot]
-          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
 
       - name: Build docs
         run: pnpm docs:build

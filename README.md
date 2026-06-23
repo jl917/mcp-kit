@@ -1,6 +1,6 @@
 # mcp-kit
 
-pnpm + Turborepo 기반 모노레포. 각 패키지는 semantic-release를 통해 독립적으로 npm에 배포됩니다.
+pnpm + Turborepo 기반 모노레포. 각 패키지는 release-please를 통해 독립적으로 npm에 배포됩니다.
 
 ## 개발 환경
 
@@ -121,7 +121,7 @@ Claude Desktop에서 로컬 빌드 연결:
 
 ## 커밋 메시지 규칙
 
-[Conventional Commits](https://www.conventionalcommits.org/) 형식을 따릅니다. semantic-release가 커밋 타입을 분석해 자동으로 버전을 결정하고 CHANGELOG를 생성합니다.
+[Conventional Commits](https://www.conventionalcommits.org/) 형식을 따릅니다. release-please가 커밋 타입을 분석해 자동으로 버전을 결정하고 릴리스 PR을 통해 CHANGELOG를 생성합니다.
 
 ### 형식
 
@@ -193,4 +193,4 @@ git commit -m "docs: update README"
 | 워크플로우 | 트리거 | 목적 |
 |-----------|--------|------|
 | `ci.yml` | PR 및 main push | 타입 검사 + 빌드 검증 |
-| `release.yml` | main push | 자동 버전 관리 + npm 배포 |
+| `release.yml` | main push | release-please 릴리스 PR 관리 → 머지 시 태그/GitHub Release/npm 배포 |

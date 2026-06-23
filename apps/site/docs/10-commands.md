@@ -90,10 +90,9 @@ pnpm build
 
 # 3. Test
 pnpm test
-
-# 4. Release dry-run
-pnpm exec multi-semantic-release --dry-run
 ```
+
+> Releases are handled by release-please. There is no local release dry-run command; merging the release PR triggers the actual release.
 
 ## MCP Server Execution
 
@@ -175,11 +174,11 @@ git commit -m "refactor(scope): restructure module"
 ## Package Publishing
 
 ```bash
-# Actual release (GitHub Actions auto-runs when pushing to main)
+# Push to main — release-please opens/updates a release PR with version bumps + CHANGELOG
 git push origin main
 
-# Manual dry-run (check results without actual publish)
-pnpm exec multi-semantic-release --dry-run
+# Merging the release PR triggers the actual release:
+# tags + GitHub Releases are created, then the publish job runs `pnpm -r publish` to npm.
 ```
 
 ## Bundle Analysis

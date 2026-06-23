@@ -1,0 +1,5 @@
+{
+  "packages/core": "1.34.0",
+  "packages/utils": "1.34.0",
+  "apps/site": "1.3.0"
+}

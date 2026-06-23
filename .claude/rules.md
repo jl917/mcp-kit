@@ -17,7 +17,7 @@
 
 ## Type
 
-| 타입 | 설명 | semantic-release |
+| 타입 | 설명 | release-please |
 |------|------|-----------------|
 | `feat` | 새로운 기능 | `minor` |
 | `fix` | 버그 수정 | `patch` |

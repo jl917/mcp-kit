@@ -45,14 +45,18 @@ Common bundling config (`packages/common/build/tsup.config.mjs`):
 | Tool | Purpose |
 |------|---------|
 | **GitHub Actions** | CI, Auto PR, Release workflows |
-| **multi-semantic-release** | Monorepo semantic-release (per-package independent versioning) |
-| **semantic-release/commit-analyzer** | Conventional Commits-based version determination |
-| **semantic-release/changelog** | Auto-generates CHANGELOG.md |
-| **semantic-release/npm** | Auto-publishes to npm |
-| **semantic-release/git** | Creates version tags |
-| **semantic-release/github** | Creates GitHub Releases |
+| **release-please** (`googleapis/release-please-action@v4`) | Monorepo release automation (per-package independent versioning via release PR) |
+| Conventional Commits | Drives version determination (`feat`/`fix`/`BREAKING CHANGE`) |
+| release-please CHANGELOG | Auto-generates per-package CHANGELOG.md |
+| `pnpm -r publish` | Publishes to npm (in the `publish` job, after release PR merge) |
+| release-please tags | Creates version tags (`<package-name>@<version>`) |
+| release-please releases | Creates GitHub Releases |
 
-## Release Rules (`.releaserc.json`)
+## Release Rules (`release-please-config.json` + `.release-please-manifest.json`)
+
+Versioning is driven by [Conventional Commits](https://www.conventionalcommits.org/). Instead of releasing immediately on push to `main`, release-please opens/updates a **release PR** with version bumps and CHANGELOG entries; merging that PR creates the tags, GitHub Releases, and triggers npm publish. Current versions per package are tracked in `.release-please-manifest.json`.
+
+Key `release-please-config.json` options: `release-type: "node"`, `include-component-in-tag: true`, `include-v-in-tag: false`, `separator: "@"` (tags stay in the `<package-name>@<version>` format, e.g. `@julong/mono-rele2-core@1.34.0`), `plugins: ["node-workspace"]`, with a `packages` map covering `packages/core`, `packages/utils`, and `apps/site`.
 
 | Commit Type | Version Bump |
 |-------------|--------------|
@@ -61,7 +65,7 @@ Common bundling config (`packages/common/build/tsup.config.mjs`):
 | `perf` | patch (`1.0.x`) |
 | `revert` | patch (`1.0.x`) |
 | `BREAKING CHANGE` (footer) | major (`x.0.0`) |
-| `docs`, `chore`, `refactor`, `test` | No release |
+| `docs`, `chore`, `refactor`, `test`, `build`, `ci`, `style` | No release |
 
 ## Currently Unused
 

@@ -14,7 +14,8 @@ mcp-kit/
 ├── package.json        # 루트 설정 (workspace 정의)
 ├── turbo.json          # Turborepo 태스크 설정
 ├── tsconfig.json       # 루트 TypeScript 설정
-├── .releaserc.json     # semantic-release 공유 설정 (패키지별 복사됨)
+├── release-please-config.json      # release-please 매니페스트 설정 (패키지별 릴리스 구성)
+├── .release-please-manifest.json   # 패키지별 현재 버전 추적
 ├── CLAUDE.md           # AI 어시스턴트용 프로젝트 컨텍스트
 └── pnpm-workspace.yaml # 워크스페이스 범위 (common 제외)
 ```

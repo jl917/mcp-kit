@@ -45,14 +45,13 @@ pnpm build           # turbo run build
 
 - tsup이 3개 엔트리(index, server, cli)를 모두 정상 번들링하는지 확인
 - DTS 생성이 정상 동작하는지 확인
-- CI에서 빌드 후 `multi-semantic-release --dry-run`으로 릴리스 가능성 검증
+- 릴리스는 release-please(릴리스 PR 머지)가 처리하므로 CI에 릴리스 드라이런 단계가 없음
 
 ### CI 파이프라인 (`.github/workflows/ci.yml`)
 
 1. `pnpm install --frozen-lockfile`
 2. `pnpm typecheck`
 3. `pnpm build`
-4. `pnpm exec multi-semantic-release --dry-run`
 
 ## Lint 검사 기준
 

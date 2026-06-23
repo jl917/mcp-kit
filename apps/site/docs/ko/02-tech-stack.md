@@ -45,14 +45,18 @@
 | 도구 | 용도 |
 |------|------|
 | **GitHub Actions** | CI, Auto PR, Release 워크플로우 |
-| **multi-semantic-release** | 모노레포용 semantic-release (패키지별 독립 버전 관리) |
-| **semantic-release/commit-analyzer** | Conventional Commits 기반 버전 결정 |
-| **semantic-release/changelog** | CHANGELOG.md 자동 생성 |
-| **semantic-release/npm** | npm 자동 배포 |
-| **semantic-release/git** | 버전 태그 생성 |
-| **semantic-release/github** | GitHub Release 생성 |
+| **release-please** (`googleapis/release-please-action@v4`) | 모노레포 릴리스 자동화 (릴리스 PR 기반 패키지별 독립 버전 관리) |
+| Conventional Commits | 버전 결정 기준 (`feat`/`fix`/`BREAKING CHANGE`) |
+| release-please CHANGELOG | 패키지별 CHANGELOG.md 자동 생성 |
+| `pnpm -r publish` | npm 배포 (릴리스 PR 머지 후 `publish` 잡에서 실행) |
+| release-please 태그 | 버전 태그 생성 (`<package-name>@<version>`) |
+| release-please 릴리스 | GitHub Release 생성 |
 
-## 릴리스 규칙 (`.releaserc.json`)
+## 릴리스 규칙 (`release-please-config.json` + `.release-please-manifest.json`)
+
+버전 관리는 [Conventional Commits](https://www.conventionalcommits.org/)를 기준으로 동작합니다. `main`에 push될 때 즉시 릴리스하는 대신, release-please가 버전 Bump와 CHANGELOG 항목을 담은 **릴리스 PR**을 열거나 업데이트합니다. 이 PR을 머지하면 태그와 GitHub Release가 생성되고 npm 배포가 트리거됩니다. 패키지별 현재 버전은 `.release-please-manifest.json`에서 추적됩니다.
+
+`release-please-config.json` 주요 옵션: `release-type: "node"`, `include-component-in-tag: true`, `include-v-in-tag: false`, `separator: "@"` (태그는 기존 `<package-name>@<version>` 형식을 유지, 예: `@julong/mono-rele2-core@1.34.0`), `plugins: ["node-workspace"]`, 그리고 `packages/core`, `packages/utils`, `apps/site`를 포함하는 `packages` 맵.
 
 | 커밋 타입 | 버전 Bump |
 |-----------|-----------|
@@ -61,7 +65,7 @@
 | `perf` | patch (`1.0.x`) |
 | `revert` | patch (`1.0.x`) |
 | `BREAKING CHANGE` (footer) | major (`x.0.0`) |
-| `docs`, `chore`, `refactor`, `test` | 릴리스 없음 |
+| `docs`, `chore`, `refactor`, `test`, `build`, `ci`, `style` | 릴리스 없음 |
 
 ## 부재 항목 (현재 미사용)
 

@@ -89,10 +89,9 @@ pnpm typecheck
 
 # 2. 빌드
 pnpm build
-
-# 3. 릴리스 드라이런
-pnpm exec multi-semantic-release --dry-run
 ```
+
+> 릴리스는 release-please가 처리합니다. 로컬 릴리스 드라이런 명령어는 없으며, 릴리스 PR을 머지하면 실제 릴리스가 트리거됩니다.
 
 ## MCP 서버 실행
 
@@ -175,11 +174,11 @@ git commit -m "refactor(scope): restructure module"
 ## 패키지 배포
 
 ```bash
-# 실제 릴리스 (main 브랜치에 push 시 GitHub Actions가 자동 실행)
+# main에 push — release-please가 버전 Bump + CHANGELOG가 담긴 릴리스 PR을 열거나 업데이트
 git push origin main
 
-# 수동 드라이런 (실제 배포 없이 결과 확인)
-pnpm exec multi-semantic-release --dry-run
+# 릴리스 PR을 머지하면 실제 릴리스가 트리거됨:
+# 태그 + GitHub Release가 생성되고, 이어서 publish 잡이 `pnpm -r publish`로 npm에 배포
 ```
 
 ## 번들 분석

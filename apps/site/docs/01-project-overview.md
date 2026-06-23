@@ -34,7 +34,7 @@ The documentation site built with Rspress lives under `apps/site/`:
 ## Business Constraints & Prohibited Rules
 
 - `packages/common` is an internal shared library — **never published to npm** (excluded via `!packages/common` in pnpm workspace)
-- Each package is versioned and published **independently** via semantic-release
+- Each package is versioned and published **independently** via release-please
 - `@modelcontextprotocol/sdk` and `zod` are **core external dependencies** of all packages — do not upgrade or remove arbitrarily
 - MCP servers use **stdio transport only** (HTTP/SSE not yet supported)
 - All tools must be written as **async handlers**
