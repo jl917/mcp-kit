@@ -1,6 +1,6 @@
 {
   "name": "@julong/mono-rele2-core",
-  "version": "1.34.0",
+  "version": "1.35.0",
   "description": "Use this skill to invoke core system utility functions via the mono-rele2-core CLI. Handles message echo, UTC timestamp generation, and environment variable lookup.",
   "license": "ISC",
   "type": "module",

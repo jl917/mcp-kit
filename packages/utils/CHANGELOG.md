@@ -1,3 +1,43 @@
+# Changelog
+
+## [1.35.0](https://github.com/jl917/mcp-kit/compare/mono-rele2-utils-1.34.0...mono-rele2-utils-1.35.0) (2026-06-23)
+
+
+### Features
+
+* CJS 지원 및 dev watch 모드 추가 ([42ea348](https://github.com/jl917/mcp-kit/commit/42ea34864a563279b589e53adb48fde1a5d721d8))
+* move skills to packages/{dir}/skills/, add Skill Installation section to README, pin branch to main ([f5c1df8](https://github.com/jl917/mcp-kit/commit/f5c1df803cb25449e8318b81325d01530a722229))
+* update common-update.md in core and utils [skip ci] ([da5861b](https://github.com/jl917/mcp-kit/commit/da5861b9cd47862b61296820a984cc30047ddc9a))
+* update common-update.md in core and utils [skip ci] ([9ac05ec](https://github.com/jl917/mcp-kit/commit/9ac05ec4c1e9c273307b28b1dbd5db01fa228da7))
+* update common-update.md in core and utils [skip ci] ([52c193e](https://github.com/jl917/mcp-kit/commit/52c193e43853cbcf993067cbbbb8e757aa1a3bd9))
+* update common-update.md in core and utils [skip ci] ([ac0d75c](https://github.com/jl917/mcp-kit/commit/ac0d75c1f2a7fa2281bb79e62cd2c5103c23749b))
+* update common-update.md in core and utils [skip ci] ([61b900b](https://github.com/jl917/mcp-kit/commit/61b900be41ad6157d3a419ffdf0e4fe536b676a6))
+* update common-update.md in core and utils [skip ci] ([e8a9ef9](https://github.com/jl917/mcp-kit/commit/e8a9ef97bc788665dea41715c98c217377069088))
+* update common-update.md in core and utils [skip ci] ([9f9c42e](https://github.com/jl917/mcp-kit/commit/9f9c42ec6a2405787b0e0a1e1cf6b3f5dc5d3712))
+* update common-update.md in core and utils [skip ci] ([3f08bd9](https://github.com/jl917/mcp-kit/commit/3f08bd9eaaa973f75502924df6ef447dbe127855))
+* update common-update.md in core and utils [skip ci] ([4698755](https://github.com/jl917/mcp-kit/commit/469875573659ae37b24c5b6df8b0bdb92fdd2168))
+* update common-update.md in core and utils [skip ci] ([ba65e69](https://github.com/jl917/mcp-kit/commit/ba65e69fdcf339a65b7abc2082e69f046d70e8c7))
+* update common-update.md in core and utils [skip ci] ([4515d43](https://github.com/jl917/mcp-kit/commit/4515d43c8e5b080656e23cc48881656db054e4e1))
+* update common-update.md in core and utils [skip ci] ([63115d5](https://github.com/jl917/mcp-kit/commit/63115d57f9b595de158d129148c9517d3cef38e9))
+* update common-update.md in core and utils [skip ci] ([c53d048](https://github.com/jl917/mcp-kit/commit/c53d048fc5a7ea388621e7f776a7888d7bda48ae))
+* update common-update.md in core and utils [skip ci] ([5dff3e8](https://github.com/jl917/mcp-kit/commit/5dff3e8159f16a2871c9d61b566d3772bb5c2008))
+* update common-update.md in core and utils [skip ci] ([a972781](https://github.com/jl917/mcp-kit/commit/a9727819cf55aeed7d65c835794a8ade8a42428f))
+* update common-update.md in core and utils [skip ci] ([76a31be](https://github.com/jl917/mcp-kit/commit/76a31be3d0baf3c5c0b76c85a1b10d29da84a3cb))
+* update common-update.md in core and utils [skip ci] ([b03d595](https://github.com/jl917/mcp-kit/commit/b03d5958959339714b09f7f6ef533e0cc5301f84))
+* update common-update.md in core and utils [skip ci] ([c3b83dd](https://github.com/jl917/mcp-kit/commit/c3b83dd966cf00eea0fb0adf3c8c4e9dee8eb22f))
+* **utils:** add env_get tool for MCP client-injected env vars ([cc2e8d0](https://github.com/jl917/mcp-kit/commit/cc2e8d0f7583aec37d3d7e97c8d9cd7cdca2a367))
+* **utils:** add getUser tool with full RandomUser type specs in docs ([2f93de5](https://github.com/jl917/mcp-kit/commit/2f93de57be67864dffd806016249ce2945167c77))
+* **utils:** add getUser tool with full RandomUser type specs in docs ([9c3bd6d](https://github.com/jl917/mcp-kit/commit/9c3bd6d23db3362aa28ecff8f6d5e903687ac0c9))
+* **utils:** add object_flatten tool for recursive nested-object flattening ([e4ce8f0](https://github.com/jl917/mcp-kit/commit/e4ce8f0805647530c6961e72aba05332542637b3))
+
+
+### Bug Fixes
+
+* 17.0 버전 sync ([38fb296](https://github.com/jl917/mcp-kit/commit/38fb2964d5becb40b4821d3d216be1afc2cc9c60))
+* readme template 수정 ([6d1c7e6](https://github.com/jl917/mcp-kit/commit/6d1c7e67cd557a251f95fd115a68ced452865d25))
+* remove unused import UTILS_ENV_KEYS in env.test.ts ([172d9cb](https://github.com/jl917/mcp-kit/commit/172d9cbf043d53d4e8ed506f0ea873e299aed509))
+* 이관 ([9c997f9](https://github.com/jl917/mcp-kit/commit/9c997f9d7a0ebd0ffc2dafd0697d87f0b06ad795))
+
 ## @julong/mono-rele2-utils [1.34.0](https://github.com/jl917/mcp-kit/compare/@julong/mono-rele2-utils@1.33.0...@julong/mono-rele2-utils@1.34.0) (2026-06-06)
 
 ### Features
