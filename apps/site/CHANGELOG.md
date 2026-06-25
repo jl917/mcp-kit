@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/jl917/mcp-kit/compare/mcp-kit-site-1.4.0...mcp-kit-site-1.4.1) (2026-06-25)
+
+
+### Bug Fixes
+
+* **docs:** ko 로케일 packages 페이지 404 수정 ([ed06179](https://github.com/jl917/mcp-kit/commit/ed061796c92390de2a22a2fa68739268891673b7))
+
 ## [1.4.0](https://github.com/jl917/mcp-kit/compare/mcp-kit-site-1.3.0...mcp-kit-site-1.4.0) (2026-06-23)
 
 
