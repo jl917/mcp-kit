@@ -1,6 +1,6 @@
 ---
 name: mono-rele2-utils-cli
-description: Use this skill to invoke text utility functions via the mono-rele2-utils CLI. Handles class name merging, case conversion, and text truncation.
+description: Use when the user needs text or object utilities, or to parse user data — covers: class name merging, case conversion (camel/snake/kebab/upper/lower/capitalize), text truncation, object flattening, environment variable lookup, and extracting name/city from RandomUser-format JSON (사용자 정보 분석). Accepts JSON strings or objects.
 ---
 
 # mono-rele2-utils-cli
