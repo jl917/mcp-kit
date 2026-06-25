@@ -18,7 +18,7 @@ export function createTsupConfig() {
   if (!cliBin) throw new Error("No CLI bin (./dist/cli.js) entry found in package.json");
   const binName = cliBin;
   const skillDir = `skills/${binName}`;
-  const skillFile = `${skillDir}/skill.md`;
+  const skillFile = `${skillDir}/SKILL.md`;
 
   return defineConfig([
     {
