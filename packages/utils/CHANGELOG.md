@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.36.0](https://github.com/jl917/mcp-kit/compare/mono-rele2-utils-1.35.0...mono-rele2-utils-1.36.0) (2026-06-25)
+
+
+### Features
+
+* update common-update.md in core and utils [skip ci] ([4843362](https://github.com/jl917/mcp-kit/commit/4843362cddce1f9b39725dafb6d8821b8deaa31f))
+
+
+### Bug Fixes
+
+* skill 파일명을 SKILL.md 대문자로 변경 ([126b67a](https://github.com/jl917/mcp-kit/commit/126b67ac98f56c617a356e03d6508ea172bab7e2))
+
 ## [1.35.0](https://github.com/jl917/mcp-kit/compare/mono-rele2-utils-1.34.0...mono-rele2-utils-1.35.0) (2026-06-23)
 
 
