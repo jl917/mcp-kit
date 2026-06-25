@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@rstest/core';
 import { echoTool, timestampTool, envTool, uuidTool } from './system.js';
-
+// core만 배포
 describe('echoTool', () => {
   it('should return the message as-is', async () => {
     const result = await echoTool.handler({ message: 'hello world' });
