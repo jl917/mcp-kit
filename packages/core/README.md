@@ -102,7 +102,7 @@ mono-rele2-core-cli echoTool "hello world"
 **Signature**
 
 ```typescript
-function timestamp(format?: `iso` \| `unix`): string
+function timestamp(format?: `iso` | `unix`): string
 ```
 
 Returns the current UTC timestamp.

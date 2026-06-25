@@ -1,6 +1,6 @@
 # @julong/mono-rele2-utils
 
-Use when the user needs text or object utilities, or to parse user data — covers: class name merging, case conversion (camel/snake/kebab/upper/lower/capitalize), text truncation, object flattening, environment variable lookup, and extracting name/city from RandomUser-format JSON (사용자 정보 분석). Accepts JSON strings or objects.
+Use this skill to invoke text utility functions via the mono-rele2-utils CLI. Handles class name merging, case conversion, and text truncation.
 
 ## MCP Server
 
@@ -116,7 +116,7 @@ Converts text to the specified case format.
 | Name | Type | Description |
 |------|------|-------------|
 | `input` | `string` | Text to convert |
-| `to` | `"upper" | "lower" | "capitalize" | "camel" | "snake" | "kebab"` | Target case format |
+| `to` | `"upper" \| "lower" \| "capitalize" \| "camel" \| "snake" \| "kebab"` | Target case format |
 
 
 **Returns**
@@ -196,7 +196,7 @@ mono-rele2-utils-cli truncateTool "hello world" 8 "…"
 **Signature**
 
 ```typescript
-function object_flatten(json: string \| JSON object): JsonObject
+function object_flatten(json: string | JSON object): JsonObject
 ```
 
 Flattens a nested JSON object of any depth into dot-notation key-value pairs. Accepts a JSON string and recursively flattens all levels. Arrays and primitives at any level are treated as leaf values..

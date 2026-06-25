@@ -1,6 +1,10 @@
 import { z } from "zod";
 import type { AnyToolDef } from "./tool.js";
 
+// Escapes `|` so the text stays inside a single markdown table cell.
+// Only apply at table-cell insertion points — never inside code blocks/signatures.
+const escapePipe = (s: string): string => s.replace(/\|/g, "\\|");
+
 // 테스트
 export type SkillTools = Record<string, AnyToolDef>;
 
@@ -69,12 +73,12 @@ function describeField(schema: z.ZodTypeAny, typeLabel?: string): string {
   if (typeLabel) parts.push(`Type: ${typeLabel}`);
   if (baseDesc) parts.push(baseDesc);
   if (inner instanceof z.ZodEnum) {
-    const values = (inner.options as string[]).map((v) => `\`${v}\``).join(" \\| ");
+    const values = (inner.options as string[]).map((v) => `\`${v}\``).join(" | ");
     parts.push(values);
   }
   if (defaultValue !== undefined) parts.push(`default: \`${String(defaultValue)}\``);
   else if (isOptional) parts.push("optional");
-  return parts.join(" — ");
+  return escapePipe(parts.join(" — "));
 }
 
 function renderExamples(binName: string, tools: SkillTools): string {
@@ -153,7 +157,7 @@ function renderReadmeSkill(binName: string, key: string, tool: AnyToolDef): stri
       const label = tool.typeLabels?.[field];
       const t = describeReadmeType(schema as z.ZodTypeAny, label);
       const d = describeReadmeDesc(schema as z.ZodTypeAny);
-      return `| \`${field}\` | ${t} | ${d} |`;
+      return `| \`${field}\` | ${escapePipe(t)} | ${escapePipe(d)} |`;
     })
     .join("\n");
 
@@ -194,7 +198,7 @@ function describeReadmeType(schema: z.ZodTypeAny, typeLabel?: string): string {
     inner = (inner as z.ZodOptional<z.ZodTypeAny> | z.ZodDefault<z.ZodTypeAny>).unwrap() as z.ZodTypeAny;
   }
   if (inner instanceof z.ZodEnum) {
-    return (inner.options as string[]).map((v) => `\`${v}\``).join(" \\| ");
+    return (inner.options as string[]).map((v) => `\`${v}\``).join(" | ");
   }
   if (inner instanceof z.ZodNumber) return "number";
   if (inner instanceof z.ZodString) return "string";
@@ -202,7 +206,7 @@ function describeReadmeType(schema: z.ZodTypeAny, typeLabel?: string): string {
   if (inner instanceof z.ZodArray) return "JSON string (array)";
   if (inner instanceof z.ZodUnion) {
     const types = inner.options.map((o) => describeReadmeType(o as unknown as z.ZodTypeAny));
-    return types.join(" \\| ");
+    return types.join(" | ");
   }
   if (inner instanceof z.ZodRecord) return "JSON object";
   return "unknown";
@@ -245,7 +249,7 @@ function renderToolApiDoc(binName: string, key: string, tool: AnyToolDef): strin
     .map(([field, schema]) => {
       const label = tool.typeLabels?.[field] ?? describeReadmeType(schema as z.ZodTypeAny);
       const desc = describeReadmeDesc(schema as z.ZodTypeAny);
-      return `| \`${field}\` | \`${label}\` | ${desc} |`;
+      return `| \`${field}\` | \`${escapePipe(label)}\` | ${escapePipe(desc)} |`;
     })
     .join("\n");
   const paramBlock = paramRows
