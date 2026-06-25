@@ -1,10 +1,11 @@
 import { defineConfig } from "@rspress/core";
 import { packageDocsPlugin } from "./scripts/package-docs-plugin.js";
 import { pluginLlms } from "@rspress/plugin-llms";
+import mermaid from "rspress-plugin-mermaid";
 
 export default defineConfig({
   root: "docs",
-  plugins: [packageDocsPlugin(), pluginLlms()],
+  plugins: [packageDocsPlugin(), pluginLlms(), mermaid()],
   lang: "en",
   locales: [
     { lang: "ko", label: "한국어" },
