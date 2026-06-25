@@ -68,32 +68,50 @@ export function packageDocsPlugin(): RspressPlugin {
     }
   }
 
-  function generateOverviewMarkdown(packages: PackageInfo[]): string {
+  function generateOverviewMarkdown(packages: PackageInfo[], prefix: string): string {
     const rows = packages
       .map((p) => {
         const meta = getPackageMeta(p.name);
-        return `| [${p.displayName}](/packages/${p.name}) | ${meta.version} | ${meta.description} |`;
+        return `| [${p.displayName}](${prefix}/packages/${p.name}) | ${meta.version} | ${meta.description} |`;
       })
       .join('\n');
 
     return `# Packages\n\nThe mcp-kit monorepo consists of the following packages.\n\n## Package List\n\n| Package | Version | Description |\n|---------|---------|-------------|\n${rows}\n\nEach package runs as an independent MCP server, providing both CLI tools and an MCP server interface.`;
   }
 
+  // Locale route prefixes: the default lang lives at the root (no prefix),
+  // every other configured locale is served under /{lang}. rspress auto-prefixes
+  // nav/sidebar links per active locale, so each locale needs its own pages.
+  function getLocalePrefixes(config: { lang?: string; locales?: { lang: string }[] }): string[] {
+    const defaultLang = config.lang;
+    const prefixes = (config.locales ?? [])
+      .filter((l) => l.lang !== defaultLang)
+      .map((l) => `/${l.lang}`);
+    // '' is the default-locale root prefix.
+    return ['', ...prefixes];
+  }
+
+  // Captured in config() so addPages() mirrors the same locale set.
+  let localePrefixes: string[] = [''];
+
   return {
     name: 'package-docs-plugin',
 
     config(config) {
       const packages = getPackages();
-      const items = [
-        { text: 'Overview', link: '/packages' },
-        ...packages.map((p) => ({ text: p.displayName, link: `/packages/${p.name}` })),
-      ];
-
-      // Populate sidebar for /packages
+      localePrefixes = getLocalePrefixes(config);
       const sidebar = config.themeConfig?.sidebar as Record<string, { text: string; items: unknown[] }[]> | undefined;
-      const packagesSidebar = sidebar?.['/packages'];
-      if (packagesSidebar?.[0]) {
-        packagesSidebar[0].items = items;
+
+      if (sidebar) {
+        for (const prefix of localePrefixes) {
+          const items = [
+            { text: 'Overview', link: `${prefix}/packages` },
+            ...packages.map((p) => ({ text: p.displayName, link: `${prefix}/packages/${p.name}` })),
+          ];
+          // Reuse the base sidebar group definition (text), populate its items.
+          const base = sidebar['/packages']?.[0];
+          sidebar[`${prefix}/packages`] = [{ text: base?.text ?? 'Packages', items }];
+        }
       }
 
       return config;
@@ -103,18 +121,22 @@ export function packageDocsPlugin(): RspressPlugin {
       const packages = getPackages();
       const pages: { routePath: string; filepath?: string; content?: string }[] = [];
 
-      // Overview page: dynamically generated table of all packages
-      pages.push({
-        routePath: '/packages',
-        content: generateOverviewMarkdown(packages),
-      });
-
-      // Individual package pages: point directly to real README.md files
-      for (const p of packages) {
+      // Mirror the same routes under each locale prefix (captured in config()).
+      // Package READMEs are single-language and shared as-is across locales.
+      for (const prefix of localePrefixes) {
+        // Overview page: dynamically generated table of all packages
         pages.push({
-          routePath: `/packages/${p.name}`,
-          filepath: join(packagesDir, p.name, 'README.md'),
+          routePath: `${prefix}/packages`,
+          content: generateOverviewMarkdown(packages, prefix),
         });
+
+        // Individual package pages: point directly to real README.md files
+        for (const p of packages) {
+          pages.push({
+            routePath: `${prefix}/packages/${p.name}`,
+            filepath: join(packagesDir, p.name, 'README.md'),
+          });
+        }
       }
 
       return pages;
