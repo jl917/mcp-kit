@@ -1,4 +1,4 @@
-# 5. UI & Design System
+# 5. CLI & Interface Conventions
 
 > This project is an **MCP Server Kit** and does not include UI/UX components or visual interfaces.
 > All interactions happen via CLI (terminal) or AI-based interfaces through the MCP protocol.
