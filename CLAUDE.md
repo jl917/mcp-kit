@@ -14,7 +14,7 @@ pnpm + Turborepo 기반 MCP(Model Context Protocol) 서버 모노레포.
 | 2 | [전체 기술 스택](apps/site/docs/02-tech-stack.md) | 프레임워크/라이브러리 버전, 부재 항목 |
 | 3 | [프로젝트 아키텍처](apps/site/docs/03-architecture.md) | 디렉토리 구조, 계층별 책임, 데이터 흐름 |
 | 4 | [코드 작성 규칙](apps/site/docs/04-coding-rules.md) | 도구 작성 패턴, TypeScript 규칙, import 규칙 |
-| 5 | [UI 및 디자인 시스템](apps/site/docs/05-ui-design-system.md) | CLI 출력 규칙, MCP config, 문서 사이트 |
+| 5 | [CLI 및 인터페이스 규칙](apps/site/docs/05-cli-interface.md) | CLI 출력/UX 규칙, 접근성, 컴포넌트 재사용 |
 | 6 | [문구 및 카피라이팅 규칙](apps/site/docs/06-copywriting-rules.md) | description 작성법, 금지 표현 |
 | 7 | [테스트 및 품질 기준](apps/site/docs/07-testing-quality.md) | 테스트 현황, 품질 검증, 작업 완료 기준 |
 | 8 | [파일 및 컴포넌트 생성 규칙](apps/site/docs/08-file-creation-rules.md) | 신규 파일 위치, 네이밍 규칙 |
