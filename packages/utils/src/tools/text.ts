@@ -1,6 +1,6 @@
 import { defineTool, toolDef, text } from '@common';
 import { z } from 'zod';
-import { cn } from '../cn.js';
+import { cn } from '@/cn';
 
 export const tools = {
   cnTool: toolDef({

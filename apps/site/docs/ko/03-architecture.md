@@ -109,6 +109,77 @@ src/tools/*.ts
 
 **tsconfig path alias**: `@common` → `../common/index.ts` (각 패키지의 tsconfig.json에서 설정)
 
+## 아키텍처 다이어그램
+
+### 패키지 및 의존 구조
+
+```mermaid
+graph TD
+    subgraph Monorepo["mcp-kit (pnpm + Turborepo)"]
+        Common["packages/common — @common (공유 키트, SSOT)<br/>tool.ts · server.ts · cli.ts · skill.ts<br/>build/tsup.config.mjs"]
+        Core["packages/core<br/>@julong/mono-rele2-core<br/>시스템 도구"]
+        Utils["packages/utils<br/>@julong/mono-rele2-utils<br/>text / deep / user / env 도구"]
+        Site["apps/site<br/>Rspress 문서 사이트"]
+    end
+
+    Common -->|"@common → ../common/index.ts<br/>(tsup noExternal로 번들)"| Core
+    Common --> Utils
+    Core -.->|README → 동적 페이지| Site
+    Utils -.->|README → 동적 페이지| Site
+```
+
+> `packages/common`은 워크스페이스에서 제외되며 npm에 배포되지 않고, 빌드 시 각 패키지에 인라인 번들됩니다.
+
+### 패키지 내부 구조 (utils 예시)
+
+```mermaid
+graph LR
+    subgraph pkg["packages/utils/src"]
+        Tools["tools/*.ts<br/>toolDef({ name, description,<br/>inputSchema (zod), handler,<br/>examples, typeLabels })"]
+        Idx["tools/index.ts<br/>(도구 집계)"]
+        SrvE["server.ts → createMcpServer"]
+        CliE["cli.ts → runCli"]
+        IndexE["index.ts<br/>tools + generateSkillMarkdown"]
+    end
+
+    Tools --> Idx
+    Idx --> SrvE
+    Idx --> CliE
+    Idx --> IndexE
+
+    SrvE -->|StdioServerTransport| MCP["MCP 클라이언트 (AI 에이전트)"]
+    CliE -->|"argv → zod 검증"| Term["터미널 stdout"]
+    IndexE -->|빌드 시점| Gen["SKILL.md / README.md"]
+```
+
+하나의 `tools` 정의가 세 가지로 소비됩니다: MCP 서버(stdio), CLI 실행기, 문서/스킬 생성.
+
+### 빌드 및 문서 생성 흐름
+
+```mermaid
+flowchart TD
+    A["pnpm dev / build (turbo)"] --> B["tsup (createTsupConfig)"]
+    B --> C["dist/index.js · server.js · cli.js<br/>(shebang 추가, 빈 청크 정리)"]
+    C --> D{"npm_lifecycle_event<br/>== 'dev' ?"}
+    D -->|yes| E["generateSkillMarkdown(tools)<br/>→ skills/&lt;bin&gt;/SKILL.md"]
+    E --> F["update-readme.mjs<br/>→ README.md"]
+    D -->|no| G["빌드만 수행"]
+```
+
+### 릴리스 파이프라인 (.github/workflows/release.yml)
+
+```mermaid
+flowchart LR
+    Push["push → main"] --> S["sync-common<br/>common 변경 시<br/>common-update.md 갱신"]
+    S --> RP["release-please<br/>버전 PR / 릴리스"]
+    RP --> Pub{"releases_created?"}
+    Pub -->|true| Build["pnpm build"]
+    Build --> Npm["pnpm -r publish (npm)"]
+    Npm --> Asset["릴리스에 SKILL.md 업로드"]
+    Asset --> Docs["docs:build → Netlify 배포"]
+    Pub -->|false| End["종료"]
+```
+
 ## 관심사 분리 원칙
 
 1. **도구 정의는 각 패키지의 `src/tools/`** 에서 담당 — 비즈니스 로직은 여기에만 위치

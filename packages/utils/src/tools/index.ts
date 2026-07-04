@@ -1,11 +1,11 @@
-import { tools as textTools } from './text.js';
-import { tools as deepTools } from './deep.js';
-import { tools as userTools } from './user.js';
-import { tools as envTools } from './env.js';
+import { tools as textTools } from './text';
+import { tools as deepTools } from './deep';
+import { tools as userTools } from './user';
+import { tools as envTools } from './env';
 
-export { cnTool, caseConvertTool, truncateTool } from './text.js';
-export { objectFlattenTool } from './deep.js';
-export { getUserTool } from './user.js';
-export { envGetTool, UTILS_ENV_KEYS } from './env.js';
+export { cnTool, caseConvertTool, truncateTool } from './text';
+export { objectFlattenTool } from './deep';
+export { getUserTool } from './user';
+export { envGetTool, UTILS_ENV_KEYS } from './env';
 
 export const tools = { ...textTools, ...deepTools, ...userTools, ...envTools };

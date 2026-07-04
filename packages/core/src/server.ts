@@ -1,12 +1,7 @@
 import { createMcpServer, startServer } from '@common';
-import { echoTool, envTool, timestampTool, uuidTool } from './tools/index.js';
+import { tools } from '@/tools/index';
 
-const server = createMcpServer({ name: 'mono-rele2-core', version: '1.0.0' }, [
-  echoTool,
-  timestampTool,
-  envTool,
-  uuidTool,
-]);
+const server = createMcpServer({ name: 'mono-rele2-core', version: '1.0.0' }, Object.values(tools));
 
 startServer(server).catch((err) => {
   console.error('[core] server error:', err);

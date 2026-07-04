@@ -97,14 +97,14 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Upload skill.md assets to releases
+      - name: Upload SKILL.md assets to releases
         run: |
           echo '${{ needs.release-please.outputs.paths_released }}' | jq -r '.[]' | while read -r path; do
             name=$(node -p "require('./$path/package.json').name")
             version=$(node -p "require('./$path/package.json').version")
             tag="${name}@${version}"
-            echo "Uploading skill.md for $tag"
-            for skill in "$path"/skills/*/skill.md; do
+            echo "Uploading SKILL.md for $tag"
+            for skill in "$path"/skills/*/SKILL.md; do
               [ -f "$skill" ] || continue
               gh release upload "$tag" "$skill" --clobber || true
             done

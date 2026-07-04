@@ -1,3 +1,3 @@
-export { cn } from './cn.js';
-export { tools } from './tools/index.js';
+export { cn } from './cn';
+export { tools } from '@/tools/index';
 export { generateSkillMarkdown, generateReadmeSkills } from '@common';

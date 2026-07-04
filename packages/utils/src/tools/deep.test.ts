@@ -1,5 +1,6 @@
 import { describe, expect, it } from '@rstest/core';
-import { objectFlattenTool, flatten } from './deep.js';
+import { textOf } from '@common';
+import { objectFlattenTool, flatten } from '@/tools/deep';
 
 describe('flatten()', () => {
   it('should flatten a simple nested object', () => {
@@ -39,7 +40,7 @@ describe('objectFlattenTool handler', () => {
       json: '{"user":{"name":"Alice","address":{"city":"Seoul"}},"active":true}',
     });
     expect(result.content[0].type).toBe('text');
-    const parsed = JSON.parse(result.content[0].text);
+    const parsed = JSON.parse(textOf(result));
     expect(parsed).toEqual({
       'user.name': 'Alice',
       'user.address.city': 'Seoul',
@@ -51,7 +52,7 @@ describe('objectFlattenTool handler', () => {
     const result = await objectFlattenTool.handler({
       json: { user: { name: 'Alice' } },
     });
-    const parsed = JSON.parse(result.content[0].text);
+    const parsed = JSON.parse(textOf(result));
     expect(parsed).toEqual({ 'user.name': 'Alice' });
   });
 
@@ -59,7 +60,7 @@ describe('objectFlattenTool handler', () => {
     const result = await objectFlattenTool.handler({
       json: 'not valid json',
     });
-    expect(result.content[0].text).toContain('Error:');
-    expect(result.content[0].text).toContain('invalid JSON');
+    expect(textOf(result)).toContain('Error:');
+    expect(textOf(result)).toContain('invalid JSON');
   });
 });

@@ -110,6 +110,77 @@ src/tools/*.ts
 
 **tsconfig path alias**: `@common` → `../common/index.ts` (configured in each package's tsconfig.json)
 
+## Architecture Diagrams
+
+### Package & Dependency Structure
+
+```mermaid
+graph TD
+    subgraph Monorepo["mcp-kit (pnpm + Turborepo)"]
+        Common["packages/common — @common (Shared Kit, SSOT)<br/>tool.ts · server.ts · cli.ts · skill.ts<br/>build/tsup.config.mjs"]
+        Core["packages/core<br/>@julong/mono-rele2-core<br/>system tools"]
+        Utils["packages/utils<br/>@julong/mono-rele2-utils<br/>text / deep / user / env tools"]
+        Site["apps/site<br/>Rspress docs site"]
+    end
+
+    Common -->|"@common → ../common/index.ts<br/>(bundled via tsup noExternal)"| Core
+    Common --> Utils
+    Core -.->|README → dynamic page| Site
+    Utils -.->|README → dynamic page| Site
+```
+
+> `packages/common` is excluded from the workspace and never published — it is inlined into each package at build time.
+
+### Per-Package Internal Structure (utils example)
+
+```mermaid
+graph LR
+    subgraph pkg["packages/utils/src"]
+        Tools["tools/*.ts<br/>toolDef({ name, description,<br/>inputSchema (zod), handler,<br/>examples, typeLabels })"]
+        Idx["tools/index.ts<br/>(aggregates tools)"]
+        SrvE["server.ts → createMcpServer"]
+        CliE["cli.ts → runCli"]
+        IndexE["index.ts<br/>tools + generateSkillMarkdown"]
+    end
+
+    Tools --> Idx
+    Idx --> SrvE
+    Idx --> CliE
+    Idx --> IndexE
+
+    SrvE -->|StdioServerTransport| MCP["MCP Client (AI Agent)"]
+    CliE -->|"argv → zod validation"| Term["Terminal stdout"]
+    IndexE -->|at build time| Gen["SKILL.md / README.md"]
+```
+
+A single `tools` definition is consumed three ways: the MCP server (stdio), the CLI runner, and documentation/skill generation.
+
+### Build & Documentation Generation Flow
+
+```mermaid
+flowchart TD
+    A["pnpm dev / build (turbo)"] --> B["tsup (createTsupConfig)"]
+    B --> C["dist/index.js · server.js · cli.js<br/>(add shebang, prune empty chunks)"]
+    C --> D{"npm_lifecycle_event<br/>== 'dev' ?"}
+    D -->|yes| E["generateSkillMarkdown(tools)<br/>→ skills/&lt;bin&gt;/SKILL.md"]
+    E --> F["update-readme.mjs<br/>→ README.md"]
+    D -->|no| G["build only"]
+```
+
+### Release Pipeline (.github/workflows/release.yml)
+
+```mermaid
+flowchart LR
+    Push["push → main"] --> S["sync-common<br/>on common change:<br/>refresh common-update.md"]
+    S --> RP["release-please<br/>version PR / release"]
+    RP --> Pub{"releases_created?"}
+    Pub -->|true| Build["pnpm build"]
+    Build --> Npm["pnpm -r publish (npm)"]
+    Npm --> Asset["upload SKILL.md to release"]
+    Asset --> Docs["docs:build → Netlify deploy"]
+    Pub -->|false| End["done"]
+```
+
 ## Separation of Concerns
 
 1. **Tool definitions reside in each package's `src/tools/`** — business logic lives only here
