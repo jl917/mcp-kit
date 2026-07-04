@@ -1,5 +1,5 @@
 import { createMcpServer, startServer } from '@common';
-import { echoTool, envTool, timestampTool, uuidTool } from './tools/index.js';
+import { echoTool, envTool, timestampTool, uuidTool } from '@/tools/index';
 
 const server = createMcpServer({ name: 'mono-rele2-core', version: '1.0.0' }, [
   echoTool,

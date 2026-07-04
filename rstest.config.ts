@@ -1,12 +1,33 @@
 import { defineConfig } from '@rstest/core';
 import { resolve } from 'node:path';
 
+const common = resolve(import.meta.dirname, 'packages/common/index.ts');
+
+// Per-package projects so that `@` resolves to each package's own `src`.
+// A single root alias could not disambiguate `@` between packages.
 export default defineConfig({
-  resolve: {
-    alias: {
-      '@common': resolve(import.meta.dirname, 'packages/common/index.ts'),
+  projects: [
+    {
+      name: 'core',
+      include: ['packages/core/src/**/*.test.ts'],
+      resolve: {
+        alias: {
+          '@common': common,
+          '@': resolve(import.meta.dirname, 'packages/core/src'),
+        },
+      },
     },
-  },
+    {
+      name: 'utils',
+      include: ['packages/utils/src/**/*.test.ts'],
+      resolve: {
+        alias: {
+          '@common': common,
+          '@': resolve(import.meta.dirname, 'packages/utils/src'),
+        },
+      },
+    },
+  ],
   coverage: {
     enabled: true,
     provider: 'v8',

@@ -3,8 +3,8 @@
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022"],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -12,7 +12,8 @@
     "noEmit": true,
     "types": ["node"],
     "paths": {
-      "@common": ["../common/index.ts"]
+      "@common": ["../common/index.ts"],
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src"],

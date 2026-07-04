@@ -6,7 +6,7 @@ import {
   objectFlattenTool,
   getUserTool,
   envGetTool,
-} from './tools/index.js';
+} from '@/tools/index';
 
 const server = createMcpServer({ name: 'mono-rele2-utils', version: '1.0.0' }, [
   cnTool,

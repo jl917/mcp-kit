@@ -31,7 +31,7 @@ export function createTsupConfig() {
         server: "src/server.ts",
         cli: "src/cli.ts",
       },
-      dts: { entry: ["src/index.ts"], resolve: [/^@julong\//, /^@common$/] },
+      dts: { entry: ["src/index.ts"], resolve: [/^@julong\//, /^@common$/, /^@\//] },
       clean: true,
       onSuccess: async () => {
         // Add shebangs to server and CLI entries (post-build)

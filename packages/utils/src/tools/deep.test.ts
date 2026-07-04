@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@rstest/core';
-import { objectFlattenTool, flatten } from './deep.js';
+import { objectFlattenTool, flatten } from '@/tools/deep';
 
 describe('flatten()', () => {
   it('should flatten a simple nested object', () => {

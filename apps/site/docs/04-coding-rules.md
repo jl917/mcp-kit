@@ -77,10 +77,12 @@ export const tools = {
 ## Import/Export Rules
 
 - **Named exports** only (no default exports)
-- **Path alias**: Use `@common` (mapped to `../common/index.ts`). Only used when referencing the `common/` module from outside a package.
-- **Relative paths**: Use relative paths for modules within the same package (e.g., `./tools/system.js`)
-- **File extensions**: Import with `.js` extension (TypeScript's NodeNext moduleResolution — tsc finds the actual `.ts` file)
-- **Re-export**: Use `export { tools } from "./tools/system.js"` to selectively re-export only what's needed
+- **Path alias**:
+  - `@common` → the `common/` module (mapped to `../common/index.ts`)
+  - `@/*` → the current package's own `src/*` (self-reference). Defined in each package's `tsconfig.json` `paths`; for tests the root `rstest.config.ts` maps `@` per package via `projects`.
+- **Relative vs alias**: Use `@/` for cross-directory imports (e.g., `server.ts` → `@/tools/index`). Keep relative paths for same-directory siblings (e.g., `./system`).
+- **File extensions**: Omit them (`moduleResolution: "Bundler"` — tsc, tsup/esbuild, and rstest all resolve the `.ts` file). Everything is bundled, so no runtime extension is required.
+- **Re-export**: Use `export { tools } from "./tools/system"` to selectively re-export only what's needed
 
 ## Comment Guidelines
 

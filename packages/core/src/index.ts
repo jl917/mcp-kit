@@ -1,2 +1,2 @@
-export { tools } from './tools/index.js';
+export { tools } from '@/tools/index';
 export { generateSkillMarkdown, generateReadmeSkills } from '@common';

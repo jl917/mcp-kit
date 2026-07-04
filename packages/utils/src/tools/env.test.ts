@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@rstest/core';
-import { envGetTool, envGet } from './env.js';
+import { envGetTool, envGet } from '@/tools/env';
 
 describe('envGet()', () => {
   it('should return matching env vars for valid keys', () => {

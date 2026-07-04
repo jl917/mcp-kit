@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@rstest/core';
-import { echoTool, timestampTool, envTool, uuidTool } from './system.js';
+import { echoTool, timestampTool, envTool, uuidTool } from '@/tools/system';
 // core만 배포
 describe('echoTool', () => {
   it('should return the message as-is', async () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@rstest/core';
-import { cnTool, caseConvertTool, truncateTool } from './text.js';
+import { cnTool, caseConvertTool, truncateTool } from '@/tools/text';
 
 describe('cnTool', () => {
   it('should merge class names', async () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@rstest/core';
-import { getUserTool, getUser } from './user.js';
+import { getUserTool, getUser } from '@/tools/user';
 
 describe('getUser()', () => {
   it('should return a Korean sentence from a valid user object', () => {

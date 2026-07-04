@@ -77,10 +77,12 @@ export const tools = {
 ## import/export 규칙
 
 - **Named exports** 사용 (default export 금지)
-- **Path alias**: `@common` 사용 (`../common/index.ts`로 매핑). 패키지 외부의 `common/` 모듈 참조 시에만 사용
-- **상대 경로**: 동일 패키지 내 모듈 참조는 상대 경로 사용 (예: `./tools/system.js`)
-- **파일 확장자**: `.js` 확장자로 import (TypeScript의 NodeNext moduleResolution 규칙, tsc가 실제 `.ts` 파일을 찾음)
-- **Re-export**: `export { tools } from "./tools/system.js"` 형태로 필요한 것만 선별하여 re-export
+- **Path alias**:
+  - `@common` → `common/` 모듈 (`../common/index.ts`로 매핑)
+  - `@/*` → 현재 패키지 자신의 `src/*` (자기 참조). 각 패키지 `tsconfig.json`의 `paths`에 정의하며, 테스트는 루트 `rstest.config.ts`의 `projects`가 패키지별로 `@`를 매핑함
+- **상대 경로 vs 별칭**: 다른 디렉토리를 참조하는 크로스 디렉토리 import는 `@/` 사용 (예: `server.ts` → `@/tools/index`). 동일 디렉토리 내 형제 모듈은 상대 경로 유지 (예: `./system`)
+- **파일 확장자**: 생략 (`moduleResolution: "Bundler"` — tsc, tsup/esbuild, rstest 모두 `.ts` 파일을 해석). 전부 번들링되므로 런타임 확장자가 필요 없음
+- **Re-export**: `export { tools } from "./tools/system"` 형태로 필요한 것만 선별하여 re-export
 
 ## 주석 작성 규칙
 
