@@ -1,4 +1,5 @@
 import { describe, expect, it } from '@rstest/core';
+import { textOf } from '@common';
 import { cnTool, caseConvertTool, truncateTool } from '@/tools/text';
 
 describe('cnTool', () => {
@@ -9,51 +10,51 @@ describe('cnTool', () => {
 
   it('should handle a single class', async () => {
     const result = await cnTool.handler({ classes: ['btn'] });
-    expect(result.content[0].text).toBe('btn');
+    expect(textOf(result)).toBe('btn');
   });
 
   it('should handle empty array', async () => {
     const result = await cnTool.handler({ classes: [] });
-    expect(result.content[0].text).toBe('');
+    expect(textOf(result)).toBe('');
   });
 });
 
 describe('caseConvertTool', () => {
   it('should convert to upper', async () => {
     const result = await caseConvertTool.handler({ input: 'hello world', to: 'upper' });
-    expect(result.content[0].text).toBe('HELLO WORLD');
+    expect(textOf(result)).toBe('HELLO WORLD');
   });
 
   it('should convert to lower', async () => {
     const result = await caseConvertTool.handler({ input: 'HELLO WORLD', to: 'lower' });
-    expect(result.content[0].text).toBe('hello world');
+    expect(textOf(result)).toBe('hello world');
   });
 
   it('should capitalize', async () => {
     const result = await caseConvertTool.handler({ input: 'hello world', to: 'capitalize' });
-    expect(result.content[0].text).toBe('Hello world');
+    expect(textOf(result)).toBe('Hello world');
   });
 
   it('should convert to camelCase', async () => {
     const result = await caseConvertTool.handler({ input: 'hello-world', to: 'camel' });
-    expect(result.content[0].text).toBe('helloWorld');
+    expect(textOf(result)).toBe('helloWorld');
   });
 
   it('should convert to snake_case', async () => {
     const result = await caseConvertTool.handler({ input: 'helloWorld', to: 'snake' });
-    expect(result.content[0].text).toBe('hello_world');
+    expect(textOf(result)).toBe('hello_world');
   });
 
   it('should convert to kebab-case', async () => {
     const result = await caseConvertTool.handler({ input: 'helloWorld', to: 'kebab' });
-    expect(result.content[0].text).toBe('hello-world');
+    expect(textOf(result)).toBe('hello-world');
   });
 });
 
 describe('truncateTool', () => {
   it('should not truncate text within maxLength', async () => {
     const result = await truncateTool.handler({ input: 'short', maxLength: 10 });
-    expect(result.content[0].text).toBe('short');
+    expect(textOf(result)).toBe('short');
   });
 
   it('should truncate and append default suffix', async () => {
@@ -62,7 +63,7 @@ describe('truncateTool', () => {
       maxLength: 10,
       suffix: '...',
     });
-    expect(result.content[0].text).toBe('hello w...');
+    expect(textOf(result)).toBe('hello w...');
   });
 
   it('should use custom suffix', async () => {
@@ -71,16 +72,16 @@ describe('truncateTool', () => {
       maxLength: 8,
       suffix: '…',
     });
-    expect(result.content[0].text).toBe('hello w…');
+    expect(textOf(result)).toBe('hello w…');
   });
 
   it('should handle text equal to maxLength', async () => {
     const result = await truncateTool.handler({ input: 'hello', maxLength: 5 });
-    expect(result.content[0].text).toBe('hello');
+    expect(textOf(result)).toBe('hello');
   });
 
   it('should handle empty input', async () => {
     const result = await truncateTool.handler({ input: '', maxLength: 5 });
-    expect(result.content[0].text).toBe('');
+    expect(textOf(result)).toBe('');
   });
 });

@@ -1,4 +1,5 @@
 import { describe, expect, it } from '@rstest/core';
+import { textOf } from '@common';
 import { getUserTool, getUser } from '@/tools/user';
 
 describe('getUser()', () => {
@@ -41,7 +42,7 @@ describe('getUserTool handler', () => {
     });
     const result = await getUserTool.handler({ user: json });
     expect(result.content[0].type).toBe('text');
-    expect(result.content[0].text).toBe('이름은 Alice Kim 이고 현재 Seoul 에 살고 있습니다.');
+    expect(textOf(result)).toBe('이름은 Alice Kim 이고 현재 Seoul 에 살고 있습니다.');
   });
 
   it('should handle parsed object input', async () => {
@@ -52,19 +53,19 @@ describe('getUserTool handler', () => {
         gender: 'male',
       },
     });
-    expect(result.content[0].text).toBe('이름은 Bob Park 이고 현재 Busan 에 살고 있습니다.');
+    expect(textOf(result)).toBe('이름은 Bob Park 이고 현재 Busan 에 살고 있습니다.');
   });
 
   it('should return error for invalid JSON string', async () => {
     const result = await getUserTool.handler({ user: 'not valid json' });
-    expect(result.content[0].text).toContain('Error:');
-    expect(result.content[0].text).toContain('invalid JSON');
+    expect(textOf(result)).toContain('Error:');
+    expect(textOf(result)).toContain('invalid JSON');
   });
 
   it('should return error when required fields are missing', async () => {
     const result = await getUserTool.handler({
       user: JSON.stringify({ foo: 'bar' }),
     });
-    expect(result.content[0].text).toContain('Error:');
+    expect(textOf(result)).toContain('Error:');
   });
 });

@@ -46,3 +46,12 @@ export function defineTool<const TSchema extends z.ZodRawShape>(tool: ToolDefSha
 export function text(content: string): ToolResult {
   return { content: [{ type: "text", text: content }] };
 }
+
+/** Extracts the text of a tool result's content item (defaults to the first). Throws if it is not text content. */
+export function textOf(result: ToolResult, index = 0): string {
+  const item = result.content[index];
+  if (!item || item.type !== "text") {
+    throw new Error(`Expected text content at index ${index}`);
+  }
+  return item.text;
+}

@@ -1,4 +1,5 @@
 import { describe, expect, it } from '@rstest/core';
+import { textOf } from '@common';
 import { echoTool, timestampTool, envTool, uuidTool } from '@/tools/system';
 // core만 배포
 describe('echoTool', () => {
@@ -23,7 +24,7 @@ describe('timestampTool', () => {
     const before = Date.now();
     const result = await timestampTool.handler({});
     const after = Date.now();
-    const text = result.content[0].text;
+    const text = textOf(result);
 
     expect(result.content[0].type).toBe('text');
     // ISO format: 2026-05-02T00:00:00.000Z
@@ -36,14 +37,14 @@ describe('timestampTool', () => {
 
   it('should return ISO string when format is iso', async () => {
     const result = await timestampTool.handler({ format: 'iso' });
-    expect(result.content[0].text).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+    expect(textOf(result)).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
   });
 
   it('should return Unix timestamp when format is unix', async () => {
     const before = Date.now();
     const result = await timestampTool.handler({ format: 'unix' });
     const after = Date.now();
-    const text = result.content[0].text;
+    const text = textOf(result);
 
     expect(result.content[0].type).toBe('text');
     expect(text).toMatch(/^\d+$/);
@@ -60,13 +61,13 @@ describe('envTool', () => {
   it('should return the value of an existing env var', async () => {
     const result = await envTool.handler({ key: 'PATH' });
     expect(result.content[0].type).toBe('text');
-    expect(result.content[0].text).toBe(ORIGINAL_PATH);
+    expect(textOf(result)).toBe(ORIGINAL_PATH);
   });
 
   it('should return empty string for an unset env var', async () => {
     const result = await envTool.handler({ key: '__MCP_KIT_TEST_UNSET_VAR__' });
     expect(result.content[0].type).toBe('text');
-    expect(result.content[0].text).toBe('');
+    expect(textOf(result)).toBe('');
   });
 });
 
@@ -75,7 +76,7 @@ describe('uuidTool', () => {
     const result = await uuidTool.handler({});
     expect(result.content[0].type).toBe('text');
     // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-    expect(result.content[0].text).toMatch(
+    expect(textOf(result)).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
     );
   });
@@ -86,7 +87,7 @@ describe('uuidTool', () => {
       uuidTool.handler({}),
       uuidTool.handler({}),
     ]);
-    const ids = [a.content[0].text, b.content[0].text, c.content[0].text];
+    const ids = [textOf(a), textOf(b), textOf(c)];
     expect(new Set(ids).size).toBe(3);
   });
 });

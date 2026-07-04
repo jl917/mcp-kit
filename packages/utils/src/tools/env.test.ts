@@ -1,4 +1,5 @@
 import { describe, expect, it } from '@rstest/core';
+import { textOf } from '@common';
 import { envGetTool, envGet } from '@/tools/env';
 
 describe('envGet()', () => {
@@ -34,7 +35,7 @@ describe('envGetTool handler', () => {
     try {
       const result = await envGetTool.handler({ keys: ['API_KEY'] });
       expect(result.content[0].type).toBe('text');
-      const parsed = JSON.parse(result.content[0].text);
+      const parsed = JSON.parse(textOf(result));
       expect(parsed).toEqual({ API_KEY: 'my-api-key' });
     } finally {
       delete process.env.API_KEY;
@@ -44,13 +45,13 @@ describe('envGetTool handler', () => {
   it('should return fallback message when no env vars found', async () => {
     delete process.env.API_KEY;
     const result = await envGetTool.handler({ keys: ['API_KEY'] });
-    expect(result.content[0].text).toBe('(no matching environment variables found)');
+    expect(textOf(result)).toBe('(no matching environment variables found)');
   });
 
   it('should return error for invalid keys', async () => {
     const result = await envGetTool.handler({ keys: ['INVALID_KEY'] });
-    expect(result.content[0].text).toContain('Error:');
-    expect(result.content[0].text).toContain('Invalid env key');
-    expect(result.content[0].text).toContain('API_KEY');
+    expect(textOf(result)).toContain('Error:');
+    expect(textOf(result)).toContain('Invalid env key');
+    expect(textOf(result)).toContain('API_KEY');
   });
 });
