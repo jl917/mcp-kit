@@ -10,40 +10,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  sync-common:
-    name: Sync common-update
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Sync common-update.md to core and utils
-        run: |
-          BEFORE="${{ github.event.before }}"
-          AFTER="${{ github.sha }}"
-          echo "Comparing $BEFORE → $AFTER"
-          CHANGED=$(git diff --name-only "$BEFORE" "$AFTER" || git diff --name-only HEAD~1 HEAD)
-          echo "Changed files: $CHANGED"
-          if echo "$CHANGED" | grep -q "^packages/common/"; then
-            TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
-            echo "$TIMESTAMP" > packages/core/common-update.md
-            echo "$TIMESTAMP" > packages/utils/common-update.md
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add packages/core/common-update.md packages/utils/common-update.md
-            git commit -m "feat: update common-update.md in core and utils [skip ci]"
-            git push origin main
-          else
-            echo "No changes in packages/common, skipping."
-          fi
-
   release-please:
     name: Release Please
-    needs: sync-common
     runs-on: ubuntu-latest
     permissions:
       contents: write

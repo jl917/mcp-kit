@@ -25,10 +25,6 @@
 7. `src/tools/index.ts` — tools re-export
 8. `src/tools/<name>.ts` — 실제 도구 정의
 
-### ./common-update.md (release 파이프라인 관련)
-
-`packages/core/common-update.md`와 `packages/utils/common-update.md`는 release 워크플로우가 자동 관리하는 파일입니다. 직접 수정하지 마세요. `packages/common/`이 변경될 때만 자동 업데이트됩니다.
-
 ## 기존 컴포넌트 수정 여부 판단 기준
 
 | 상황 | 행동 |

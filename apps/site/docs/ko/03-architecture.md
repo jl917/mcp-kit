@@ -170,8 +170,7 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    Push["push → main"] --> S["sync-common<br/>common 변경 시<br/>common-update.md 갱신"]
-    S --> RP["release-please<br/>버전 PR / 릴리스"]
+    Push["push → main"] --> RP["release-please<br/>버전 PR / 릴리스"]
     RP --> Pub{"releases_created?"}
     Pub -->|true| Build["pnpm build"]
     Build --> Npm["pnpm -r publish (npm)"]
