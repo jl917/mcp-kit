@@ -171,8 +171,7 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    Push["push → main"] --> S["sync-common<br/>on common change:<br/>refresh common-update.md"]
-    S --> RP["release-please<br/>version PR / release"]
+    Push["push → main"] --> RP["release-please<br/>version PR / release"]
     RP --> Pub{"releases_created?"}
     Pub -->|true| Build["pnpm build"]
     Build --> Npm["pnpm -r publish (npm)"]

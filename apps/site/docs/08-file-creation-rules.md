@@ -25,10 +25,6 @@ When adding a new package, **all** of the following files are required:
 7. `src/tools/index.ts` — tools re-export
 8. `src/tools/<name>.ts` — actual tool definitions
 
-### `./common-update.md` (Release Pipeline Related)
-
-`packages/core/common-update.md` and `packages/utils/common-update.md` are auto-managed by the release workflow. Do not edit manually. They are only updated when `packages/common/` changes.
-
 ## Decision Guide for Modifying Existing Components
 
 | Situation | Action |
