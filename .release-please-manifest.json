@@ -1,5 +1,6 @@
 {
   "packages/core": "1.39.0",
   "packages/utils": "1.39.0",
+  "packages/exchange": "1.39.0",
   "apps/site": "1.4.1"
 }

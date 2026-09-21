@@ -41,6 +41,10 @@ pnpm clean       # 빌드 아웃풋 및 캐시 제거
     "mono-rele2-utils": {
       "command": "npx",
       "args": ["-y", "@julong/mono-rele2-utils"]
+    },
+    "mono-rele2-exchange": {
+      "command": "npx",
+      "args": ["-y", "@julong/mono-rele2-exchange"]
     }
   }
 }
@@ -64,6 +68,10 @@ pnpm clean       # 빌드 아웃풋 및 캐시 제거
     "mono-rele2-utils": {
       "command": "npx",
       "args": ["-y", "@julong/mono-rele2-utils"]
+    },
+    "mono-rele2-exchange": {
+      "command": "npx",
+      "args": ["-y", "@julong/mono-rele2-exchange"]
     }
   }
 }
@@ -102,6 +110,7 @@ pnpm build
 # 로컬 실행 확인 (MCP Inspector 사용 시)
 npx @modelcontextprotocol/inspector node packages/core/dist/server.js
 npx @modelcontextprotocol/inspector node packages/utils/dist/server.js
+npx @modelcontextprotocol/inspector node packages/exchange/dist/server.js
 ```
 
 Claude Desktop에서 로컬 빌드 연결:

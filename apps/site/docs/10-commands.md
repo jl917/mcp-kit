@@ -100,14 +100,17 @@ pnpm test
 # Run directly via npx (published version)
 npx @julong/mono-rele2-core
 npx @julong/mono-rele2-utils
+npx @julong/mono-rele2-exchange
 
 # Run local build (development)
 node packages/core/dist/server.js
 node packages/utils/dist/server.js
+node packages/exchange/dist/server.js
 
 # Debug with MCP Inspector
 npx @modelcontextprotocol/inspector node packages/core/dist/server.js
 npx @modelcontextprotocol/inspector node packages/utils/dist/server.js
+npx @modelcontextprotocol/inspector node packages/exchange/dist/server.js
 
 # MCP Client Config (with env variable example)
 # @julong/mono-rele2-utils supports passing API_KEY environment variable
@@ -129,6 +132,7 @@ npx @modelcontextprotocol/inspector node packages/utils/dist/server.js
 # List tools
 npx @julong/mono-rele2-core-cli
 npx @julong/mono-rele2-utils-cli
+npx @julong/mono-rele2-exchange-cli
 
 # Run specific tools (core)
 npx @julong/mono-rele2-core-cli echoTool "hello world"
@@ -144,10 +148,53 @@ npx @julong/mono-rele2-utils-cli objectFlattenTool '{"user":{"name":"Alice"}}'
 npx @julong/mono-rele2-utils-cli getUserTool '{"name":{"first":"Alice","last":"Kim"},"location":{"city":"Seoul"}}'
 npx @julong/mono-rele2-utils-cli envGetTool '["API_KEY"]'
 
+# Run specific tools (exchange) — requires `npx playwright install chromium` once
+npx @julong/mono-rele2-exchange-cli exchangeRatesTool
+npx @julong/mono-rele2-exchange-cli exchangeRatesTool '["naver","daum"]' '["CNY","JPY"]'
+npx @julong/mono-rele2-exchange-cli exchangeRateTool google EUR
+
 # Run CLI from local build
 node packages/core/dist/cli.js echoTool "hello world"
 node packages/utils/dist/cli.js cnTool '["btn","active"]'
+node packages/exchange/dist/cli.js exchangeRateTool naver CNY
 ```
+
+## Agent Integration Test (MCP + LLM)
+
+Runs the exchange MCP server under an LLM agent (`deepagents` + `langchain`) and checks the
+tool results end to end. The whole cycle is written to `packages/common/.log/<taskId>.log`.
+
+```bash
+# 1. Copy the env template and fill in your LLM credentials
+cp .env.example .env
+
+# 2. Build the MCP server bundle the agent will spawn
+pnpm --filter @julong/mono-rele2-exchange build
+
+# 3. Run the agent as assertions
+pnpm test:agent
+
+# 4. Read the full run log
+less packages/common/.log/rstest-agent-all.log
+```
+
+`pnpm test:agent` runs `packages/exchange/src/agent.test.ts`, which asserts that the MCP
+server exposes both tools, that the LLM actually invoked one of them, that the tool arguments
+match the request scope, and that the numbers in the final answer came from the tool result
+rather than from the model. Plain `pnpm test` skips the file unless `RUN_AGENT_TESTS` is set.
+
+The test is the only place that wires an agent: `@common/agent` supplies the model, the
+logging and `nodeMcpServer()`, while the test supplies the MCP server to spawn and the
+prompts. Published packages stay pure tool providers and never import langchain.
+
+| Env var | Purpose |
+|---------|---------|
+| `SILICONFLOW_URL` | OpenAI-compatible base URL (e.g. `https://api.siliconflow.cn/v1`) |
+| `SILICONFLOW_MODEL` | Model name (e.g. `Qwen/Qwen3-8B`) |
+| `OPENAI_API_KEY` | API key — also accepts `SILICONFLOW_API_KEY` or `API_KEY` |
+
+> The agent needs network access, a valid API key, and Playwright's browser
+> (`npx playwright install chromium`). It is not part of `pnpm test`.
 
 ## Git Commits
 

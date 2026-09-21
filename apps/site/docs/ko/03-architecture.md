@@ -9,7 +9,8 @@ mcp-kit/
 ├── packages/
 │   ├── common/         # 공유 키트 (npm 미배포, workspace 제외)
 │   ├── core/           # @julong/mono-rele2-core — 핵심 시스템 도구
-│   └── utils/          # @julong/mono-rele2-utils — 텍스트/데이터 유틸리티 도구
+│   ├── utils/          # @julong/mono-rele2-utils — 텍스트/데이터 유틸리티 도구
+│   └── exchange/       # @julong/mono-rele2-exchange — 포털 환율 수집 도구
 ├── .github/workflows/  # CI/CD 파이프라인
 ├── package.json        # 루트 설정 (workspace 정의)
 ├── turbo.json          # Turborepo 태스크 설정
@@ -33,13 +34,29 @@ common/
 │   ├── server.ts   # MCP 서버: createMcpServer(), startServer()
 │   ├── cli.ts      # CLI 실행: runCli(), handleCliError()
 │   └── skill.ts    # 문서 생성: generateSkillMarkdown(), generateReadmeSkills()
+├── agent/
+│   ├── llm.ts      # createChatModel() — 환경 변수로 OpenAI 호환 채팅 모델 생성
+│   ├── log.ts      # FileLogCallback, appendLog() — taskId별 .log 파일 기록
+│   ├── runner.ts   # runMcpAgent(), nodeMcpServer() — MCP 서버 기동 + deep agent 실행
+│   └── index.ts    # 에이전트 키트 진입점 (`@common`이 아닌 `@common/agent`로 사용)
 ├── build/
 │   ├── tsup.config.mjs       # 공통 tsup 설정 (createTsupConfig)
 │   └── update-readme.mjs     # README 생성 스크립트
+├── .log/           # 에이전트 실행 로그, taskId별 파일 (gitignore 대상)
 ├── types.ts        # 공통 타입 (Nullable, Optional, MaybePromise)
 ├── constants.ts    # 공통 상수 (VERSION)
 └── index.ts        # 공개 진입점 (kit/* 전체 re-export)
 ```
+
+> `agent/`는 의도적으로 `index.ts`에서 **재노출하지 않습니다**. 각 패키지가 `noExternal: [/./]`로
+> `@common`을 인라인 번들하기 때문에, 재노출하면 langchain·deepagents가 배포되는 모든 MCP 서버
+> 번들에 끌려 들어갑니다. 쓰는 쪽에서 `@common/agent` 경로 별칭으로 직접 가져오며, `dist/`에는
+> 포함되지 않습니다.
+>
+> 이렇게 해서 계층이 한 방향으로 유지됩니다. **에이전트를 조립하는 곳은 `packages/common`
+> 하나뿐**이고, 나머지 패키지는 MCP 도구만 제공합니다. 어떤 패키지가 자기 도구를 LLM으로
+> 검증하고 싶으면, 테스트에서 `@common/agent`에 MCP 서버와 프롬프트를 넘겨 실행합니다
+> (`packages/exchange/src/agent.test.ts` 참고).
 
 ### `packages/core/` — @julong/mono-rele2-core
 
@@ -71,6 +88,31 @@ utils/
 │       ├── deep.ts         # objectFlattenTool — 중첩 JSON dot-notation 평탄화
 │       ├── user.ts         # getUserTool — RandomUser 파싱 및 한글 문장 생성
 │       └── env.ts          # envGetTool — MCP client env 변수 조회 + UTILS_ENV_KEYS
+├── tsup.config.ts
+└── package.json
+```
+
+### `packages/exchange/` — @julong/mono-rele2-exchange
+
+Playwright로 네이버·구글·다음을 직접 열어 환율을 읽어옵니다. `playwright`는 실행 시점에 브라우저 드라이버를 자기 패키지 경로에서 찾으므로 번들하지 않고 `dependencies`로 남겨 둡니다 (패키지 자체 `tsup.config.ts`에서 `external` 처리).
+
+```
+exchange/
+├── src/
+│   ├── index.ts            # 라이브러리 진입점 (fetch* / 타입 re-export)
+│   ├── server.ts           # MCP 서버 진입점 (2개 도구 등록)
+│   ├── cli.ts              # CLI 진입점
+│   ├── exchange/
+│   │   ├── index.ts        # 포털 병렬 수집 오케스트레이션 + 타임아웃 처리
+│   │   ├── types.ts        # Provider / CurrencyCode / ExchangeQuote 정의
+│   │   ├── parse.ts        # 숫자 파싱 · 고시 단위 역산 · ExchangeQuote 생성
+│   │   ├── wait.ts         # 자리표시자가 실제 시세로 바뀔 때까지 대기
+│   │   ├── browser.ts      # Chromium 기동 및 브라우저 컨텍스트 생성
+│   │   └── providers/      # naver.ts · google.ts · daum.ts 스크레이퍼
+│   ├── tools/
+│   │   ├── index.ts        # tools re-export
+│   │   └── exchange.ts     # exchangeRatesTool, exchangeRateTool 정의
+│   └── agent.test.ts       # 실제 LLM 테스트 — `@common/agent`로 이 도구들을 호출
 ├── tsup.config.ts
 └── package.json
 ```
@@ -119,13 +161,16 @@ graph TD
         Common["packages/common — @common (공유 키트, SSOT)<br/>tool.ts · server.ts · cli.ts · skill.ts<br/>build/tsup.config.mjs"]
         Core["packages/core<br/>@julong/mono-rele2-core<br/>시스템 도구"]
         Utils["packages/utils<br/>@julong/mono-rele2-utils<br/>text / deep / user / env 도구"]
+        Exchange["packages/exchange<br/>@julong/mono-rele2-exchange<br/>네이버 / 구글 / 다음 환율 도구"]
         Site["apps/site<br/>Rspress 문서 사이트"]
     end
 
     Common -->|"@common → ../common/index.ts<br/>(tsup noExternal로 번들)"| Core
     Common --> Utils
+    Common --> Exchange
     Core -.->|README → 동적 페이지| Site
     Utils -.->|README → 동적 페이지| Site
+    Exchange -.->|README → 동적 페이지| Site
 ```
 
 > `packages/common`은 워크스페이스에서 제외되며 npm에 배포되지 않고, 빌드 시 각 패키지에 인라인 번들됩니다.

@@ -9,7 +9,8 @@ mcp-kit/
 ├── packages/
 │   ├── common/         # Shared kit (not published to npm, excluded from workspace)
 │   ├── core/           # @julong/mono-rele2-core — core system tools
-│   └── utils/          # @julong/mono-rele2-utils — text/data utility tools
+│   ├── utils/          # @julong/mono-rele2-utils — text/data utility tools
+│   └── exchange/       # @julong/mono-rele2-exchange — portal exchange-rate tools
 ├── .github/workflows/  # CI/CD pipelines
 ├── package.json        # Root config (workspace definition)
 ├── turbo.json          # Turborepo task configuration
@@ -33,13 +34,29 @@ common/
 │   ├── server.ts   # MCP server: createMcpServer(), startServer()
 │   ├── cli.ts      # CLI execution: runCli(), handleCliError()
 │   └── skill.ts    # Documentation generation: generateSkillMarkdown(), generateReadmeSkills()
+├── agent/
+│   ├── llm.ts      # createChatModel() — OpenAI-compatible chat model from env vars
+│   ├── log.ts      # FileLogCallback, appendLog() — one .log file per taskId
+│   ├── runner.ts   # runMcpAgent(), nodeMcpServer() — spawn MCP servers, run a deep agent
+│   └── index.ts    # Agent-kit entry point (imported as `@common/agent`, NOT via `@common`)
 ├── build/
 │   ├── tsup.config.mjs       # Common tsup config (createTsupConfig)
 │   └── update-readme.mjs     # README generation script
+├── .log/           # Agent run logs, one file per taskId (gitignored)
 ├── types.ts        # Common types (Nullable, Optional, MaybePromise)
 ├── constants.ts    # Common constants (VERSION)
 └── index.ts        # Public entry point (re-exports all kit/*)
 ```
+
+> `agent/` is deliberately **not** re-exported from `index.ts`. Every package bundles `@common`
+> inline via `noExternal: [/./]`, so re-exporting it would drag langchain and deepagents into
+> every published MCP server bundle. Consumers reach it through the separate `@common/agent`
+> path alias, and it stays out of `dist/`.
+>
+> This keeps the layering one-way: **`packages/common` is the only place that assembles an
+> agent** — every other package ships MCP tools and nothing else. A package that wants to prove
+> its tools work under an LLM does so from a test that hands `@common/agent` an MCP server and
+> a prompt (see `packages/exchange/src/agent.test.ts`).
 
 ### `packages/core/` — @julong/mono-rele2-core
 
@@ -71,6 +88,31 @@ utils/
 │       ├── deep.ts         # objectFlattenTool — nested JSON dot-notation flattening
 │       ├── user.ts         # getUserTool — RandomUser parsing and Korean sentence generation
 │       └── env.ts          # envGetTool — MCP client env variable lookup + UTILS_ENV_KEYS
+├── tsup.config.ts
+└── package.json
+```
+
+### `packages/exchange/` — @julong/mono-rele2-exchange
+
+Reads exchange rates by driving Naver, Google, and Daum with Playwright. `playwright` resolves browser drivers from its own package directory at runtime, so it stays unbundled in `dependencies` (marked `external` in this package's own `tsup.config.ts`).
+
+```
+exchange/
+├── src/
+│   ├── index.ts            # Library entry point (re-exports fetch* and types)
+│   ├── server.ts           # MCP server entry point (registers 2 tools)
+│   ├── cli.ts              # CLI entry point
+│   ├── exchange/
+│   │   ├── index.ts        # Parallel per-portal orchestration and timeout handling
+│   │   ├── types.ts        # Provider / CurrencyCode / ExchangeQuote definitions
+│   │   ├── parse.ts        # Number parsing, quoted-unit derivation, ExchangeQuote building
+│   │   ├── wait.ts         # Waits for placeholders to become real quotes
+│   │   ├── browser.ts      # Chromium launch and browser context creation
+│   │   └── providers/      # naver.ts · google.ts · daum.ts scrapers
+│   ├── tools/
+│   │   ├── index.ts        # Tool re-exports
+│   │   └── exchange.ts     # exchangeRatesTool, exchangeRateTool definitions
+│   └── agent.test.ts       # Live LLM test — drives these tools through `@common/agent`
 ├── tsup.config.ts
 └── package.json
 ```
@@ -120,13 +162,16 @@ graph TD
         Common["packages/common — @common (Shared Kit, SSOT)<br/>tool.ts · server.ts · cli.ts · skill.ts<br/>build/tsup.config.mjs"]
         Core["packages/core<br/>@julong/mono-rele2-core<br/>system tools"]
         Utils["packages/utils<br/>@julong/mono-rele2-utils<br/>text / deep / user / env tools"]
+        Exchange["packages/exchange<br/>@julong/mono-rele2-exchange<br/>Naver / Google / Daum rate tools"]
         Site["apps/site<br/>Rspress docs site"]
     end
 
     Common -->|"@common → ../common/index.ts<br/>(bundled via tsup noExternal)"| Core
     Common --> Utils
+    Common --> Exchange
     Core -.->|README → dynamic page| Site
     Utils -.->|README → dynamic page| Site
+    Exchange -.->|README → dynamic page| Site
 ```
 
 > `packages/common` is excluded from the workspace and never published — it is inlined into each package at build time.

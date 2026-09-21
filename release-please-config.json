@@ -23,6 +23,7 @@
   "packages": {
     "packages/core": {},
     "packages/utils": {},
+    "packages/exchange": {},
     "apps/site": {}
   }
 }
