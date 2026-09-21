@@ -99,14 +99,17 @@ pnpm build
 # npx로 직접 실행 (npm 배포 버전)
 npx @julong/mono-rele2-core
 npx @julong/mono-rele2-utils
+npx @julong/mono-rele2-exchange
 
 # 로컬 빌드 실행 (개발 중)
 node packages/core/dist/server.js
 node packages/utils/dist/server.js
+node packages/exchange/dist/server.js
 
 # MCP Inspector로 디버깅
 npx @modelcontextprotocol/inspector node packages/core/dist/server.js
 npx @modelcontextprotocol/inspector node packages/utils/dist/server.js
+npx @modelcontextprotocol/inspector node packages/exchange/dist/server.js
 
 # MCP Client Config (env 변수 포함 예시)
 # @julong/mono-rele2-utils는 API_KEY 환경 변수 전달 지원
@@ -128,6 +131,7 @@ npx @modelcontextprotocol/inspector node packages/utils/dist/server.js
 # 도구 목록 보기
 npx @julong/mono-rele2-core-cli
 npx @julong/mono-rele2-utils-cli
+npx @julong/mono-rele2-exchange-cli
 
 # 특정 도구 실행 (core)
 npx @julong/mono-rele2-core-cli echoTool "hello world"
@@ -143,10 +147,53 @@ npx @julong/mono-rele2-utils-cli objectFlattenTool '{"user":{"name":"Alice"}}'
 npx @julong/mono-rele2-utils-cli getUserTool '{"name":{"first":"Alice","last":"Kim"},"location":{"city":"Seoul"}}'
 npx @julong/mono-rele2-utils-cli envGetTool '["API_KEY"]'
 
+# 특정 도구 실행 (exchange) — 최초 1회 `npx playwright install chromium` 필요
+npx @julong/mono-rele2-exchange-cli exchangeRatesTool
+npx @julong/mono-rele2-exchange-cli exchangeRatesTool '["naver","daum"]' '["CNY","JPY"]'
+npx @julong/mono-rele2-exchange-cli exchangeRateTool google EUR
+
 # 로컬 빌드로 CLI 실행
 node packages/core/dist/cli.js echoTool "hello world"
 node packages/utils/dist/cli.js cnTool '["btn","active"]'
+node packages/exchange/dist/cli.js exchangeRateTool naver CNY
 ```
+
+## 에이전트 통합 테스트 (MCP + LLM)
+
+exchange MCP 서버를 LLM 에이전트(`deepagents` + `langchain`) 아래에서 띄워 도구 실행 결과까지
+확인합니다. 실행 전 싸이클은 `packages/common/.log/<taskId>.log`에 기록됩니다.
+
+```bash
+# 1. 환경 변수 템플릿을 복사해 LLM 자격 증명을 채웁니다
+cp .env.example .env
+
+# 2. 에이전트가 띄울 MCP 서버 번들을 먼저 빌드합니다
+pnpm --filter @julong/mono-rele2-exchange build
+
+# 3. 에이전트를 검증으로 실행
+pnpm test:agent
+
+# 4. 전체 실행 로그 확인
+less packages/common/.log/rstest-agent-all.log
+```
+
+`pnpm test:agent`는 `packages/exchange/src/agent.test.ts`를 실행합니다. MCP 서버가 두 도구를
+노출하는지, LLM이 그중 하나를 실제로 호출했는지, 도구 인자가 요청 범위와 맞는지, 최종 답변의
+숫자가 모델이 지어낸 것이 아니라 도구 결과에서 온 것인지를 검증합니다. 일반 `pnpm test`는
+`RUN_AGENT_TESTS`가 없으면 이 파일을 건너뜁니다.
+
+에이전트를 조립하는 곳은 이 테스트뿐입니다. 모델·로깅·`nodeMcpServer()`는 `@common/agent`가
+제공하고, 테스트는 어떤 MCP 서버를 어떤 프롬프트로 부를지만 정합니다. 배포되는 패키지는
+도구만 제공하며 langchain을 import하지 않습니다.
+
+| 환경 변수 | 용도 |
+|-----------|------|
+| `SILICONFLOW_URL` | OpenAI 호환 base URL (예: `https://api.siliconflow.cn/v1`) |
+| `SILICONFLOW_MODEL` | 모델명 (예: `Qwen/Qwen3-8B`) |
+| `OPENAI_API_KEY` | API 키 — `SILICONFLOW_API_KEY` / `API_KEY`도 허용 |
+
+> 네트워크, 유효한 API 키, Playwright 브라우저(`npx playwright install chromium`)가 필요합니다.
+> `pnpm test`에는 포함되지 않습니다.
 
 ## Git 커밋
 
