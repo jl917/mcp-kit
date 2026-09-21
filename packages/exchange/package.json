@@ -1,6 +1,6 @@
 {
   "name": "@julong/mono-rele2-exchange",
-  "version": "1.39.0",
+  "version": "1.40.0",
   "description": "Use this skill to fetch the latest KRW exchange rates for China, Japan, and the Euro area from Naver, Google, and Daum via the mono-rele2-exchange CLI. Scrapes each portal with Playwright and returns JSON, using null for any rate it cannot read.",
   "license": "ISC",
   "type": "module",
