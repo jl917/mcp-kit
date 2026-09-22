@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/jl917/mcp-kit/compare/v2.0.0...v2.0.1) (2026-09-22)
+
+
+### Bug Fixes
+
+* **common:** keep the MCP server alive on escaped async errors ([#44](https://github.com/jl917/mcp-kit/issues/44)) ([8b42d7f](https://github.com/jl917/mcp-kit/commit/8b42d7f2b469964e98b33e9f8cabeb77632904f9))
+
 ## [2.0.0](https://github.com/jl917/mcp-kit/compare/v1.0.0...v2.0.0) (2026-09-22)
 
 
