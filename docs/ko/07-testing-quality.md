@@ -7,6 +7,7 @@
 ```
 src/exchange/parse.test.ts      # 파싱·단위 역산 단위 테스트
 src/tools/exchange.test.ts      # 도구 핸들러 테스트
+src/common/kit/server.test.ts   # 도구 등록 필터·프로세스 가드·stderr 전용 로그 테스트
 src/common/agent/log.test.ts    # 로그 직렬화·마스킹 테스트
 src/agent.test.ts               # 실제 LLM + 실제 포털 (기본 실행에서 제외)
 ```
