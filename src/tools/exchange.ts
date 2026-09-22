@@ -25,7 +25,7 @@ export const tools = {
   exchangeRatesTool: toolDef({
     name: 'exchange_rates',
     description:
-      '네이버·구글·다음에서 중국(CNY)·일본(JPY)·유로(EUR)의 원화 환율을 가져와 JSON으로 반환합니다. ' +
+      '네이버·구글·다음에서 미국(USD)·중국(CNY)·일본(JPY)·유로(EUR)의 원화 환율을 가져와 JSON으로 반환합니다. ' +
       `${QUOTE_SHAPE} 읽지 못한 통화는 null, 포털 자체를 열지 못하면 그 포털 전체가 null입니다`,
     inputSchema: {
       providers: z
@@ -45,12 +45,12 @@ export const tools = {
     },
     typeLabels: {
       providers: '("naver" | "google" | "daum")[]',
-      currencies: '("CNY" | "JPY" | "EUR")[]',
+      currencies: '("USD" | "CNY" | "JPY" | "EUR")[]',
       timeoutMs: 'number',
     },
     returnType:
       `Record<"naver" | "google" | "daum", ` +
-      `Record<"CNY" | "JPY" | "EUR", ${QUOTE_TYPE} | null> | null>`,
+      `Record<"USD" | "CNY" | "JPY" | "EUR", ${QUOTE_TYPE} | null> | null>`,
     returnDescription:
       '포털별·통화별 시세 JSON. 통화를 읽지 못하면 그 통화가 null, 포털을 열지 못하면 포털 전체가 null',
     handler: async ({ providers, currencies, timeoutMs }) => {
@@ -63,9 +63,9 @@ export const tools = {
     },
     examples: [
       {
-        args: [`'["naver"]'`, `'["CNY"]'`],
+        args: [`'["naver"]'`, `'["USD"]'`],
         result:
-          '{"naver":{"CNY":{"currency":"CNY","base":"KRW","rate":205.12,...},"JPY":null,"EUR":null},"google":null,"daum":null}',
+          '{"naver":{"USD":{"currency":"USD","base":"KRW","rate":1358.7,...},"CNY":null,"JPY":null,"EUR":null},"google":null,"daum":null}',
       },
     ],
     guidelines: GUIDELINES,
@@ -86,7 +86,7 @@ export const tools = {
     },
     typeLabels: {
       provider: '"naver" | "google" | "daum"',
-      currency: '"CNY" | "JPY" | "EUR"',
+      currency: '"USD" | "CNY" | "JPY" | "EUR"',
       timeoutMs: 'number',
     },
     returnType: `${QUOTE_TYPE} | null`,

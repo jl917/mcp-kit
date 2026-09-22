@@ -24,7 +24,7 @@ describe('tool definitions', () => {
   it('should reject unsupported providers and currencies', () => {
     const schema = z.object(exchangeRateTool.inputSchema);
     expect(() => schema.parse({ provider: 'bing', currency: 'CNY' })).toThrow();
-    expect(() => schema.parse({ provider: 'naver', currency: 'USD' })).toThrow();
+    expect(() => schema.parse({ provider: 'naver', currency: 'GBP' })).toThrow();
   });
 });
 

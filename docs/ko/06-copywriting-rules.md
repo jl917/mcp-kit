@@ -24,7 +24,7 @@ Use this skill to [동작] via the [패키지명] CLI. Handles [주요 기능].
 ```
 
 예시:
-- `@julong/mcp-kit`: "Use this skill to fetch the latest KRW exchange rates for China, Japan, and the Euro area from Naver, Google, and Daum via the mcp-kit CLI. Scrapes each portal with Playwright and returns JSON, using null for any rate it cannot read."
+- `@julong/mcp-kit`: "Use this skill to fetch the latest KRW exchange rates for the United States, China, Japan, and the Euro area from Naver, Google, and Daum via the mcp-kit CLI. Scrapes each portal with Playwright and returns JSON, using null for any rate it cannot read."
 
 ## 도구 description 작성 규칙
 

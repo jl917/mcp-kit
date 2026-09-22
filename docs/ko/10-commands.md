@@ -258,4 +258,4 @@ echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
   | npx -y @julong/mcp-kit
 ```
 
-기본 인자로 `exchange_rates`를 한 번 부르면 `timeoutMs × (통화 수 + 1)`, 통화 셋이면 최대 80초까지 걸립니다. 클라이언트의 도구 호출 제한 시간이 그보다 짧다면 `providers` / `currencies`를 좁히거나 `timeoutMs`를 낮춥니다.
+기본 인자로 `exchange_rates`를 한 번 부르면 `timeoutMs × (통화 수 + 1)`, 통화 넷이면 최대 100초까지 걸립니다. 클라이언트의 도구 호출 제한 시간이 그보다 짧다면 `providers` / `currencies`를 좁히거나 `timeoutMs`를 낮춥니다.
