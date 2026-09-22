@@ -258,4 +258,4 @@ echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
   | npx -y @julong/mcp-kit
 ```
 
-One call to `exchange_rates` with the default arguments can take up to `timeoutMs × (currencies + 1)` — 80 seconds for three currencies. If the client's tool timeout is shorter than that, narrow `providers` / `currencies` or lower `timeoutMs`.
+One call to `exchange_rates` with the default arguments can take up to `timeoutMs × (currencies + 1)` — 100 seconds for four currencies. If the client's tool timeout is shorter than that, narrow `providers` / `currencies` or lower `timeoutMs`.

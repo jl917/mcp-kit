@@ -3,8 +3,8 @@ import type { Page } from 'playwright';
 /** 환율을 수집하는 포털 목록. */
 export const PROVIDERS = ['naver', 'google', 'daum'] as const;
 
-/** 수집 대상 통화 — 중국 위안 / 일본 엔 / 유로. */
-export const CURRENCIES = ['CNY', 'JPY', 'EUR'] as const;
+/** 수집 대상 통화 — 미국 달러 / 중국 위안 / 일본 엔 / 유로. */
+export const CURRENCIES = ['USD', 'CNY', 'JPY', 'EUR'] as const;
 
 export type Provider = (typeof PROVIDERS)[number];
 export type CurrencyCode = (typeof CURRENCIES)[number];
@@ -14,6 +14,7 @@ export const CURRENCY_META: Record<
   CurrencyCode,
   { country: string; name: string; naverQuery: string; daumLabel: string }
 > = {
+  USD: { country: '미국', name: '달러', naverQuery: '미국 환율', daumLabel: '미국' },
   CNY: { country: '중국', name: '위안', naverQuery: '중국 환율', daumLabel: '중국' },
   JPY: { country: '일본', name: '엔', naverQuery: '일본 환율', daumLabel: '일본' },
   EUR: { country: '유럽연합', name: '유로', naverQuery: '유로 환율', daumLabel: '유로' },

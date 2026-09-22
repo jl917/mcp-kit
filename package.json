@@ -1,7 +1,7 @@
 {
   "name": "@julong/mcp-kit",
   "version": "2.0.1",
-  "description": "Use this skill to fetch the latest KRW exchange rates for China, Japan, and the Euro area from Naver, Google, and Daum via the mcp-kit CLI. Scrapes each portal with Playwright and returns JSON, using null for any rate it cannot read.",
+  "description": "Use this skill to fetch the latest KRW exchange rates for the United States, China, Japan, and the Euro area from Naver, Google, and Daum via the mcp-kit CLI. Scrapes each portal with Playwright and returns JSON, using null for any rate it cannot read.",
   "license": "ISC",
   "type": "module",
   "packageManager": "pnpm@9.12.1",

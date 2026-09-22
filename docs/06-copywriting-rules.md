@@ -23,7 +23,7 @@ Use this skill to [action] via the [package-name] CLI. Handles [main features].
 ```
 
 Examples:
-- `@julong/mcp-kit`: "Use this skill to fetch the latest KRW exchange rates for China, Japan, and the Euro area from Naver, Google, and Daum via the mcp-kit CLI. Scrapes each portal with Playwright and returns JSON, using null for any rate it cannot read."
+- `@julong/mcp-kit`: "Use this skill to fetch the latest KRW exchange rates for the United States, China, Japan, and the Euro area from Naver, Google, and Daum via the mcp-kit CLI. Scrapes each portal with Playwright and returns JSON, using null for any rate it cannot read."
 
 ## Tool Description Rules
 
