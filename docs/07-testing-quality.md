@@ -83,6 +83,8 @@ pnpm build           # tsup
 
 ### CI Pipeline (`.github/workflows/ci.yml`)
 
+Runs on every pull request targeting `main` and on pushes to `main`.
+
 1. `pnpm install --frozen-lockfile`
 2. `pnpm lint`
 3. `pnpm format:check`

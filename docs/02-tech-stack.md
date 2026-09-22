@@ -63,7 +63,7 @@ Bundling config (`tsup.config.ts`):
 
 | Tool | Purpose |
 |------|---------|
-| **GitHub Actions** | CI, Auto PR, Release workflows |
+| **GitHub Actions** | CI and Release workflows |
 | **release-please** (`googleapis/release-please-action@v4`) | Release automation (single-package versioning via release PR) |
 | Conventional Commits | Drives version determination (`feat`/`fix`/`BREAKING CHANGE`) |
 | release-please CHANGELOG | Auto-generates the root CHANGELOG.md |

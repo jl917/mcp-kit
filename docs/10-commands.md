@@ -197,11 +197,18 @@ git commit -m "refactor(scope): restructure module"
 ## Publishing
 
 ```bash
-# Push to main — release-please opens/updates a release PR with version bumps + CHANGELOG
-git push origin main
+# 1. Push the work branch and open a PR against main
+git push -u origin <branch>
+gh pr create --base main
 
-# Merging the release PR triggers the actual release:
-# a tag (v<version>) and GitHub Release are created, then the publish job runs `pnpm publish`
+# 2. CI runs on the PR — merge once it is green
+
+# 3. The merge triggers release-please, which opens/updates a release PR
+#    carrying the version bump + CHANGELOG
+
+# 4. Merging that release PR performs the actual release:
+#    a tag (v<version>) and GitHub Release are created, then the publish job
+#    runs `pnpm publish`
 ```
 
 ## Bundle Inspection

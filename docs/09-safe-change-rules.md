@@ -72,7 +72,7 @@ The following changes require team review or approval before execution:
 
 ## Release Branch Protection
 
-- `develop` branch: CI must pass (lint + format + type check + test + build)
-- `main` branch: Only mergeable via Auto PR from `develop` (direct push prohibited)
-- Pushing to `main` triggers release-please, which opens/updates a **release PR** with version bumps + CHANGELOG; the actual tags, GitHub Releases, and npm publish happen only when that release PR is merged
-- Include `[skip ci]` in commit messages to skip CI (for release commits, etc.)
+- `main` is the only long-lived branch. Work happens on a short-lived branch and lands on `main` through a pull request — no direct push.
+- CI (lint + format + type check + test + build) runs on every pull request targeting `main` and must pass before merge.
+- Merging into `main` triggers release-please, which opens/updates a **release PR** with version bumps + CHANGELOG; the actual tags, GitHub Releases, and npm publish happen only when that release PR is merged
+- Include `[skip ci]` in commit messages to skip the push-triggered CI run (for release commits, etc.)

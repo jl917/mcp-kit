@@ -197,11 +197,18 @@ git commit -m "refactor(scope): restructure module"
 ## 패키지 배포
 
 ```bash
-# main에 push — release-please가 버전 Bump + CHANGELOG가 담긴 릴리스 PR을 열거나 업데이트
-git push origin main
+# 1. 작업 브랜치를 push하고 main을 대상으로 PR을 엽니다
+git push -u origin <branch>
+gh pr create --base main
 
-# 릴리스 PR을 머지하면 실제 릴리스가 트리거됨:
-# 태그(v<version>) + GitHub Release가 생성되고, 이어서 publish 잡이 `pnpm publish`로 npm에 배포
+# 2. PR에서 CI가 돌고, 통과하면 병합합니다
+
+# 3. 병합되면 release-please가 버전 Bump + CHANGELOG를 담은
+#    릴리스 PR을 열거나 업데이트합니다
+
+# 4. 그 릴리스 PR을 머지하면 실제 릴리스가 수행됩니다:
+#    태그(v<version>) + GitHub Release가 생성되고,
+#    이어서 publish 잡이 `pnpm publish`로 npm에 배포
 ```
 
 ## 번들 분석

@@ -72,7 +72,7 @@
 
 ## 릴리스 브랜치 보호
 
-- `develop` 브랜치: CI 통과 필수 (lint + format + 타입 검사 + 테스트 + 빌드)
-- `main` 브랜치: `develop`에서 Auto PR로만 병합 가능 (직접 push 금지)
-- `main`에 push되면 release-please가 버전 Bump + CHANGELOG가 담긴 **릴리스 PR**을 열거나 업데이트하며, 실제 태그/GitHub Release/npm 배포는 그 릴리스 PR을 머지할 때만 수행됨
-- `[skip ci]`를 커밋 메시지에 포함하면 CI를 건너뛸 수 있음 (릴리스 커밋 등)
+- 장수 브랜치는 `main` 하나입니다. 작업은 짧은 수명의 브랜치에서 하고 Pull Request로 `main`에 병합합니다 (직접 push 금지).
+- CI(lint + format + 타입 검사 + 테스트 + 빌드)는 `main`을 대상으로 하는 모든 PR에서 실행되며, 통과해야 병합할 수 있습니다.
+- `main`에 병합되면 release-please가 버전 Bump + CHANGELOG가 담긴 **릴리스 PR**을 열거나 업데이트하며, 실제 태그/GitHub Release/npm 배포는 그 릴리스 PR을 머지할 때만 수행됨
+- `[skip ci]`를 커밋 메시지에 포함하면 push로 트리거되는 CI 실행을 건너뛸 수 있음 (릴리스 커밋 등)

@@ -62,7 +62,7 @@
 
 | 도구 | 용도 |
 |------|------|
-| **GitHub Actions** | CI, Auto PR, Release 워크플로우 |
+| **GitHub Actions** | CI, Release 워크플로우 |
 | **release-please** (`googleapis/release-please-action@v4`) | 릴리스 자동화 (릴리스 PR 기반 단일 패키지 버전 관리) |
 | Conventional Commits | 버전 결정 기준 (`feat`/`fix`/`BREAKING CHANGE`) |
 | release-please CHANGELOG | 루트 CHANGELOG.md 자동 생성 |

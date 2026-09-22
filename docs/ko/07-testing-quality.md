@@ -83,6 +83,8 @@ pnpm build           # tsup
 
 ### CI 파이프라인 (`.github/workflows/ci.yml`)
 
+`main`을 대상으로 하는 모든 PR과 `main` push에서 실행됩니다.
+
 1. `pnpm install --frozen-lockfile`
 2. `pnpm lint`
 3. `pnpm format:check`

@@ -30,6 +30,7 @@ pnpm 기반 단일 저장소. KRW 환율을 조회하는 MCP(Model Context Proto
 | 공개 API·빌드 설정·릴리스 설정 변경, 구조 변경 | [09-safe-change-rules](docs/09-safe-change-rules.md) |
 | 명령어 실행, MCP 서버·CLI 구동, 배포 절차 | [10-commands](docs/10-commands.md) |
 | 커밋 메시지 작성 | [.claude/rules.md](.claude/rules.md) |
+| 브랜치 생성, PR, 병합 절차 | [CONTRIBUTING.md](CONTRIBUTING.md) |
 
 > `docs/*.md`가 기준 문서이고 `docs/ko/*.md`는 한국어 미러입니다. 한쪽을 고치면 **반드시 다른 쪽도 함께** 고칩니다.
 
@@ -63,6 +64,7 @@ pnpm 기반 단일 저장소. KRW 환율을 조회하는 MCP(Model Context Proto
 - `pnpm lint` → `format:check` → `typecheck` → `test` → `build` 전부 통과해야 완료입니다 (CI와 동일한 순서).
 - 도구를 추가·변경했으면 `pnpm readme`로 README.md를 재생성합니다.
 - 커밋 메시지는 Conventional Commits를 따릅니다.
+- 작업은 짧은 수명의 브랜치에서 하고 `main`을 대상으로 PR을 엽니다. `main`에 직접 push하지 않습니다.
 
 ## 디렉토리 구조
 
