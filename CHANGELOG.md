@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/jl917/mcp-kit/compare/v2.0.1...v2.1.0) (2026-09-22)
+
+
+### Features
+
+* **exchange:** add USD to the collected currencies ([#46](https://github.com/jl917/mcp-kit/issues/46)) ([8a120fb](https://github.com/jl917/mcp-kit/commit/8a120fb5d6481e7a003a30eaee3fa7d951e13850))
+
 ## [2.0.1](https://github.com/jl917/mcp-kit/compare/v2.0.0...v2.0.1) (2026-09-22)
 
 
