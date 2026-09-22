@@ -248,6 +248,7 @@ npx playwright install chromium
 | 아무것도 없음 | 프로세스가 아예 뜨지 않았습니다. 클라이언트가 쓰는 `PATH`에 `npx`가 있는지, Node가 20 이상인지 확인합니다. |
 | `[mcp-kit] ready on stdio (v…, node …)`가 없음 | 기동 실패입니다. 바로 뒤의 `[mcp-kit] server error:` 줄에 원인이 있습니다. |
 | `[mcp-kit] uncaughtException:` / `unhandledRejection:` | 도구 핸들러 밖으로 에러가 샜습니다. 서버는 살아서 계속 응답하며, 그 줄이 원인을 가리킵니다. |
+| `[mcp-kit] <도구> start`만 있고 짝이 되는 `done in …ms`가 없음 | 호출 도중에 프로세스가 죽었습니다. 서버가 마지막으로 하던 일이므로 그 호출부터 재현합니다. |
 | `[mcp-kit] stdin closed by client — shutting down` | 정상 종료입니다. 클라이언트가 파이프를 닫았습니다. |
 | `[mcp-kit] no tools registered` | `WHITE_FN` / `BLACK_FN`이 도구를 전부 걸러냈습니다. |
 
@@ -258,4 +259,4 @@ echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
   | npx -y @julong/mcp-kit
 ```
 
-기본 인자로 `exchange_rates`를 한 번 부르면 `timeoutMs × (통화 수 + 1)`, 통화 넷이면 최대 100초까지 걸립니다. 클라이언트의 도구 호출 제한 시간이 그보다 짧다면 `providers` / `currencies`를 좁히거나 `timeoutMs`를 낮춥니다.
+`exchange_rates` 한 번의 예산은 `min(timeoutMs × (통화 수 + 1), 45초)`이고, 예산이 끝나면 그때까지 읽은 값을 그대로 돌려줍니다. 시간 안에 닿지 못한 통화는 `null`입니다. 45초 상한은 의도한 값입니다. MCP 클라이언트는 요청 하나를 기본 60초까지만 기다리고, 그 시간을 넘긴 호출은 부분 결과조차 남기지 못합니다. 통화를 더해도 그 선을 넘지 않도록 여기서 끊습니다.

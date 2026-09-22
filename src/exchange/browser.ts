@@ -39,3 +39,22 @@ export async function createContext(browser: Browser): Promise<BrowserContext> {
     extraHTTPHeaders: { 'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8' },
   });
 }
+
+/**
+ * 브라우저를 닫습니다. 제한 시간 안에 닫히지 않으면 기다리기를 그만둡니다.
+ *
+ * Chromium이 응답하지 않으면 `close()`는 끝나지 않습니다. 그대로 기다리면
+ * 도구 호출이 영영 응답하지 않으므로 여기서 끊습니다. 남은 뒷정리는 Playwright가
+ * 자기 종료 경로에서 프로세스째 끝내므로, 기다리지 않는다고 브라우저가 남지는 않습니다.
+ */
+export async function closeBrowser(browser: Browser, timeoutMs: number): Promise<void> {
+  let timer: NodeJS.Timeout | undefined;
+  await new Promise<void>((resolve) => {
+    timer = setTimeout(resolve, timeoutMs);
+    browser.close().then(
+      () => resolve(),
+      () => resolve(),
+    );
+  });
+  clearTimeout(timer);
+}

@@ -53,9 +53,11 @@ export type ExchangeRatesResult = Record<Provider, ProviderQuotes | null>;
  * 한 포털에서 요청된 통화들을 읽어오는 스크레이퍼.
  *
  * @param timeoutMs - 페이지 이동·요소 대기 하나에 허용할 시간
+ * @param deadline - 수집을 끝내야 하는 시각(epoch ms). 이 시각을 넘기면 남은 통화는 포기합니다
  */
 export type Scraper = (
   page: Page,
   currencies: readonly CurrencyCode[],
   timeoutMs: number,
+  deadline: number,
 ) => Promise<Partial<ProviderQuotes>>;
