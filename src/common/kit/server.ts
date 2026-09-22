@@ -62,6 +62,25 @@ function isToolEnabled(name: string, white: Set<string>, black: Set<string>): bo
   return white.size === 0;
 }
 
+/**
+ * 도구 호출 하나가 언제 시작해 얼마나 걸렸는지 stderr에 남깁니다.
+ *
+ * `-32000 Connection closed`는 서버 프로세스가 사라진 뒤에야 클라이언트에
+ * 나타납니다. 그때 남아 있는 단서는 "어떤 호출이 얼마나 오래 돌고 있었는가"
+ * 뿐이라, 끝난 호출뿐 아니라 시작한 호출도 같이 남깁니다.
+ */
+function withCallLog(name: string, tool: AnyToolDef): AnyToolDef['handler'] {
+  return async (args) => {
+    const startedAt = Date.now();
+    logServer(name, `${tool.name} start`);
+    try {
+      return await tool.handler(args);
+    } finally {
+      logServer(name, `${tool.name} done in ${Date.now() - startedAt}ms`);
+    }
+  };
+}
+
 export function createMcpServer(config: McpServerConfig, tools: AnyToolDef[]): McpServer {
   const white = parseFnList(process.env.WHITE_FN);
   const black = parseFnList(process.env.BLACK_FN);
@@ -74,7 +93,7 @@ export function createMcpServer(config: McpServerConfig, tools: AnyToolDef[]): M
       tool.name,
       { description: tool.description, inputSchema: tool.inputSchema },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      tool.handler as any,
+      withCallLog(config.name, tool) as any,
     );
     registered.push(tool.name);
   }

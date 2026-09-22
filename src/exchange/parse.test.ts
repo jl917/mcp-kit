@@ -1,5 +1,22 @@
 import { describe, expect, it } from '@rstest/core';
 import { deriveQuotedUnit, parseNumber, toQuote } from '@/exchange/parse';
+import { stepTimeout } from '@/exchange/wait';
+
+describe('stepTimeout()', () => {
+  it('should keep the full step while the budget is wide open', () => {
+    expect(stepTimeout(20_000, Date.now() + 60_000)).toBe(20_000);
+  });
+
+  it('should shrink the step to what the budget has left', () => {
+    const left = stepTimeout(20_000, Date.now() + 5_000);
+    expect(left).toBeGreaterThan(4_000);
+    expect(left).toBeLessThanOrEqual(5_000);
+  });
+
+  it('should return 0 once the budget is spent so the scraper stops', () => {
+    expect(stepTimeout(20_000, Date.now() - 1)).toBe(0);
+  });
+});
 
 describe('parseNumber()', () => {
   it('should parse a plain decimal', () => {

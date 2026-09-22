@@ -248,6 +248,7 @@ This error means the client's stdio pipe to the server is gone — the server pr
 | (nothing at all) | The process never started. Check that `npx` is on the `PATH` the client launches with, and that Node is 20 or newer. |
 | `[mcp-kit] ready on stdio (v…, node …)` missing | Startup failed. The `[mcp-kit] server error:` line right after it carries the cause. |
 | `[mcp-kit] uncaughtException:` / `unhandledRejection:` | An error escaped a tool handler. The server stays up and keeps serving; the line names the cause. |
+| `[mcp-kit] <tool> start` with no matching `done in …ms` | The process died mid-call. That call is the one to reproduce — it is the last thing the server was doing. |
 | `[mcp-kit] stdin closed by client — shutting down` | Normal shutdown — the client closed the pipe. |
 | `[mcp-kit] no tools registered` | `WHITE_FN` / `BLACK_FN` filtered every tool out. |
 
@@ -258,4 +259,4 @@ echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
   | npx -y @julong/mcp-kit
 ```
 
-One call to `exchange_rates` with the default arguments can take up to `timeoutMs × (currencies + 1)` — 100 seconds for four currencies. If the client's tool timeout is shorter than that, narrow `providers` / `currencies` or lower `timeoutMs`.
+One call to `exchange_rates` is budgeted at `min(timeoutMs × (currencies + 1), 45s)` and returns whatever it has read when the budget runs out — currencies it could not reach in time come back as `null`. The 45-second cap is deliberate: an MCP client waits 60 seconds for one request by default, and a call that runs past that returns no partial result at all. Adding a currency lengthens a call but can no longer push it over that line.

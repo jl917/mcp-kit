@@ -4,6 +4,21 @@ import { deriveQuotedUnit, parseNumber } from './parse';
 const POLL_INTERVAL_MS = 200;
 
 /**
+ * 이번 대기에 실제로 쓸 수 있는 시간을 돌려줍니다.
+ *
+ * 통화를 순회하는 스크레이퍼는 남은 예산과 무관하게 매번 `timeoutMs`를 통째로
+ * 기다렸습니다. 그래서 통화가 늘어날수록 이미 버려진 수집이 예산을 한참 넘겨
+ * 계속 돌았고, 그동안 Chromium도 붙잡고 있었습니다. 남은 시간으로 잘라 두면
+ * 예산이 끝나는 시점에 수집도 같이 멈춥니다.
+ *
+ * @param deadline - 전체 수집을 끝내야 하는 시각(epoch ms)
+ * @returns 남은 시간으로 자른 대기 시간. 예산이 없으면 `0`
+ */
+export function stepTimeout(timeoutMs: number, deadline: number): number {
+  return Math.max(0, Math.min(timeoutMs, deadline - Date.now()));
+}
+
+/**
  * 시세 요소가 실제 값을 담을 때까지 기다린 뒤 원본 문자열을 돌려줍니다.
  *
  * 포털이 SPA로 그리는 구간에서는 값이 채워지기 전에 `-`나 `0.00` 같은

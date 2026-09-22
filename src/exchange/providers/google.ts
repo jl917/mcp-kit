@@ -1,6 +1,6 @@
 import type { Page } from 'playwright';
 import { toQuote } from '../parse';
-import { readRateText } from '../wait';
+import { readRateText, stepTimeout } from '../wait';
 import type { CurrencyCode, ExchangeQuote, ProviderQuotes, Scraper } from '../types';
 
 export function googleUrl(currency: CurrencyCode): string {
@@ -21,14 +21,17 @@ const PRICE_SELECTORS = [
  * Google Finance의 통화 시세 페이지에서 환율을 읽습니다.
  * 구글은 모든 통화를 1단위 기준으로 표시하므로 단위 환산이 없습니다.
  */
-export const scrapeGoogle: Scraper = async (page, currencies, timeoutMs) => {
+export const scrapeGoogle: Scraper = async (page, currencies, timeoutMs, deadline) => {
   const quotes: Partial<ProviderQuotes> = {};
 
   for (const currency of currencies) {
+    const step = stepTimeout(timeoutMs, deadline);
+    if (step === 0) break;
+
     const url = googleUrl(currency);
     try {
-      await page.goto(url, { waitUntil: 'domcontentloaded' });
-      quotes[currency] = await readPrice(page, url, currency, timeoutMs);
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: step });
+      quotes[currency] = await readPrice(page, url, currency, stepTimeout(timeoutMs, deadline));
     } catch {
       quotes[currency] = null;
     }
