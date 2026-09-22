@@ -238,3 +238,24 @@ pnpm clean && pnpm install && pnpm build
 # Exchange lookups failing because the Playwright browser is missing
 npx playwright install chromium
 ```
+
+### `MCP error -32000: Connection closed`
+
+This error means the client's stdio pipe to the server is gone — the server process exited. The server writes every log line to stderr, so read the client's MCP log for this server first.
+
+| Line in stderr | What it means |
+|---|---|
+| (nothing at all) | The process never started. Check that `npx` is on the `PATH` the client launches with, and that Node is 20 or newer. |
+| `[mcp-kit] ready on stdio (v…, node …)` missing | Startup failed. The `[mcp-kit] server error:` line right after it carries the cause. |
+| `[mcp-kit] uncaughtException:` / `unhandledRejection:` | An error escaped a tool handler. The server stays up and keeps serving; the line names the cause. |
+| `[mcp-kit] stdin closed by client — shutting down` | Normal shutdown — the client closed the pipe. |
+| `[mcp-kit] no tools registered` | `WHITE_FN` / `BLACK_FN` filtered every tool out. |
+
+Reproduce the handshake outside the client to separate a client problem from a server problem:
+
+```bash
+echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"t","version":"1"}}}' \
+  | npx -y @julong/mcp-kit
+```
+
+One call to `exchange_rates` with the default arguments can take up to `timeoutMs × (currencies + 1)` — 80 seconds for three currencies. If the client's tool timeout is shorter than that, narrow `providers` / `currencies` or lower `timeoutMs`.

@@ -38,7 +38,7 @@ mcp-kit/
 src/common/
 ├── kit/
 │   ├── tool.ts     # 도구 정의: toolDef(), defineTool(), AnyToolDef 타입, text() 헬퍼
-│   ├── server.ts   # MCP 서버: createMcpServer(), startServer()
+│   ├── server.ts   # MCP 서버: createMcpServer(), startServer(), installProcessGuards()
 │   ├── cli.ts      # CLI 실행: runCli(), handleCliError()
 │   └── skill.ts    # 문서 생성: generateSkillMarkdown(), generateReadmeSkills()
 ├── agent/

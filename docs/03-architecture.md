@@ -38,7 +38,7 @@ Not a separate package — just a module in the same source tree. `tsup` inlines
 src/common/
 ├── kit/
 │   ├── tool.ts     # Tool definitions: toolDef(), defineTool(), AnyToolDef type, text() helper
-│   ├── server.ts   # MCP server: createMcpServer(), startServer()
+│   ├── server.ts   # MCP server: createMcpServer(), startServer(), installProcessGuards()
 │   ├── cli.ts      # CLI execution: runCli(), handleCliError()
 │   └── skill.ts    # Documentation generation: generateSkillMarkdown(), generateReadmeSkills()
 ├── agent/

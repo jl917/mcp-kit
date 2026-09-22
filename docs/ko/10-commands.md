@@ -238,3 +238,24 @@ pnpm clean && pnpm install && pnpm build
 # Playwright 브라우저 미설치로 환율 조회가 실패할 때
 npx playwright install chromium
 ```
+
+### `MCP error -32000: Connection closed`
+
+클라이언트와 서버를 잇는 stdio 파이프가 끊겼다는 뜻입니다. 즉 서버 프로세스가 종료됐습니다. 서버는 모든 로그를 stderr로 남기므로, 해당 서버의 MCP 로그를 먼저 확인합니다.
+
+| stderr에 남은 줄 | 의미 |
+|---|---|
+| 아무것도 없음 | 프로세스가 아예 뜨지 않았습니다. 클라이언트가 쓰는 `PATH`에 `npx`가 있는지, Node가 20 이상인지 확인합니다. |
+| `[mcp-kit] ready on stdio (v…, node …)`가 없음 | 기동 실패입니다. 바로 뒤의 `[mcp-kit] server error:` 줄에 원인이 있습니다. |
+| `[mcp-kit] uncaughtException:` / `unhandledRejection:` | 도구 핸들러 밖으로 에러가 샜습니다. 서버는 살아서 계속 응답하며, 그 줄이 원인을 가리킵니다. |
+| `[mcp-kit] stdin closed by client — shutting down` | 정상 종료입니다. 클라이언트가 파이프를 닫았습니다. |
+| `[mcp-kit] no tools registered` | `WHITE_FN` / `BLACK_FN`이 도구를 전부 걸러냈습니다. |
+
+클라이언트 문제인지 서버 문제인지 가르려면 핸드셰이크를 밖에서 재현합니다.
+
+```bash
+echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"t","version":"1"}}}' \
+  | npx -y @julong/mcp-kit
+```
+
+기본 인자로 `exchange_rates`를 한 번 부르면 `timeoutMs × (통화 수 + 1)`, 통화 셋이면 최대 80초까지 걸립니다. 클라이언트의 도구 호출 제한 시간이 그보다 짧다면 `providers` / `currencies`를 좁히거나 `timeoutMs`를 낮춥니다.

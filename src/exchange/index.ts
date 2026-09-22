@@ -1,4 +1,4 @@
-import type { Browser } from 'playwright';
+import type { Browser, BrowserContext } from 'playwright';
 import { createContext, launchBrowser } from './browser';
 import { scrapeDaum } from './providers/daum';
 import { scrapeGoogle } from './providers/google';
@@ -28,6 +28,15 @@ export interface FetchOptions {
 }
 
 export const DEFAULT_TIMEOUT_MS = 20_000;
+
+/**
+ * 브라우저·탭을 닫는 데 허용할 시간.
+ *
+ * Chromium이 응답하지 않으면 `close()`가 끝나지 않습니다. 그대로 기다리면
+ * 도구 호출이 영영 응답하지 않고, 호출을 반복할수록 살아남은 Chromium이 쌓여
+ * MCP 서버 프로세스가 메모리로 죽습니다. 그래서 정리도 시간 안에 끊습니다.
+ */
+const CLOSE_TIMEOUT_MS = 5_000;
 
 /**
  * 네이버·구글·다음에서 원화 기준 환율을 가져옵니다.
@@ -64,7 +73,11 @@ export async function fetchExchangeRates(options: FetchOptions = {}): Promise<Ex
       }),
     );
   } finally {
-    await browser?.close().catch(() => undefined);
+    if (browser)
+      await withTimeout(
+        browser.close().catch(() => undefined),
+        CLOSE_TIMEOUT_MS,
+      );
   }
 
   return result;
@@ -95,8 +108,12 @@ async function runScraper(
   currencies: readonly CurrencyCode[],
   timeoutMs: number,
 ): Promise<ProviderQuotes | null> {
-  const context = await createContext(browser);
+  // 컨텍스트 생성도 try 안에 둔다. 예산을 넘겨 버려진 수집이 돌고 있을 때
+  // 브라우저가 먼저 닫히면 바로 이 줄이 던지는데, 밖으로 나가면 그 예외를
+  // 받아 줄 곳이 없다.
+  let context: BrowserContext | undefined;
   try {
+    context = await createContext(browser);
     const page = await context.newPage();
     page.setDefaultTimeout(timeoutMs);
     page.setDefaultNavigationTimeout(timeoutMs);
@@ -104,7 +121,11 @@ async function runScraper(
   } catch {
     return null;
   } finally {
-    await context.close().catch(() => undefined);
+    if (context)
+      await withTimeout(
+        context.close().catch(() => undefined),
+        CLOSE_TIMEOUT_MS,
+      );
   }
 }
 
