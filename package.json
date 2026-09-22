@@ -1,47 +1,68 @@
 {
-  "name": "mcp-kit",
+  "name": "@julong/mcp-kit",
   "version": "1.0.0",
-  "private": true,
-  "packageManager": "pnpm@9.12.1",
+  "description": "Use this skill to fetch the latest KRW exchange rates for China, Japan, and the Euro area from Naver, Google, and Daum via the mcp-kit CLI. Scrapes each portal with Playwright and returns JSON, using null for any rate it cannot read.",
+  "license": "ISC",
   "type": "module",
+  "packageManager": "pnpm@9.12.1",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "bin": {
+    "mcp-kit": "./dist/server.js",
+    "mcp-kit-cli": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "format": "turbo run format",
-    "format:check": "turbo run format:check",
-    "typecheck": "turbo run typecheck",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "rslint --config rslint.config.ts src scripts",
+    "format": "prettier --write src/ scripts/ --write '*.{ts,json,js,mjs}'",
+    "format:check": "prettier --check src/ --check scripts/ --check '*.{ts,json,js,mjs}'",
+    "typecheck": "tsc --noEmit",
     "test": "rstest --passWithNoTests",
-    "test:agent": "RUN_AGENT_TESTS=1 rstest --project exchange agent.test.ts",
-    "clean": "turbo run clean && rimraf node_modules",
-    "readme": "turbo run readme --parallel",
-    "docs:dev": "turbo run docs:dev",
-    "docs:build": "turbo run docs:build"
+    "test:agent": "RUN_AGENT_TESTS=1 rstest agent.test.ts",
+    "clean": "rimraf dist coverage doc_build node_modules",
+    "readme": "bun scripts/update-readme.mjs",
+    "docs:dev": "rspress dev",
+    "docs:build": "rspress build"
+  },
+  "dependencies": {
+    "playwright": "^1.50.0"
   },
   "devDependencies": {
     "@langchain/core": "^1.2.12",
     "@langchain/mcp-adapters": "^1.1.4",
     "@langchain/openai": "^1.5.13",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@rslint/core": "^0.5.3",
+    "@rspress/core": "^2.0.12",
+    "@rspress/plugin-llms": "^2.0.12",
     "@rstest/core": "^0.10.3",
     "@rstest/coverage-v8": "^0.10.3",
     "@types/node": "^25.6.0",
     "bun": "^1.2.0",
     "deepagents": "^1.14.0",
     "langchain": "^1.5.11",
+    "netlify-cli": "^26.0.2",
     "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
+    "rspress-plugin-mermaid": "^1.0.1",
     "tsup": "^8.5.1",
-    "turbo": "^2.3.3",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "zod": "^4.4.2"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jl917/mcp-kit.git"
-  },
-  "license": "ISC",
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
-    "zod": "^4.4.2"
   }
 }

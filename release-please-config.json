@@ -1,9 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "release-type": "node",
-  "include-component-in-tag": true,
-  "include-v-in-tag": false,
-  "separator": "@",
+  "include-component-in-tag": false,
+  "include-v-in-tag": true,
   "bump-minor-pre-major": false,
   "bump-patch-for-minor-pre-major": false,
   "changelog-sections": [
@@ -19,11 +18,7 @@
     { "type": "build", "section": "Build System", "hidden": true },
     { "type": "ci", "section": "Continuous Integration", "hidden": true }
   ],
-  "plugins": ["node-workspace"],
   "packages": {
-    "packages/core": {},
-    "packages/utils": {},
-    "packages/exchange": {},
-    "apps/site": {}
+    ".": {}
   }
 }

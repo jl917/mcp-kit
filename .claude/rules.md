@@ -34,9 +34,9 @@
 
 변경 범위를 나타냅니다. 소문자로 작성합니다. 예시:
 
-- `core` — `packages/core/` 관련 변경
-- `utils` — `packages/utils/` 관련 변경
-- `common` — `packages/common/` 관련 변경
+- `exchange` — `src/exchange/` (환율 스크레이핑) 관련 변경
+- `tools` — `src/tools/` (MCP 도구 정의) 관련 변경
+- `common` — `src/common/` (공용 kit·agent) 관련 변경
 - `deps` — 의존성 변경
 - `docs` — 문서 관련 변경
 - `release` — 릴리스 관련 변경
@@ -45,8 +45,8 @@
 ## Subject
 
 - 명령문 현재형으로 작성 (과거형 금지)
-  - ✅ `feat: add echoTool`
-  - ❌ `feat: added echoTool`
+  - ✅ `feat: add exchangeRateTool`
+  - ❌ `feat: added exchangeRateTool`
 - 첫 글자는 소문자
 - 마침표로 끝내지 않음
 - 50자 이내로 제한
@@ -61,35 +61,35 @@
 
 하위 호환성을 깨는 변경은 다음 중 하나로 표시:
 
-1. `type` 뒤에 `!` 추가: `feat(core)!: remove deprecated echoTool`
+1. `type` 뒤에 `!` 추가: `feat(tools)!: remove deprecated exchange_rate tool`
 2. `footer`에 `BREAKING CHANGE:` 명시:
 
 ```
-feat(core): rename echoTool to echo
+feat(tools): rename exchange_rates to exchange_quotes
 
-BREAKING CHANGE: echoTool has been renamed to echo.
+BREAKING CHANGE: exchange_rates has been renamed to exchange_quotes.
 ```
 
 ## 예시
 
 ```bash
 # 새로운 기능 (minor)
-git commit -m "feat(core): add uuid generation tool"
+git commit -m "feat(exchange): add USD provider"
 
 # 버그 수정 (patch)
-git commit -m "fix(utils): handle empty string in truncateTool"
+git commit -m "fix(exchange): handle missing rate node on daum"
 
 # 문서 변경 (릴리스 없음)
 git commit -m "docs: update README with installation guide"
 
 # Breaking Change (major)
-git commit -m "feat(core)!: rename echoTool to echo"
+git commit -m "feat(tools)!: rename exchange_rates to exchange_quotes"
 
 # scope + body 포함
 git commit -m "refactor(common): extract tool validation logic
 
-Extract shared validation logic from core and utils into common/kit
-to reduce code duplication"
+Extract shared validation logic from the tool definitions into
+src/common/kit to reduce code duplication"
 ```
 
 ## 금지 사항

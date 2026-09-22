@@ -154,4 +154,4 @@ vite.config.ts.timestamp-*
 .firecrawl
 .omo
 # agent 실행 로그 (taskId별 .log)
-packages/common/.log/
+src/common/.log/
