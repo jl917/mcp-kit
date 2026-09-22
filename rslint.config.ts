@@ -1,4 +1,4 @@
-import { defineConfig, ts, js, importPlugin, unicornPlugin } from "@rslint/core";
+import { defineConfig, ts, js, importPlugin, unicornPlugin } from '@rslint/core';
 
 export default defineConfig([
   ts.configs.recommended,
@@ -7,7 +7,7 @@ export default defineConfig([
   unicornPlugin.configs.recommended,
   {
     rules: {
-      "@typescript-eslint/no-explicit-any": "off",
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
 ]);

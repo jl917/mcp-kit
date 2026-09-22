@@ -1,0 +1,59 @@
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import { z } from 'zod';
+
+export type ToolResult = CallToolResult;
+
+export type ToolExample = {
+  args: string[];
+  result: string;
+};
+
+type ToolDefShape<TSchema extends z.ZodRawShape> = {
+  name: string;
+  description: string;
+  inputSchema: TSchema;
+  handler: (input: z.infer<z.ZodObject<TSchema>>) => Promise<ToolResult>;
+  examples?: ToolExample[];
+  guidelines?: string[];
+  typeLabels?: { [K in keyof TSchema]?: string };
+  typeDefs?: { [K in keyof TSchema]?: string };
+  returnType?: string;
+  returnDescription?: string;
+};
+
+export type AnyToolDef = {
+  name: string;
+  description: string;
+  inputSchema: z.ZodRawShape;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  handler: (args: any) => Promise<ToolResult>;
+  examples?: ToolExample[];
+  guidelines?: string[];
+  typeLabels?: Record<string, string>;
+  typeDefs?: Record<string, string>;
+  returnType?: string;
+  returnDescription?: string;
+};
+
+export function toolDef<const TSchema extends z.ZodRawShape>(def: ToolDefShape<TSchema>) {
+  return def;
+}
+
+export function defineTool<const TSchema extends z.ZodRawShape>(
+  tool: ToolDefShape<TSchema>,
+): AnyToolDef {
+  return tool as AnyToolDef;
+}
+
+export function text(content: string): ToolResult {
+  return { content: [{ type: 'text', text: content }] };
+}
+
+/** Extracts the text of a tool result's content item (defaults to the first). Throws if it is not text content. */
+export function textOf(result: ToolResult, index = 0): string {
+  const item = result.content[index];
+  if (!item || item.type !== 'text') {
+    throw new Error(`Expected text content at index ${index}`);
+  }
+  return item.text;
+}
