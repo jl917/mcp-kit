@@ -10,6 +10,8 @@ import {
 } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+// 봉인 형식을 한 곳에만 두려고 런타임이 읽는 모듈에서 그대로 가져옵니다.
+import { createSealSecret, sealCredential } from './src/tmdb/embedded';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 
@@ -20,6 +22,44 @@ if (!binName) throw new Error('No CLI bin (./dist/cli.js) entry found in package
 
 const skillDir = `skills/${binName}`;
 const skillFile = `${skillDir}/SKILL.md`;
+
+/**
+ * 빌드 환경의 TMDB 자격 증명을 번들에 심을 값으로 바꿉니다.
+ *
+ * 값이 있으면 이 빌드를 받은 쪽은 `TMDB_API_KEY`를 따로 넣지 않아도 영화 도구를
+ * 쓸 수 있습니다. 없으면 빈 문자열이 들어가고, 도구는 예전처럼 실행 시점의 환경
+ * 변수만 봅니다. 봉하고 여는 규칙은 `src/tmdb/embedded.ts`가 갖고 있습니다.
+ *
+ * 열쇠는 빌드마다 새로 만들어 같은 번들에 함께 넣습니다. 번들을 가진 사람은 언제든
+ * 열 수 있으므로 이것은 암호화가 아니라 난독화입니다 — 키가 평문 문자열로 남지
+ * 않을 뿐입니다. 자격 증명을 심은 빌드는 npm에 올리지 않습니다.
+ * `.github/workflows/ci.yml`과 `release.yml`의 빌드 단계는 그래서 이 값을 비워 둡니다.
+ */
+function embeddedCredentials(): Record<string, string> {
+  try {
+    // 셸에 이미 있는 값이 우선입니다 (Node `loadEnvFile`의 규칙).
+    process.loadEnvFile(resolve('.env'));
+  } catch {
+    // `.env`가 없으면 셸 환경 변수만 봅니다.
+  }
+
+  const apiKey = process.env.TMDB_API_KEY?.trim() ?? '';
+  const accessToken = process.env.TMDB_ACCESS_TOKEN?.trim() ?? '';
+  const embedded = [apiKey && 'TMDB_API_KEY', accessToken && 'TMDB_ACCESS_TOKEN'].filter(Boolean);
+  const secret = createSealSecret();
+
+  console.log(
+    embedded.length > 0
+      ? `TMDB credentials embedded in the bundle (sealed, not secret): ${embedded.join(', ')}`
+      : 'TMDB credentials not embedded — the bundle reads the environment at run time',
+  );
+
+  return {
+    __TMDB_SEAL_SECRET__: JSON.stringify(secret),
+    __TMDB_API_KEY__: JSON.stringify(sealCredential(apiKey, secret)),
+    __TMDB_ACCESS_TOKEN__: JSON.stringify(sealCredential(accessToken, secret)),
+  };
+}
 
 function addShebang(path: string): void {
   if (!existsSync(path)) return;
@@ -43,6 +83,7 @@ export default defineConfig([
     // sucrase를 한 번 더 돌려 CJS로 바꾸는데, 그 변환이 `return(await x)?.y ?? z`를
     // `returnawait ...`로 붙여 놓아 `dist/*.cjs`가 통째로 파싱되지 않습니다.
     treeshake: true,
+    define: embeddedCredentials(),
     entry: {
       index: 'src/index.ts',
       server: 'src/server.ts',

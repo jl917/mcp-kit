@@ -1,7 +1,12 @@
 export { fetchNowPlaying, fetchUpcoming, fetchRecommendations } from './movies';
 export type { ListOptions, RecommendOptions } from './movies';
-export { buildRequest, resolveAuth, tmdbGet, TMDB_ENV_KEYS } from './client';
+export { buildRequest, EMBEDDED_AUTH, resolveAuth, tmdbGet, TMDB_ENV_KEYS } from './client';
 export type { QueryParams, TmdbAuth } from './client';
+export {
+  EMBEDDED_TMDB_ACCESS_TOKEN,
+  EMBEDDED_TMDB_API_KEY,
+  hasEmbeddedCredentials,
+} from './embedded';
 export {
   clearGenreCache,
   fetchGenreMap,

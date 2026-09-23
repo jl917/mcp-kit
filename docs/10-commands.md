@@ -142,9 +142,43 @@ in this order of precedence:
 1. Variables already set in the environment — the `env` block of an MCP client config, or an
    inline prefix such as `TMDB_API_KEY=... pnpm start`.
 2. A `.env` file in the current working directory, loaded at startup.
+3. A credential embedded into the bundle at build time (see below).
 
-A value already present in the environment always wins over `.env`. When neither supplies a
-credential, every movie tool answers with a single `Error: ...` line naming both variables.
+A value already present in the environment always wins over `.env`, and either of them wins over
+the embedded credential. The environment is taken as a whole: as soon as it supplies `TMDB_API_KEY`
+or `TMDB_ACCESS_TOKEN`, the embedded pair is ignored entirely rather than filling in the other
+half — a bearer token is preferred over an API key, so mixing the two sources would silently
+discard the key you passed in. When no source supplies a credential, every movie tool answers with
+a single `Error: ...` line naming both variables.
+
+### Building a Bundle That Carries the Credential
+
+`pnpm build` reads `TMDB_API_KEY` / `TMDB_ACCESS_TOKEN` from the build environment and writes the
+value into the bundle, so the resulting server needs no credential to start:
+
+```bash
+# From .env in the repository root
+pnpm build
+
+# Or for one build only
+TMDB_API_KEY=<your-key> pnpm build
+
+# Now the movie tools work with nothing in the environment
+node dist/cli.js nowPlayingMoviesTool
+```
+
+The build prints which variables it embedded:
+
+```
+TMDB credentials embedded in the bundle (sealed, not secret): TMDB_API_KEY
+TMDB credentials not embedded — the bundle reads the environment at run time
+```
+
+The value is sealed with AES-256-GCM rather than written in plain text, so it is not a greppable
+string in `dist/`. The secret that opens it ships in the same bundle, which makes this obfuscation
+and not encryption — anyone holding the bundle can recover the key. Treat any build made this way
+as carrying a secret: do not commit it, do not attach it to a release, and do not `npm publish` it.
+To rotate or remove the value, rebuild without the variable set.
 
 In CI the same two variables come from repository secrets, wired into the `Test` step of
 `.github/workflows/ci.yml`:
@@ -162,9 +196,9 @@ also exercises the tests that call TMDB for real; without it those tests skip an
 suite still passes. Pull requests opened from a fork never receive secrets, so they take the skip
 path. Set `SKIP_TMDB_LIVE_TESTS=1` to skip them even when a credential is available.
 
-The `Build` step deliberately gets no credential. The tools read the environment at call time, so
-nothing needs a key at build time — and a key handed to the build would ship inside the published
-package.
+The `Build` step in both workflows deliberately gets no credential. A key handed to the build is
+written into the bundle, and that bundle is what `pnpm publish` uploads — every install would carry
+your key.
 
 > An MCP client spawns the server with a working directory you do not control, so `.env` is only
 > reliable when you start the server yourself. For a client config, use its `env` block.
@@ -205,9 +239,11 @@ node dist/cli.js exchangeRateTool naver CNY
 
 ## Running the Movie Tools
 
-The TMDB tools need a credential in the environment — `TMDB_API_KEY` (v3 API key) or
-`TMDB_ACCESS_TOKEN` (read access token). Issue either at
-<https://www.themoviedb.org/settings/api>. No browser is involved, so Playwright is not needed.
+The TMDB tools need a credential — `TMDB_API_KEY` (v3 API key) or `TMDB_ACCESS_TOKEN` (read access
+token). Issue either at <https://www.themoviedb.org/settings/api>. The examples below pass it in
+the environment; a build that already carries one (see "Building a Bundle That Carries the
+Credential") runs the same commands with no prefix. No browser is involved, so Playwright is not
+needed.
 
 ```bash
 # Build once, then run the local CLI

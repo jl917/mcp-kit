@@ -34,11 +34,39 @@
 
 번들링 설정 (`tsup.config.ts`):
 - ESM + CJS 포맷 (`"format": ["esm", "cjs"]`)
+- 코드 분할 (`"splitting": true`)과 `"treeshake": true` — CJS 변환을 rollup이 맡습니다
 - `playwright`를 제외한 **모든 의존성을 번들에 인라인** (`noExternal: [/^(?!playwright)/]`)
 - `playwright`만 **external** — 런타임에 자기 패키지 디렉터리에서 브라우저 드라이버를 찾으므로 번들링 불가
 - Minify 활성화 (`"minify": true`)
+- `define`으로 빌드 환경의 TMDB 자격 증명을 번들에 심습니다 (아래 참고)
 - 엔트리 포인트 3개: `src/index.ts`, `src/server.ts`, `src/cli.ts`
 - 빌드 후처리: `server`/`cli` 번들에 shebang 추가, 빈 청크 제거, `dev`에서는 `skills/<bin>/SKILL.md`와 README 재생성
+
+### `treeshake: true`를 뺄 수 없는 이유
+
+이 옵션이 없으면 tsup은 이미 minify된 esbuild 출력에 sucrase를 한 번 더 돌려 CJS로 바꿉니다.
+minify가 만들어 내는 `return(await x)?.y ?? z` 형태를 sucrase가 `returnawait _asyncNullishCoalesce(...)`로
+공백 없이 붙여 놓아서, `dist/*.cjs` 전체가 파싱되지 않습니다. `treeshake: true`를 켜면 CJS 코드 분할을
+rollup이 맡고 sucrase 단계는 아예 돌지 않습니다. CI의 `Smoke test the built bundles` 단계가 빌드 결과를
+직접 로드하므로 같은 문제가 조용히 배포되지 않습니다.
+
+### 빌드 시점 TMDB 자격 증명
+
+`tsup.config.ts`는 빌드 환경(그리고 로컬 `.env`)의 `TMDB_API_KEY` / `TMDB_ACCESS_TOKEN`을 읽어
+`src/tmdb/embedded.ts`의 `__TMDB_API_KEY__` / `__TMDB_ACCESS_TOKEN__` / `__TMDB_SEAL_SECRET__` 식별자를
+문자열 리터럴로 바꿉니다. 자격 증명을 심어 만든 빌드는 띄울 때 값을 주지 않아도 영화 도구가 돌고, 심지
+않은 빌드는 예전과 똑같이 호출 시점에 환경 변수를 읽습니다. 어떤 변수를 심었는지는 빌드 로그에 찍힙니다.
+
+값은 빌드마다 새로 만든 열쇠로 AES-256-GCM으로 봉해서 넣습니다. 봉하는 쪽과 여는 쪽이 어긋나지 않도록
+형식은 `src/tmdb/embedded.ts` 한 곳에만 둡니다. **이것은 암호화가 아니라 난독화입니다** — 열쇠가 같은
+번들 안에 들어 있어 번들을 가진 사람은 언제든 열 수 있습니다. 얻는 것은 딱 두 가지입니다.
+
+- 키가 `dist/`에 그대로 적힌 문자열로 남지 않아 자동 시크릿 스캐너나 눈으로 훑는 검사에 걸리지 않음
+- 번들 일부를 이슈나 로그에 붙여 넣어도 자격 증명이 새지 않음
+
+자격 증명을 배포해도 되는 것으로 만들어 주지는 않습니다. 그래서 `.github/workflows/ci.yml`과
+`release.yml`의 `Build` 단계에는 일부러 아무것도 넘기지 않습니다 — npm에 올라간 빌드는 봉했든 아니든
+설치하는 모든 사람에게 그 키를 넘겨주는 셈이기 때문입니다.
 
 ## 코드 품질 및 테스트
 

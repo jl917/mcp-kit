@@ -142,9 +142,41 @@ printf '%s\n%s\n%s\n' \
 1. 이미 환경에 설정된 값 — MCP 클라이언트 설정의 `env` 블록이나 `TMDB_API_KEY=... pnpm start`처럼
    앞에 붙여 준 값
 2. 현재 작업 디렉터리의 `.env` 파일 (시작할 때 한 번 읽습니다)
+3. 빌드 시점에 번들에 심긴 자격 증명 (아래 참고)
 
-환경에 이미 있는 값이 언제나 `.env`보다 우선합니다. 어느 쪽에도 없으면 영화 도구는 두 변수 이름을
-알려 주는 `Error: ...` 한 줄로 답합니다.
+환경에 이미 있는 값이 언제나 `.env`보다 우선하고, 둘 중 무엇이든 번들에 심긴 값보다 우선합니다.
+환경 변수는 통째로 봅니다 — `TMDB_API_KEY`든 `TMDB_ACCESS_TOKEN`이든 하나라도 값을 주는 순간 심긴
+값은 나머지 한쪽을 채우지 않고 전부 무시됩니다. 토큰이 키보다 먼저 선택되므로, 두 출처를 섞으면
+직접 넘긴 키가 조용히 버려지기 때문입니다. 어느 쪽에도 없으면 영화 도구는 두 변수 이름을 알려 주는
+`Error: ...` 한 줄로 답합니다.
+
+### 자격 증명을 심은 빌드 만들기
+
+`pnpm build`는 빌드 환경의 `TMDB_API_KEY` / `TMDB_ACCESS_TOKEN`을 읽어 번들에 그 값을 적어 둡니다.
+그렇게 만든 서버는 자격 증명 없이 띄워도 그대로 돕니다.
+
+```bash
+# 저장소 루트의 .env에서 읽어 심기
+pnpm build
+
+# 이번 빌드에만 심기
+TMDB_API_KEY=<your-key> pnpm build
+
+# 이제 환경 변수 없이도 영화 도구가 돕니다
+node dist/cli.js nowPlayingMoviesTool
+```
+
+무엇을 심었는지는 빌드 로그에 찍힙니다.
+
+```
+TMDB credentials embedded in the bundle (sealed, not secret): TMDB_API_KEY
+TMDB credentials not embedded — the bundle reads the environment at run time
+```
+
+값은 평문이 아니라 AES-256-GCM으로 봉해서 넣으므로 `dist/`에서 문자열로 검색되지 않습니다. 다만 여는
+열쇠가 같은 번들에 함께 들어가므로 이것은 암호화가 아니라 난독화입니다 — 번들을 가진 사람은 키를
+되찾을 수 있습니다. 이렇게 만든 빌드는 비밀값을 들고 있는 것으로 다루십시오 — 커밋하지 않고, 릴리스에
+첨부하지 않고, `npm publish` 하지 않습니다. 값을 바꾸거나 빼려면 변수를 비운 채 다시 빌드합니다.
 
 CI에서는 같은 두 변수를 저장소 시크릿에서 받아 `.github/workflows/ci.yml`의 `Test` 단계에 넘깁니다.
 
@@ -161,8 +193,8 @@ TMDB를 실제로 호출하는 테스트까지 함께 돌고, 없으면 그 테�
 통과합니다. 포크에서 올라온 PR에는 시크릿이 내려오지 않으므로 항상 건너뛰는 쪽으로 갑니다.
 자격 증명이 있어도 끄고 싶으면 `SKIP_TMDB_LIVE_TESTS=1`을 씁니다.
 
-`Build` 단계에는 자격 증명을 일부러 넘기지 않습니다. 도구는 호출 시점에 환경 변수를 읽으므로
-빌드에 키가 필요 없고, 빌드에 넘긴 키는 배포 패키지에 그대로 실립니다.
+두 워크플로의 `Build` 단계에는 자격 증명을 일부러 넘기지 않습니다. 빌드에 넘긴 키는 번들에 그대로
+적히고, 그 번들이 `pnpm publish`로 올라가는 바로 그 결과물이라 설치하는 모든 사람이 그 키를 갖게 됩니다.
 
 > MCP 클라이언트는 작업 디렉터리를 마음대로 정해 서버를 띄우므로, `.env`는 직접 서버를 실행할 때만
 > 믿을 수 있습니다. 클라이언트 설정에서는 `env` 블록을 쓰십시오.
@@ -203,10 +235,10 @@ node dist/cli.js exchangeRateTool naver CNY
 
 ## 영화 도구 실행
 
-TMDB 도구는 환경 변수에 자격 증명이 있어야 합니다 — `TMDB_API_KEY`(v3 API 키) 또는
-`TMDB_ACCESS_TOKEN`(읽기 액세스 토큰) 중 하나입니다.
-<https://www.themoviedb.org/settings/api> 에서 발급합니다. 브라우저를 쓰지 않으므로
-Playwright는 필요 없습니다.
+TMDB 도구에는 자격 증명이 필요합니다 — `TMDB_API_KEY`(v3 API 키) 또는 `TMDB_ACCESS_TOKEN`(읽기 액세스
+토큰) 중 하나입니다. <https://www.themoviedb.org/settings/api> 에서 발급합니다. 아래 예시는 환경 변수로
+넘기는 방식이고, 자격 증명을 심어 만든 빌드(위 "자격 증명을 심은 빌드 만들기" 참고)라면 앞에 붙이지
+않고 그대로 실행합니다. 브라우저를 쓰지 않으므로 Playwright는 필요 없습니다.
 
 ```bash
 # 한 번 빌드한 뒤 로컬 CLI로 실행

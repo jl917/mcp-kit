@@ -1,11 +1,34 @@
 import { describe, expect, it } from '@rstest/core';
-import { buildRequest, resolveAuth, TMDB_ENV_KEYS } from '@/tmdb/client';
+import { buildRequest, EMBEDDED_AUTH, resolveAuth, TMDB_ENV_KEYS } from '@/tmdb/client';
+
+const NO_ENV = {} as NodeJS.ProcessEnv;
 
 describe('resolveAuth()', () => {
   it('should read both credential forms from the environment', () => {
     expect(
       resolveAuth({ TMDB_API_KEY: 'key', TMDB_ACCESS_TOKEN: 'token' } as NodeJS.ProcessEnv),
     ).toEqual({ apiKey: 'key', accessToken: 'token' });
+  });
+
+  it('should fall back to the credential embedded at build time', () => {
+    expect(resolveAuth(NO_ENV, { apiKey: 'built-in' })).toEqual({
+      apiKey: 'built-in',
+      accessToken: undefined,
+    });
+  });
+
+  // 키와 토큰을 서로 다른 출처에서 섞으면 buildRequest()가 토큰을 먼저 골라
+  // 사용자가 넣은 키가 조용히 무시된다. 그래서 출처를 통째로 고른다.
+  it('should ignore the embedded credential once the environment supplies one', () => {
+    expect(
+      resolveAuth({ TMDB_API_KEY: 'from-env' } as NodeJS.ProcessEnv, { accessToken: 'built-in' }),
+    ).toEqual({ apiKey: 'from-env', accessToken: undefined });
+  });
+
+  it('should report no credential when neither source has one', () => {
+    expect(resolveAuth(NO_ENV, {})).toEqual({ apiKey: undefined, accessToken: undefined });
+    // 자격 증명을 심지 않은 빌드 — 테스트에는 `define`이 적용되지 않으므로 그 상태다.
+    expect(EMBEDDED_AUTH).toEqual({ apiKey: undefined, accessToken: undefined });
   });
 
   it('should trim values and treat blank ones as missing', () => {

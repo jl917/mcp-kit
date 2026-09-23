@@ -18,7 +18,7 @@ const RETURN_TYPE =
   '{ kind, language, region, page, totalPages, totalResults, dates, basedOn, results: MovieSummary[] }';
 
 const GUIDELINES = [
-  'TMDB_API_KEY(v3 API 키) 또는 TMDB_ACCESS_TOKEN(읽기 액세스 토큰) 중 하나를 환경 변수로 넣어야 합니다.',
+  'TMDB_API_KEY(v3 API 키) 또는 TMDB_ACCESS_TOKEN(읽기 액세스 토큰) 중 하나가 필요합니다. 빌드에 심긴 자격 증명이 있으면 그대로 쓰고, 환경 변수를 주면 그 값이 우선입니다.',
   '기본값은 language=ko-KR, region=KR입니다. 한국 개봉 기준이 아니면 region을 바꾸고, 지역을 빼려면 빈 문자열을 넘깁니다.',
   '한 페이지는 최대 20편입니다. 더 필요하면 page를 올려 다시 호출합니다.',
   'genres는 TMDB 장르 목록을 언어별로 한 번 받아 이름으로 바꾼 값이고, 장르 목록을 받지 못하면 빈 배열입니다.',

@@ -1,3 +1,4 @@
+import { EMBEDDED_TMDB_ACCESS_TOKEN, EMBEDDED_TMDB_API_KEY } from './embedded';
 import { TMDB_BASE_URL } from './types';
 
 /**
@@ -18,12 +19,30 @@ export const TMDB_ENV_KEYS = ['TMDB_API_KEY', 'TMDB_ACCESS_TOKEN'] as const;
 /** 쿼리 문자열로 실어 보낼 값. `undefined`와 빈 문자열은 빠집니다. */
 export type QueryParams = Record<string, string | number | boolean | undefined>;
 
-/** 환경 변수에서 인증 정보를 읽습니다. 값이 비어 있으면 없는 것으로 봅니다. */
-export function resolveAuth(env: NodeJS.ProcessEnv = process.env): TmdbAuth {
-  return {
+/** 빌드 시점에 심긴 자격 증명. 심지 않은 빌드에서는 두 값 모두 `undefined`입니다. */
+export const EMBEDDED_AUTH: TmdbAuth = {
+  apiKey: EMBEDDED_TMDB_API_KEY,
+  accessToken: EMBEDDED_TMDB_ACCESS_TOKEN,
+};
+
+/**
+ * 인증 정보를 결정합니다. 값이 비어 있으면 없는 것으로 봅니다.
+ *
+ * 환경 변수가 둘 중 하나라도 값을 주면 환경 변수 쪽만 씁니다. 키와 토큰을 서로 다른
+ * 출처에서 섞어 오면 `buildRequest()`가 토큰을 먼저 골라, 사용자가 넣은 키가 조용히
+ * 무시되기 때문입니다. 환경 변수가 아무것도 주지 않을 때만 빌드에 심긴 값으로
+ * 넘어갑니다.
+ */
+export function resolveAuth(
+  env: NodeJS.ProcessEnv = process.env,
+  embedded: TmdbAuth = EMBEDDED_AUTH,
+): TmdbAuth {
+  const fromEnv: TmdbAuth = {
     apiKey: env.TMDB_API_KEY?.trim() || undefined,
     accessToken: env.TMDB_ACCESS_TOKEN?.trim() || undefined,
   };
+  if (fromEnv.apiKey || fromEnv.accessToken) return fromEnv;
+  return { apiKey: embedded.apiKey, accessToken: embedded.accessToken };
 }
 
 /**
