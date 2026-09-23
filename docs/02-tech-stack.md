@@ -38,7 +38,7 @@ Bundling config (`tsup.config.ts`):
 - Every dependency is inlined except `playwright` (`noExternal: [/^(?!playwright)/]`)
 - `playwright` stays **external** — it resolves browser drivers from its own package directory at runtime and cannot be bundled
 - Minify enabled
-- `define` injects the build environment's TMDB credentials into the bundle (see below)
+- `define` injects `package.json`'s `version` (read by `src/common/constants.ts`, reported in the MCP `initialize` response) and the build environment's TMDB credentials (see below)
 - 3 entry points: `src/index.ts`, `src/server.ts`, `src/cli.ts`
 - Post-build: shebangs added to the `server`/`cli` bundles, empty chunks removed, and in `dev` the `skills/<bin>/SKILL.md` and README are regenerated
 
