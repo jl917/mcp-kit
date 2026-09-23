@@ -53,7 +53,19 @@ jobs:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
 
-      # 빌드에는 자격 증명을 넘기지 않습니다. 도구는 실행 시점에 환경 변수를
-      # 읽으므로 키가 번들에 들어갈 이유가 없고, 들어가면 npm에 그대로 실립니다.
+      # 빌드에는 자격 증명을 넘기지 않습니다. 넘기면 tsup이 그 값을 번들에 심고
+      # (`tsup.config.ts`의 define), 그 빌드가 npm에 그대로 실립니다. 봉해서 넣기는
+      # 하지만 여는 열쇠도 같은 번들에 들어가므로 비밀이 되지는 않습니다. 자격 증명을
+      # 심은 빌드가 필요하면 공개 레지스트리로 나가지 않는 곳에서 만듭니다.
       - name: Build
         run: pnpm build
+
+      # 번들이 실제로 로드되는지 봅니다. 타입 검사와 테스트는 소스를 보지만 CJS
+      # 출력은 별도 변환을 한 번 더 거쳐서, 소스가 멀쩡해도 `dist/*.cjs`만 깨질 수
+      # 있습니다. 그건 설치한 쪽에서야 드러납니다.
+      - name: Smoke test the built bundles
+        run: |
+          node -e "require('./dist/index.cjs')"
+          node -e "import('./dist/index.js')"
+          node dist/cli.js
+          node dist/server.js < /dev/null

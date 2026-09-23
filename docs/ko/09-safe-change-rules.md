@@ -10,6 +10,7 @@
 | `@modelcontextprotocol/sdk` 버전 | MCP 프로토콜 호환성에 직접 영향 |
 | `zod` 버전 | 모든 도구의 스키마 정의가 의존 |
 | `tsup.config.ts`의 `external`/`noExternal` 설정 | 번들링 결과에 직접 영향 (특히 `playwright`는 반드시 external 유지) |
+| `tsup.config.ts`의 `treeshake: true` | 빼면 CJS 변환이 다시 sucrase를 거치면서 `returnawait`를 뱉어 `dist/*.cjs` 전체가 파싱되지 않음 |
 | `release-please-config.json` / `.release-please-manifest.json` | 버전 관리 정책 및 추적되는 버전에 직접 영향 |
 | `src/tools/`의 도구 `name` 필드 | MCP 프로토콜에 노출되는 도구 식별자로, 변경 시 클라이언트 호환성 깨짐 |
 

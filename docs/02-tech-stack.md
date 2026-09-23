@@ -34,12 +34,42 @@
 
 Bundling config (`tsup.config.ts`):
 - ESM + CJS format
-- Code splitting with `splitting: true`
+- Code splitting with `splitting: true`, and `treeshake: true` so rollup performs the CJS conversion
 - Every dependency is inlined except `playwright` (`noExternal: [/^(?!playwright)/]`)
 - `playwright` stays **external** — it resolves browser drivers from its own package directory at runtime and cannot be bundled
 - Minify enabled
+- `define` injects the build environment's TMDB credentials into the bundle (see below)
 - 3 entry points: `src/index.ts`, `src/server.ts`, `src/cli.ts`
 - Post-build: shebangs added to the `server`/`cli` bundles, empty chunks removed, and in `dev` the `skills/<bin>/SKILL.md` and README are regenerated
+
+### Why `treeshake: true` Is Not Optional
+
+Without it, tsup converts the CJS output by running sucrase over the already-minified esbuild
+bundle. Sucrase rewrites `return(await x)?.y ?? z` — the shape minification produces — into
+`returnawait _asyncNullishCoalesce(...)`, with the space dropped, and every `dist/*.cjs` fails to
+parse. `treeshake: true` hands CJS code splitting to rollup instead and the sucrase pass never
+runs. The `Smoke test the built bundles` step in CI loads the output so this cannot ship unnoticed.
+
+### Build-Time TMDB Credentials
+
+`tsup.config.ts` reads `TMDB_API_KEY` / `TMDB_ACCESS_TOKEN` from the build environment (and from a
+local `.env`) and replaces the `__TMDB_API_KEY__` / `__TMDB_ACCESS_TOKEN__` / `__TMDB_SEAL_SECRET__`
+identifiers in `src/tmdb/embedded.ts` with string literals. A build made with a credential runs the
+movie tools without one being supplied at startup; a build made without one behaves exactly as
+before and reads the environment at call time. The build prints which variables it embedded.
+
+The value is sealed with AES-256-GCM under a secret generated fresh for each build, and
+`src/tmdb/embedded.ts` owns both halves of the format so the build and the runtime cannot drift
+apart. **This is obfuscation, not encryption** — the secret ships in the same bundle, so anyone
+holding the bundle can open the value. What it buys is narrow and worth stating plainly:
+
+- the key is not a greppable string in `dist/`, so automated secret scanners and casual inspection
+  do not surface it
+- pasting a fragment of the bundle into an issue or a log does not leak the credential
+
+It does not make the credential safe to distribute. The `Build` steps in
+`.github/workflows/ci.yml` and `release.yml` therefore pass none — anything published to npm would
+hand that key to everyone who installs the package, sealed or not.
 
 ## Code Quality & Testing
 
