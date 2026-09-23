@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/jl917/mcp-kit/compare/v2.2.1...v2.3.0) (2026-09-23)
+
+
+### Features
+
+* **release:** ship the published bundle with a TMDB credential ([#54](https://github.com/jl917/mcp-kit/issues/54)) ([f4df056](https://github.com/jl917/mcp-kit/commit/f4df0567a7e44591548064163ca2a497fac52f36))
+
 ## [2.2.1](https://github.com/jl917/mcp-kit/compare/v2.2.0...v2.2.1) (2026-09-23)
 
 
