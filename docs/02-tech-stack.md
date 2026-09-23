@@ -67,9 +67,18 @@ holding the bundle can open the value. What it buys is narrow and worth stating 
   do not surface it
 - pasting a fragment of the bundle into an issue or a log does not leak the credential
 
-It does not make the credential safe to distribute. The `Build` steps in
-`.github/workflows/ci.yml` and `release.yml` therefore pass none — anything published to npm would
-hand that key to everyone who installs the package, sealed or not.
+It does not make the credential safe to distribute.
+
+The `Build` step in `.github/workflows/release.yml` passes the repository secrets, so **the package
+published to npm carries a TMDB credential** and `npx @julong/mcp-kit` works with nothing in the
+client config. Everyone who installs the package can recover that key, so the secret behind it must
+be a dedicated key issued for public use — not a personal one, and not one shared with anything
+else. If it is abused, issue a new one at TMDB and replace the repository secret; the next release
+picks it up. A `Verify the credential made it into the bundle` step fails the release if the secret
+is missing, so a keyless package cannot be published by accident.
+
+`ci.yml` passes the same secrets so the embedding path is exercised on every run, but it asserts
+nothing — pull requests from a fork receive no secrets and correctly produce a build without one.
 
 ## Code Quality & Testing
 

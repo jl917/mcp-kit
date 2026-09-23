@@ -9,7 +9,7 @@ export type {
   ExchangeRatesResult,
 } from '@/exchange/types';
 export { fetchNowPlaying, fetchUpcoming, fetchRecommendations } from '@/tmdb/movies';
-export { MOVIE_LISTS, TMDB_ENV_KEYS } from '@/tmdb/index';
+export { hasEmbeddedCredentials, MOVIE_LISTS, TMDB_ENV_KEYS } from '@/tmdb/index';
 export type {
   ListOptions,
   RecommendOptions,
