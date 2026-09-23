@@ -1,7 +1,7 @@
 {
   "name": "@julong/mcp-kit",
   "version": "2.1.1",
-  "description": "Use this skill to fetch the latest KRW exchange rates for the United States, China, Japan, and the Euro area from Naver, Google, and Daum via the mcp-kit CLI. Scrapes each portal with Playwright and returns JSON, using null for any rate it cannot read.",
+  "description": "Use this skill to fetch KRW exchange rates and TMDB movie listings via the mcp-kit CLI. Scrapes Naver, Google, and Daum with Playwright for USD, CNY, JPY, and EUR rates, and reads now playing, upcoming, and recommended movies from the TMDB v3 API.",
   "license": "ISC",
   "type": "module",
   "packageManager": "pnpm@9.12.1",
@@ -28,6 +28,9 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "start": "node dist/server.js",
+    "start:cli": "node dist/cli.js",
+    "inspect": "npx -y @modelcontextprotocol/inspector node dist/server.js",
     "lint": "rslint --config rslint.config.ts src scripts",
     "format": "prettier --write src/ scripts/ --write '*.{ts,json,js,mjs}'",
     "format:check": "prettier --check src/ --check scripts/ --check '*.{ts,json,js,mjs}'",

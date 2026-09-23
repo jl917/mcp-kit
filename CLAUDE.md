@@ -75,6 +75,7 @@ src/
 ├── cli.ts          # CLI 진입점
 ├── tools/          # MCP 도구 정의
 ├── exchange/       # 환율 스크레이핑 도메인
+├── tmdb/           # TMDB 영화 조회 도메인 (TMDB_API_KEY 또는 TMDB_ACCESS_TOKEN 필요)
 └── common/         # 공용 kit(tool/server/cli/skill) · agent
 docs/               # 문서 사이트 콘텐츠 (rspress, en + ko)
 scripts/            # README 생성, 문서 플러그인
@@ -86,6 +87,9 @@ skills/             # 생성된 SKILL.md
 ```bash
 pnpm install        # 의존성 설치
 pnpm build          # 빌드 (tsup)
+pnpm start          # MCP 서버 실행 (stdio, dist/server.js)
+pnpm start:cli      # CLI 실행 (dist/cli.js)
+pnpm inspect        # MCP Inspector로 서버 디버깅
 pnpm lint           # 린트 (rslint)
 pnpm format:check   # 포맷 검사 (prettier)
 pnpm typecheck      # 타입 검사

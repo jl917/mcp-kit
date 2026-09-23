@@ -2,6 +2,7 @@ import type { BaseLanguageModel } from '@langchain/core/language_models/base';
 import { MultiServerMCPClient } from '@langchain/mcp-adapters';
 import { createDeepAgent } from 'deepagents';
 import { existsSync } from 'node:fs';
+import { pickEnv } from '@/common/kit/env';
 import { createChatModel } from './llm.js';
 import { appendLog, FileLogCallback, type ToolCallRecord } from './log.js';
 
@@ -18,21 +19,40 @@ export interface McpStdioServer {
  * 서버를 지금 이 프로세스와 같은 런타임(`process.execPath`)으로 띄웁니다.
  * PATH에 `node`가 있는지에 기대지 않고, bun으로 실행 중이면 서버도 bun으로 돕니다.
  *
+ * MCP stdio 클라이언트는 `env`를 주지 않으면 `HOME`·`PATH` 같은 소수의 변수만
+ * 자식에게 물려줍니다. 도구가 읽어야 할 자격 증명(`TMDB_API_KEY` 등)은 그 목록에
+ * 없으므로, 넘겨야 할 키는 `envKeys`로 지정해 명시적으로 실어 보냅니다.
+ *
  * @param name - 에이전트 쪽에서 이 서버를 가리킬 이름
  * @param entryPath - 빌드된 서버 진입점 (보통 `<repo>/dist/server.js`)
+ * @param envKeys - 현재 프로세스에서 골라 서버에 넘길 환경 변수 이름들
  * @throws 번들이 없으면 빌드가 필요하다는 에러를 던집니다
  *
  * @example
  * ```ts
- * const servers = nodeMcpServer("mcp-kit", resolve(repoRoot, "dist/server.js"));
+ * const servers = nodeMcpServer("mcp-kit", resolve(repoRoot, "dist/server.js"), ["TMDB_API_KEY"]);
  * await runMcpAgent({ taskId, prompt, systemPrompt, servers });
  * ```
  */
-export function nodeMcpServer(name: string, entryPath: string): Record<string, McpStdioServer> {
+export function nodeMcpServer(
+  name: string,
+  entryPath: string,
+  envKeys: readonly string[] = [],
+): Record<string, McpStdioServer> {
   if (!existsSync(entryPath)) {
     throw new Error(`MCP server bundle not found at ${entryPath} — run \`pnpm build\` first`);
   }
-  return { [name]: { command: process.execPath, args: [entryPath] } };
+
+  const env = pickEnv(envKeys);
+  return {
+    [name]: {
+      command: process.execPath,
+      args: [entryPath],
+      // 빈 객체를 넘기면 클라이언트가 기본 상속 목록 대신 그 객체를 쓴다.
+      // 넘길 값이 없으면 필드 자체를 빼서 기본 동작을 그대로 둔다.
+      ...(Object.keys(env).length > 0 ? { env } : {}),
+    },
+  };
 }
 
 export interface McpAgentRunOptions {

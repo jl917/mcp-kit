@@ -1,4 +1,4 @@
-import { createMcpServer, installProcessGuards, startServer, VERSION } from '@/common';
+import { createMcpServer, installProcessGuards, loadDotEnv, startServer, VERSION } from '@/common';
 import { tools } from '@/tools';
 
 const CONFIG = { name: 'mcp-kit', version: VERSION };
@@ -10,6 +10,9 @@ const CONFIG = { name: 'mcp-kit', version: VERSION };
 // `-32000 Connection closed`만 남아 원인을 알 수 없다.
 async function main(): Promise<void> {
   installProcessGuards(CONFIG.name);
+  // MCP 클라이언트가 env 블록을 주지 않고 띄웠을 때를 위해 `.env`도 훑는다.
+  // 클라이언트가 넘긴 환경 변수가 언제나 우선이다.
+  loadDotEnv();
   const server = createMcpServer(CONFIG, Object.values(tools));
   await startServer(server, CONFIG);
 }

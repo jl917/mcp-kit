@@ -2,11 +2,11 @@
 
 ## 핵심 포지션 및 목적
 
-**mcp-kit**는 [Model Context Protocol(MCP)](https://modelcontextprotocol.io) 서버를 구축하고 배포하기 위한 단일 저장소입니다. 저장소 하나가 배포 패키지 하나(`@julong/mcp-kit`)에 대응하며, CLI 도구와 MCP 서버 인터페이스를 동시에 제공합니다. 주 목적은 AI 어시스턴트(Claude 등)가 원화 환율 조회 기능을 MCP 프로토콜을 통해 직접 호출할 수 있도록 하는 것입니다.
+**mcp-kit**는 [Model Context Protocol(MCP)](https://modelcontextprotocol.io) 서버를 구축하고 배포하기 위한 단일 저장소입니다. 저장소 하나가 배포 패키지 하나(`@julong/mcp-kit`)에 대응하며, CLI 도구와 MCP 서버 인터페이스를 동시에 제공합니다. 주 목적은 AI 어시스턴트(Claude 등)가 원화 환율 조회와 TMDB 영화 조회 기능을 MCP 프로토콜을 통해 직접 호출할 수 있도록 하는 것입니다.
 
 ## 주요 사용자 대상
 
-- **최종 사용자**: Claude Desktop, Cursor 등 MCP 클라이언트를 통해 AI 어시스턴트에 환율 조회 기능을 연결하려는 개발자
+- **최종 사용자**: Claude Desktop, Cursor 등 MCP 클라이언트를 통해 AI 어시스턴트에 환율·영화 조회 기능을 연결하려는 개발자
 - **개발자**: MCP 서버 패키지를 npm으로 설치하거나 npx로 직접 실행하여 사용
 - **AI 에이전트**: MCP 프로토콜을 통해 도구(tool)를 직접 호출
 
