@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1](https://github.com/jl917/mcp-kit/compare/v2.2.0...v2.2.1) (2026-09-23)
+
+
+### Bug Fixes
+
+* keep dist/*.cjs loadable, and allow a TMDB credential to be embedded at build time ([#52](https://github.com/jl917/mcp-kit/issues/52)) ([b5d7a4f](https://github.com/jl917/mcp-kit/commit/b5d7a4f6f3f7dafd4e5c1c4692bcaa1dfda9963e))
+
 ## [2.2.0](https://github.com/jl917/mcp-kit/compare/v2.1.1...v2.2.0) (2026-09-23)
 
 
