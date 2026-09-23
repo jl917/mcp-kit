@@ -39,6 +39,10 @@ export default defineConfig([
     noExternal: [/^(?!playwright)/],
     external: [/^playwright/],
     splitting: true,
+    // CJS 쪽 코드 분할을 rollup이 맡습니다. 끄면 tsup이 minify된 esbuild 출력에
+    // sucrase를 한 번 더 돌려 CJS로 바꾸는데, 그 변환이 `return(await x)?.y ?? z`를
+    // `returnawait ...`로 붙여 놓아 `dist/*.cjs`가 통째로 파싱되지 않습니다.
+    treeshake: true,
     entry: {
       index: 'src/index.ts',
       server: 'src/server.ts',
