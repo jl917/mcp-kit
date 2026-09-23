@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/jl917/mcp-kit/compare/v2.1.1...v2.2.0) (2026-09-23)
+
+
+### Features
+
+* **tools:** add TMDB movie lookup tools ([#50](https://github.com/jl917/mcp-kit/issues/50)) ([0c24106](https://github.com/jl917/mcp-kit/commit/0c2410613a44a3e035bd3c9783f6d6eeb07146c5))
+
 ## [2.1.1](https://github.com/jl917/mcp-kit/compare/v2.1.0...v2.1.1) (2026-09-22)
 
 
