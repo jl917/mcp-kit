@@ -11,6 +11,7 @@ mcp-kit/
 │   ├── agent.test.ts   # Real-LLM test (excluded from the default test run)
 │   ├── tools/          # MCP tool definitions
 │   ├── exchange/       # Exchange-rate scraping domain
+│   ├── tmdb/           # TMDB movie lookup domain
 │   └── common/         # Shared kit (never published separately, inlined into the bundle)
 ├── docs/               # Rspress documentation site content
 ├── scripts/            # README generation, Rspress plugin
@@ -65,9 +66,11 @@ src/common/
 
 ```
 src/tools/
-├── index.ts        # tools re-export
+├── index.ts        # tools re-export + UTILS_ENV_KEYS (env block in the generated README)
 ├── exchange.ts     # exchangeRatesTool, exchangeRateTool definitions
-└── exchange.test.ts
+├── exchange.test.ts
+├── movie.ts        # nowPlayingMoviesTool, upcomingMoviesTool, movieRecommendationsTool definitions
+└── movie.test.ts
 ```
 
 ### `src/exchange/` — Exchange-Rate Scraping Domain
@@ -83,6 +86,22 @@ src/exchange/
 ├── browser.ts      # Chromium launch and browser context creation
 └── providers/      # naver.ts · google.ts · daum.ts scrapers
 ```
+
+### `src/tmdb/` — TMDB Movie Lookup Domain
+
+Calls the [TMDB v3 REST API](https://developer.themoviedb.org/reference/intro/getting-started) over `fetch`. No browser and no extra dependency, so the whole domain is bundled like the rest of the source.
+
+```
+src/tmdb/
+├── index.ts        # Domain entry point (re-exports)
+├── types.ts        # TmdbMovie / MovieSummary / MovieListResult definitions and constants
+├── client.ts       # Auth resolution, URL building, GET with a timeout
+├── genres.ts       # Genre id → name table (cached per language), genre name resolution
+├── normalize.ts    # Raw TMDB movie → MovieSummary
+└── movies.ts       # now playing / upcoming / recommendation orchestration
+```
+
+Authentication comes from the environment: `TMDB_API_KEY` (v3 API key, sent as a query parameter) or `TMDB_ACCESS_TOKEN` (read access token, sent as a bearer header). When both are set the token wins, so the secret never lands in a URL.
 
 ### `docs/` + `rspress.config.ts` — Rspress Documentation Site
 
@@ -126,13 +145,15 @@ graph TD
         Common["src/common — @/common (shared kit, SSOT)<br/>tool.ts · server.ts · cli.ts · skill.ts"]
         Agent["src/common/agent — @/common/agent<br/>llm · log · runner (test-only)"]
         Exchange["src/exchange<br/>Naver / Google / Daum scrapers"]
-        Tools["src/tools<br/>exchange_rates · exchange_rate"]
+        Tmdb["src/tmdb<br/>TMDB v3 REST client"]
+        Tools["src/tools<br/>exchange_rates · exchange_rate<br/>movies_now_playing · movies_upcoming · movie_recommendations"]
         Entries["src/index.ts · server.ts · cli.ts"]
         Site["docs + rspress.config.ts<br/>Rspress documentation site"]
     end
 
     Common --> Tools
     Exchange --> Tools
+    Tmdb --> Tools
     Tools --> Entries
     Agent -.->|"used only by agent.test.ts<br/>(not in dist)"| Entries
     Entries -.->|"README → /api page"| Site
@@ -201,5 +222,6 @@ flowchart LR
 
 - **New tool**: add a file under `src/tools/` (or extend an existing one) and aggregate it in `src/tools/index.ts`
 - **New portal/currency**: add a scraper under `src/exchange/providers/` and the constant in `src/exchange/types.ts`
+- **New TMDB endpoint**: add the call in `src/tmdb/movies.ts` and the response type in `src/tmdb/types.ts`
 - **New shared capability**: add a module under `src/common/kit/`
 - **Build config changes**: edit the root `tsup.config.ts`

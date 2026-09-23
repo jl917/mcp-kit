@@ -8,4 +8,15 @@ export type {
   ProviderQuotes,
   ExchangeRatesResult,
 } from '@/exchange/types';
+export { fetchNowPlaying, fetchUpcoming, fetchRecommendations } from '@/tmdb/movies';
+export { MOVIE_LISTS, TMDB_ENV_KEYS } from '@/tmdb/index';
+export type {
+  ListOptions,
+  RecommendOptions,
+  MovieListKind,
+  MovieListResult,
+  MovieSummary,
+  RecommendationMode,
+  TmdbAuth,
+} from '@/tmdb/index';
 export { generateSkillMarkdown, generateReadmeSkills } from '@/common';

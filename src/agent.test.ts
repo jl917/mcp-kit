@@ -1,5 +1,7 @@
 import { beforeAll, describe, expect, it } from '@rstest/core';
 import { logFileFor, nodeMcpServer, runMcpAgent, type ToolCallRecord } from '@/common/agent';
+import { loadDotEnv } from '@/common';
+import { TMDB_ENV_KEYS } from '@/tmdb/index';
 import { existsSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,11 +25,7 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SERVER_ENTRY = resolve(REPO_ROOT, 'dist/server.js');
 
 // rstest는 .env를 읽지 않으므로 여기서 한 번 불러온다 (이미 있는 환경 변수는 유지).
-try {
-  process.loadEnvFile(resolve(REPO_ROOT, '.env'));
-} catch {
-  // .env가 없으면 셸에 이미 있는 환경 변수만 쓴다.
-}
+loadDotEnv(REPO_ROOT);
 
 const ENABLED = Boolean(process.env.RUN_AGENT_TESTS);
 const HAS_API_KEY = Boolean(
@@ -86,7 +84,9 @@ function runAgent(taskId: string, prompt: string) {
     taskId,
     prompt,
     systemPrompt: SYSTEM_PROMPT,
-    servers: nodeMcpServer('mcp-kit', SERVER_ENTRY),
+    // 자격 증명은 띄우는 쪽에서 실어 보낸다. MCP stdio 클라이언트는 기본적으로
+    // HOME·PATH 같은 소수의 변수만 물려주므로 TMDB 키가 서버에 닿지 않는다.
+    servers: nodeMcpServer('mcp-kit', SERVER_ENTRY, TMDB_ENV_KEYS),
   });
 }
 
@@ -160,8 +160,9 @@ describe.skipIf(!ENABLED)('exchange agent — LLM이 MCP 도구를 호출하는�
     async () => {
       const result = await runAgent(TASK_ALL, PROMPT_ALL);
 
-      // 1. MCP 서버가 도구를 노출했는가
-      expect(result.toolNames.sort()).toEqual(['exchange_rate', 'exchange_rates']);
+      // 1. MCP 서버가 환율 도구를 노출했는가 (다른 도메인 도구도 같이 실려 있다)
+      expect(result.toolNames).toContain('exchange_rate');
+      expect(result.toolNames).toContain('exchange_rates');
 
       // 2. LLM이 실제로 도구를 호출했는가
       expect(result.toolCalls.length).toBeGreaterThan(0);

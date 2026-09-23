@@ -100,24 +100,91 @@ pnpm build
 # npx로 직접 실행 (npm 배포 버전)
 npx @julong/mcp-kit
 
-# 로컬 빌드 실행 (개발 중)
-node dist/server.js
+# 로컬 빌드 실행 — 같은 동작을 스크립트로
+pnpm build && pnpm start
+
+# 로컬 빌드에서 도구 하나만 실행
+pnpm start:cli nowPlayingMoviesTool
 
 # MCP Inspector로 디버깅
-npx @modelcontextprotocol/inspector node dist/server.js
+pnpm inspect
 
 # MCP Client Config
 # {
 #   "mcpServers": {
 #     "@julong/mcp-kit": {
 #       "command": "npx",
-#       "args": ["-y", "@julong/mcp-kit"]
+#       "args": ["-y", "@julong/mcp-kit"],
+#       "env": { "TMDB_API_KEY": "<발급받은-키>" }
 #     }
 #   }
 # }
 ```
 
+`pnpm start`는 stdio 서버라 `stdin`을 기다리며 스스로는 아무것도 출력하지 않습니다. 정상 상태이고,
+원래 MCP 클라이언트가 몰아 주는 쪽입니다. 손으로 응답을 보려면 JSON-RPC 프레임을 파이프로 넣습니다.
+
+```bash
+printf '%s\n%s\n%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"probe","version":"1"}}}' \
+  '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+  | pnpm -s start
+```
+
 `WHITE_FN` / `BLACK_FN` 환경 변수로 노출할 도구를 제한할 수 있습니다 (도구 `name` 기준, 쉼표 구분). `WHITE_FN`이 비어 있지 않으면 allowlist로 동작합니다.
+
+### 자격 증명을 읽는 순서
+
+서버와 CLI는 `TMDB_API_KEY` / `TMDB_ACCESS_TOKEN`을 프로세스 환경 변수에서 읽습니다. 우선순위는
+다음과 같습니다.
+
+1. 이미 환경에 설정된 값 — MCP 클라이언트 설정의 `env` 블록이나 `TMDB_API_KEY=... pnpm start`처럼
+   앞에 붙여 준 값
+2. 현재 작업 디렉터리의 `.env` 파일 (시작할 때 한 번 읽습니다)
+
+환경에 이미 있는 값이 언제나 `.env`보다 우선합니다. 어느 쪽에도 없으면 영화 도구는 두 변수 이름을
+알려 주는 `Error: ...` 한 줄로 답합니다.
+
+CI에서는 같은 두 변수를 저장소 시크릿에서 받아 `.github/workflows/ci.yml`의 `Test` 단계에 넘깁니다.
+
+```yaml
+- name: Test
+  run: pnpm test
+  env:
+    TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+    TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+```
+
+시크릿은 Settings → Secrets and variables → Actions에서 등록합니다. 값이 있으면 `pnpm test`가
+TMDB를 실제로 호출하는 테스트까지 함께 돌고, 없으면 그 테스트만 건너뛴 채 나머지는 그대로
+통과합니다. 포크에서 올라온 PR에는 시크릿이 내려오지 않으므로 항상 건너뛰는 쪽으로 갑니다.
+자격 증명이 있어도 끄고 싶으면 `SKIP_TMDB_LIVE_TESTS=1`을 씁니다.
+
+`Build` 단계에는 자격 증명을 일부러 넘기지 않습니다. 도구는 호출 시점에 환경 변수를 읽으므로
+빌드에 키가 필요 없고, 빌드에 넘긴 키는 배포 패키지에 그대로 실립니다.
+
+> MCP 클라이언트는 작업 디렉터리를 마음대로 정해 서버를 띄우므로, `.env`는 직접 서버를 실행할 때만
+> 믿을 수 있습니다. 클라이언트 설정에서는 `env` 블록을 쓰십시오.
+
+### LM Studio에서 연결하기
+
+LM Studio도 같은 `mcpServers` 형식을 읽습니다 (Program → Install → `mcp.json` 편집). 빌드된 진입점을
+절대 경로로 가리키고 자격 증명은 `env`로 넘깁니다.
+
+```json
+{
+  "mcpServers": {
+    "mcp-kit": {
+      "command": "node",
+      "args": ["/absolute/path/to/mcp-kit/dist/server.js"],
+      "env": { "TMDB_API_KEY": "<발급받은-키>" }
+    }
+  }
+}
+```
+
+먼저 `pnpm build`를 돌립니다. 위 경로는 소스가 아니라 빌드 결과물입니다.
 
 ## CLI 도구 실행
 
@@ -125,13 +192,47 @@ npx @modelcontextprotocol/inspector node dist/server.js
 # 도구 목록 보기
 npx mcp-kit-cli
 
-# 특정 도구 실행 — 최초 1회 `npx playwright install chromium` 필요
+# 환율 도구 실행 — 최초 1회 `npx playwright install chromium` 필요
 npx mcp-kit-cli exchangeRatesTool
 npx mcp-kit-cli exchangeRatesTool '["naver","daum"]' '["CNY","JPY"]'
 npx mcp-kit-cli exchangeRateTool google EUR
 
 # 로컬 빌드로 CLI 실행
 node dist/cli.js exchangeRateTool naver CNY
+```
+
+## 영화 도구 실행
+
+TMDB 도구는 환경 변수에 자격 증명이 있어야 합니다 — `TMDB_API_KEY`(v3 API 키) 또는
+`TMDB_ACCESS_TOKEN`(읽기 액세스 토큰) 중 하나입니다.
+<https://www.themoviedb.org/settings/api> 에서 발급합니다. 브라우저를 쓰지 않으므로
+Playwright는 필요 없습니다.
+
+```bash
+# 한 번 빌드한 뒤 로컬 CLI로 실행
+pnpm build
+
+# 상영 중 / 개봉 예정 (기본값: language=ko-KR, region=KR)
+TMDB_API_KEY=<발급받은-키> node dist/cli.js nowPlayingMoviesTool
+TMDB_API_KEY=<발급받은-키> node dist/cli.js upcomingMoviesTool
+
+# 한국 개봉 기준이 아닌 목록
+TMDB_API_KEY=<발급받은-키> node dist/cli.js nowPlayingMoviesTool en-US US
+
+# 기준 영화 기반 추천 (인자 순서: title, movieId, genre, ...)
+TMDB_API_KEY=<발급받은-키> node dist/cli.js movieRecommendationsTool 인터스텔라
+TMDB_API_KEY=<발급받은-키> node dist/cli.js movieRecommendationsTool null 157336
+
+# 기준 영화 없이 추천 — 이미 개봉한 작품을 인기순으로
+TMDB_API_KEY=<발급받은-키> node dist/cli.js movieRecommendationsTool null null 액션
+```
+
+CLI는 인자를 스키마 필드 순서대로 채우므로, 앞 인자를 건너뛰려면 `null`을 넘깁니다.
+자격 증명이 없으면 영화 도구는 예외 대신 `Error: ...` 한 줄로 답합니다.
+
+```bash
+# MCP 서버 자체를 stdio로 띄워 확인
+TMDB_API_KEY=<발급받은-키> npx @modelcontextprotocol/inspector node dist/server.js
 ```
 
 ## 에이전트 통합 테스트 (MCP + LLM)

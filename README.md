@@ -1,6 +1,6 @@
 # @julong/mcp-kit
 
-Use this skill to fetch the latest KRW exchange rates for the United States, China, Japan, and the Euro area from Naver, Google, and Daum via the mcp-kit CLI. Scrapes each portal with Playwright and returns JSON, using null for any rate it cannot read.
+Use this skill to fetch KRW exchange rates and TMDB movie listings via the mcp-kit CLI. Scrapes Naver, Google, and Daum with Playwright for USD, CNY, JPY, and EUR rates, and reads now playing, upcoming, and recommended movies from the TMDB v3 API.
 
 ## MCP Server
 
@@ -13,7 +13,10 @@ Add to your MCP client config:
   "mcpServers": {
     "@julong/mcp-kit": {
       "command": "npx",
-      "args": ["-y", "@julong/mcp-kit"]
+      "args": ["-y", "@julong/mcp-kit"],
+      "env": {
+        "TMDB_API_KEY": "<value>"
+      }
     }
   }
 }
@@ -137,4 +140,134 @@ mcp-kit-cli exchangeRateTool <provider> <currency> [timeoutMs]
 ```sh
 mcp-kit-cli exchangeRateTool daum JPY
 # → {"currency":"JPY","base":"KRW","rate":8.723,"quotedRate":872.3,"quotedUnit":100,...}
+```
+
+### `movies_now_playing(language, region, page, timeoutMs)`
+
+**Signature**
+
+```typescript
+function movies_now_playing(language?: string, region?: string, page?: number, timeoutMs?: number): { kind, language, region, page, totalPages, totalResults, dates, basedOn, results: MovieSummary[] }
+```
+
+TMDB에서 현재 상영 중인 영화 목록을 가져와 JSON으로 반환합니다. 영화 하나는 { id, title, originalTitle, releaseDate, overview, genres, voteAverage, voteCount, popularity, posterUrl, tmdbUrl } 형태입니다. dates에 집계 기간이 함께 담깁니다.
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `language` | `string` | 응답 언어 (ISO 639-1 + ISO 3166-1, 예: ko-KR) (default: `ko-KR`) |
+| `region` | `string` | 개봉 기준 지역 (ISO 3166-1, 예: KR). 빈 문자열이면 지역을 지정하지 않음 (default: `KR`) |
+| `page` | `number` | 조회할 페이지 번호 (default: `1`) |
+| `timeoutMs` | `number` | 요청 하나에 허용할 시간(ms) (default: `10000`) |
+
+
+**Returns**
+
+`{ kind, language, region, page, totalPages, totalResults, dates, basedOn, results: MovieSummary[] }` — 상영 중인 영화 목록 JSON. basedOn은 항상 null
+
+
+**CLI**
+
+```sh
+mcp-kit-cli nowPlayingMoviesTool [language] [region] [page] [timeoutMs]
+```
+
+
+
+**Examples**
+
+```sh
+mcp-kit-cli nowPlayingMoviesTool ko-KR KR
+# → {"kind":"now_playing","language":"ko-KR","region":"KR","page":1,...}
+```
+
+### `movies_upcoming(language, region, page, timeoutMs)`
+
+**Signature**
+
+```typescript
+function movies_upcoming(language?: string, region?: string, page?: number, timeoutMs?: number): { kind, language, region, page, totalPages, totalResults, dates, basedOn, results: MovieSummary[] }
+```
+
+TMDB에서 개봉 예정 영화 목록을 가져와 JSON으로 반환합니다. 영화 하나는 { id, title, originalTitle, releaseDate, overview, genres, voteAverage, voteCount, popularity, posterUrl, tmdbUrl } 형태입니다. dates에 집계 기간이 함께 담깁니다.
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `language` | `string` | 응답 언어 (ISO 639-1 + ISO 3166-1, 예: ko-KR) (default: `ko-KR`) |
+| `region` | `string` | 개봉 기준 지역 (ISO 3166-1, 예: KR). 빈 문자열이면 지역을 지정하지 않음 (default: `KR`) |
+| `page` | `number` | 조회할 페이지 번호 (default: `1`) |
+| `timeoutMs` | `number` | 요청 하나에 허용할 시간(ms) (default: `10000`) |
+
+
+**Returns**
+
+`{ kind, language, region, page, totalPages, totalResults, dates, basedOn, results: MovieSummary[] }` — 개봉 예정 영화 목록 JSON. basedOn은 항상 null
+
+
+**CLI**
+
+```sh
+mcp-kit-cli upcomingMoviesTool [language] [region] [page] [timeoutMs]
+```
+
+
+
+**Examples**
+
+```sh
+mcp-kit-cli upcomingMoviesTool ko-KR KR
+# → {"kind":"upcoming","language":"ko-KR","region":"KR","page":1,...}
+```
+
+### `movie_recommendations(title, movieId, genre, language, region, page, timeoutMs)`
+
+**Signature**
+
+```typescript
+function movie_recommendations(title?: string, movieId?: number, genre?: string, language?: string, region?: string, page?: number, timeoutMs?: number): { kind, language, region, page, totalPages, totalResults, dates, basedOn, results: MovieSummary[] }
+```
+
+TMDB에서 추천 영화 목록을 가져와 JSON으로 반환합니다. 기준 영화를 주면 그 영화 기반 추천(kind: "similar")을, 주지 않으면 이미 개봉한 인기작(kind: "discover")을 돌려줍니다. 영화 하나는 { id, title, originalTitle, releaseDate, overview, genres, voteAverage, voteCount, popularity, posterUrl, tmdbUrl } 형태입니다..
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `title` | `string` | 기준 영화 제목. 검색해서 첫 결과를 기준으로 삼음 (optional) |
+| `movieId` | `number` | 기준 영화의 TMDB id. title보다 우선함 (optional) |
+| `genre` | `string` | 기준 영화 없이 추천할 때만 적용할 장르 이름 또는 id (예: 액션, 28) (optional) |
+| `language` | `string` | 응답 언어 (ISO 639-1 + ISO 3166-1, 예: ko-KR) (default: `ko-KR`) |
+| `region` | `string` | 개봉 기준 지역 (ISO 3166-1, 예: KR). 빈 문자열이면 지역을 지정하지 않음 (default: `KR`) |
+| `page` | `number` | 조회할 페이지 번호 (default: `1`) |
+| `timeoutMs` | `number` | 요청 하나에 허용할 시간(ms) (default: `10000`) |
+
+
+**Returns**
+
+`{ kind, language, region, page, totalPages, totalResults, dates, basedOn, results: MovieSummary[] }` — 추천 영화 목록 JSON. similar 추천이면 basedOn에 기준 영화의 { id, title }이 담김
+
+
+**CLI**
+
+```sh
+mcp-kit-cli movieRecommendationsTool [title] [movieId] [genre] [language] [region] [page] [timeoutMs]
+```
+
+
+
+**Examples**
+
+```sh
+mcp-kit-cli movieRecommendationsTool "인터스텔라"
+# → {"kind":"similar","basedOn":{"id":157336,"title":"인터스텔라"},...}
+```
+```sh
+mcp-kit-cli movieRecommendationsTool null null "액션"
+# → {"kind":"discover","basedOn":null,"page":1,...}
 ```

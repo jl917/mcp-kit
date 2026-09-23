@@ -11,6 +11,7 @@ mcp-kit/
 │   ├── agent.test.ts   # 실제 LLM 테스트 (기본 test에서 제외)
 │   ├── tools/          # MCP 도구 정의
 │   ├── exchange/       # 환율 스크레이핑 도메인
+│   ├── tmdb/           # TMDB 영화 조회 도메인
 │   └── common/         # 공유 키트 (별도 배포 없음, 번들에 인라인)
 ├── docs/               # Rspress 문서 사이트 콘텐츠
 ├── scripts/            # README 생성, Rspress 플러그인
@@ -64,9 +65,11 @@ src/common/
 
 ```
 src/tools/
-├── index.ts        # tools re-export
+├── index.ts        # tools re-export + UTILS_ENV_KEYS (생성된 README의 env 블록)
 ├── exchange.ts     # exchangeRatesTool, exchangeRateTool 정의
-└── exchange.test.ts
+├── exchange.test.ts
+├── movie.ts        # nowPlayingMoviesTool, upcomingMoviesTool, movieRecommendationsTool 정의
+└── movie.test.ts
 ```
 
 ### `src/exchange/` — 환율 스크레이핑 도메인
@@ -82,6 +85,22 @@ src/exchange/
 ├── browser.ts      # Chromium 기동 및 브라우저 컨텍스트 생성
 └── providers/      # naver.ts · google.ts · daum.ts 스크레이퍼
 ```
+
+### `src/tmdb/` — TMDB 영화 조회 도메인
+
+[TMDB v3 REST API](https://developer.themoviedb.org/reference/intro/getting-started)를 `fetch`로 호출합니다. 브라우저도 추가 의존성도 쓰지 않으므로 나머지 소스와 똑같이 번들에 인라인됩니다.
+
+```
+src/tmdb/
+├── index.ts        # 도메인 진입점 (re-export)
+├── types.ts        # TmdbMovie / MovieSummary / MovieListResult 정의와 상수
+├── client.ts       # 인증 해석 · URL 조립 · 제한 시간을 둔 GET
+├── genres.ts       # 장르 id → 이름 표(언어별 캐시), 장르 이름 해석
+├── normalize.ts    # TMDB 원본 영화 → MovieSummary
+└── movies.ts       # 상영 중 / 개봉 예정 / 추천 오케스트레이션
+```
+
+인증은 환경 변수에서 읽습니다. `TMDB_API_KEY`(v3 API 키)는 쿼리 문자열로, `TMDB_ACCESS_TOKEN`(읽기 액세스 토큰)은 Bearer 헤더로 보냅니다. 둘 다 있으면 토큰을 써서 비밀값이 URL에 남지 않게 합니다.
 
 ### `docs/` + `rspress.config.ts` — Rspress 문서 사이트
 
@@ -125,13 +144,15 @@ graph TD
         Common["src/common — @/common (공유 키트, SSOT)<br/>tool.ts · server.ts · cli.ts · skill.ts"]
         Agent["src/common/agent — @/common/agent<br/>llm · log · runner (테스트 전용)"]
         Exchange["src/exchange<br/>네이버 / 구글 / 다음 스크레이퍼"]
-        Tools["src/tools<br/>exchange_rates · exchange_rate"]
+        Tmdb["src/tmdb<br/>TMDB v3 REST 클라이언트"]
+        Tools["src/tools<br/>exchange_rates · exchange_rate<br/>movies_now_playing · movies_upcoming · movie_recommendations"]
         Entries["src/index.ts · server.ts · cli.ts"]
         Site["docs + rspress.config.ts<br/>Rspress 문서 사이트"]
     end
 
     Common --> Tools
     Exchange --> Tools
+    Tmdb --> Tools
     Tools --> Entries
     Agent -.->|"agent.test.ts에서만 사용<br/>(dist에 미포함)"| Entries
     Entries -.->|"README → /api 페이지"| Site
@@ -200,5 +221,6 @@ flowchart LR
 
 - **새 도구 추가**: `src/tools/` 하위에 파일 추가 (또는 기존 파일에 추가) 후 `src/tools/index.ts`에 집계
 - **새 포털/통화 추가**: `src/exchange/providers/`에 스크레이퍼 추가, `src/exchange/types.ts`에 상수 추가
+- **새 TMDB 엔드포인트 추가**: `src/tmdb/movies.ts`에 호출 추가, `src/tmdb/types.ts`에 응답 타입 추가
 - **공통 기능 추가**: `src/common/kit/`에 모듈 추가
 - **빌드 설정 변경**: 루트 `tsup.config.ts` 수정

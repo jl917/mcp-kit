@@ -100,24 +100,93 @@ pnpm build
 # Run directly with npx (published version)
 npx @julong/mcp-kit
 
-# Run the local build (during development)
-node dist/server.js
+# Run the local build — the same thing, as a script
+pnpm build && pnpm start
+
+# Run one tool from the local build
+pnpm start:cli nowPlayingMoviesTool
 
 # Debug with MCP Inspector
-npx @modelcontextprotocol/inspector node dist/server.js
+pnpm inspect
 
 # MCP Client Config
 # {
 #   "mcpServers": {
 #     "@julong/mcp-kit": {
 #       "command": "npx",
-#       "args": ["-y", "@julong/mcp-kit"]
+#       "args": ["-y", "@julong/mcp-kit"],
+#       "env": { "TMDB_API_KEY": "<your-key>" }
 #     }
 #   }
 # }
 ```
 
+`pnpm start` is a stdio server: it waits on `stdin` and prints nothing on its own. That is the
+normal state — an MCP client drives it. To see it answer by hand, pipe JSON-RPC frames in:
+
+```bash
+printf '%s\n%s\n%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"probe","version":"1"}}}' \
+  '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+  | pnpm -s start
+```
+
 Use the `WHITE_FN` / `BLACK_FN` env vars to restrict which tools are exposed (comma-separated, matched by tool `name`). A non-empty `WHITE_FN` acts as an allowlist.
+
+### Where Credentials Come From
+
+The server and the CLI read `TMDB_API_KEY` / `TMDB_ACCESS_TOKEN` from the process environment,
+in this order of precedence:
+
+1. Variables already set in the environment — the `env` block of an MCP client config, or an
+   inline prefix such as `TMDB_API_KEY=... pnpm start`.
+2. A `.env` file in the current working directory, loaded at startup.
+
+A value already present in the environment always wins over `.env`. When neither supplies a
+credential, every movie tool answers with a single `Error: ...` line naming both variables.
+
+In CI the same two variables come from repository secrets, wired into the `Test` step of
+`.github/workflows/ci.yml`:
+
+```yaml
+- name: Test
+  run: pnpm test
+  env:
+    TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+    TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+```
+
+Add the secret under Settings → Secrets and variables → Actions. With it present, `pnpm test`
+also exercises the tests that call TMDB for real; without it those tests skip and the rest of the
+suite still passes. Pull requests opened from a fork never receive secrets, so they take the skip
+path. Set `SKIP_TMDB_LIVE_TESTS=1` to skip them even when a credential is available.
+
+The `Build` step deliberately gets no credential. The tools read the environment at call time, so
+nothing needs a key at build time — and a key handed to the build would ship inside the published
+package.
+
+> An MCP client spawns the server with a working directory you do not control, so `.env` is only
+> reliable when you start the server yourself. For a client config, use its `env` block.
+
+### Connecting from LM Studio
+
+LM Studio reads the same `mcpServers` shape (Program → Install → Edit `mcp.json`). Point it at the
+built entry with an absolute path and pass the credential through `env`:
+
+```json
+{
+  "mcpServers": {
+    "mcp-kit": {
+      "command": "node",
+      "args": ["/absolute/path/to/mcp-kit/dist/server.js"],
+      "env": { "TMDB_API_KEY": "<your-key>" }
+    }
+  }
+}
+```
+
+Run `pnpm build` first — the path above is the build output, not the source.
 
 ## Running CLI Tools
 
@@ -125,13 +194,47 @@ Use the `WHITE_FN` / `BLACK_FN` env vars to restrict which tools are exposed (co
 # List available tools
 npx mcp-kit-cli
 
-# Run a tool — requires `npx playwright install chromium` once
+# Run an exchange-rate tool — requires `npx playwright install chromium` once
 npx mcp-kit-cli exchangeRatesTool
 npx mcp-kit-cli exchangeRatesTool '["naver","daum"]' '["CNY","JPY"]'
 npx mcp-kit-cli exchangeRateTool google EUR
 
 # Run the CLI from the local build
 node dist/cli.js exchangeRateTool naver CNY
+```
+
+## Running the Movie Tools
+
+The TMDB tools need a credential in the environment — `TMDB_API_KEY` (v3 API key) or
+`TMDB_ACCESS_TOKEN` (read access token). Issue either at
+<https://www.themoviedb.org/settings/api>. No browser is involved, so Playwright is not needed.
+
+```bash
+# Build once, then run the local CLI
+pnpm build
+
+# Now playing / upcoming (defaults: language=ko-KR, region=KR)
+TMDB_API_KEY=<your-key> node dist/cli.js nowPlayingMoviesTool
+TMDB_API_KEY=<your-key> node dist/cli.js upcomingMoviesTool
+
+# Movies beyond the Korean release calendar
+TMDB_API_KEY=<your-key> node dist/cli.js nowPlayingMoviesTool en-US US
+
+# Recommendations from a reference movie (arguments: title, movieId, genre, ...)
+TMDB_API_KEY=<your-key> node dist/cli.js movieRecommendationsTool 인터스텔라
+TMDB_API_KEY=<your-key> node dist/cli.js movieRecommendationsTool null 157336
+
+# Recommendations with no reference movie — already released, popularity first
+TMDB_API_KEY=<your-key> node dist/cli.js movieRecommendationsTool null null 액션
+```
+
+Passing `null` keeps a later argument positional — the CLI maps arguments to schema fields in
+order. Without a credential every movie tool answers with a single `Error: ...` line instead of
+throwing.
+
+```bash
+# Drive the MCP server itself over stdio
+TMDB_API_KEY=<your-key> npx @modelcontextprotocol/inspector node dist/server.js
 ```
 
 ## Agent Integration Test (MCP + LLM)

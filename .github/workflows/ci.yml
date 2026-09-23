@@ -44,8 +44,16 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      # 자격 증명이 있으면 TMDB를 실제로 호출하는 테스트까지 함께 돕니다.
+      # 포크에서 올라온 PR에는 시크릿이 내려오지 않아 값이 비는데, 그때는 해당
+      # 테스트만 건너뛰고 나머지는 그대로 통과합니다.
       - name: Test
         run: pnpm test
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
 
+      # 빌드에는 자격 증명을 넘기지 않습니다. 도구는 실행 시점에 환경 변수를
+      # 읽으므로 키가 번들에 들어갈 이유가 없고, 들어가면 npm에 그대로 실립니다.
       - name: Build
         run: pnpm build

@@ -2,11 +2,11 @@
 
 ## Core Position & Purpose
 
-**mcp-kit** is a single repository for building and shipping a [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server. One repository maps to one published package (`@julong/mcp-kit`), providing both CLI tools and an MCP server interface. The primary goal is to enable AI assistants (Claude, etc.) to look up KRW exchange rates directly through the MCP protocol.
+**mcp-kit** is a single repository for building and shipping a [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server. One repository maps to one published package (`@julong/mcp-kit`), providing both CLI tools and an MCP server interface. The primary goal is to enable AI assistants (Claude, etc.) to look up KRW exchange rates and TMDB movie listings directly through the MCP protocol.
 
 ## Target Users
 
-- **End Users**: Developers who want to connect exchange rate lookups to AI assistants via MCP clients like Claude Desktop or Cursor
+- **End Users**: Developers who want to connect exchange rate and movie lookups to AI assistants via MCP clients like Claude Desktop or Cursor
 - **Developers**: Install the MCP server package via npm or run it directly with npx
 - **AI Agents**: Call tools directly through the MCP protocol
 
