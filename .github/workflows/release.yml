@@ -57,8 +57,31 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # 배포되는 번들에 TMDB 자격 증명을 심습니다. 이러면 `npx @julong/mcp-kit`를
+      # 쓰는 쪽이 클라이언트 설정에 키를 넣지 않아도 영화 도구가 바로 돕니다.
+      #
+      # 심은 값은 AES-256-GCM으로 봉해 넣지만 여는 열쇠가 같은 번들에 들어가므로,
+      # 이 패키지를 설치한 사람은 누구나 키를 되찾을 수 있습니다. 여기 쓰는 키는
+      # 그 전제를 받아들인 전용 키여야 하고, 남용이 보이면 TMDB에서 발급을 다시
+      # 받아 시크릿만 갈아 끼우면 다음 릴리스부터 반영됩니다.
       - name: Build
         run: pnpm build
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+      # 시크릿 이름이 바뀌거나 지워지면 빌드는 조용히 성공하고 자격 증명만 빠진
+      # 패키지가 올라갑니다. 그건 설치한 쪽에서야 드러나므로 여기서 막습니다.
+      - name: Verify the credential made it into the bundle
+        run: |
+          node -e "
+            const { hasEmbeddedCredentials } = require('./dist/index.cjs');
+            if (!hasEmbeddedCredentials()) {
+              console.error('No TMDB credential in the bundle — check the TMDB_API_KEY secret');
+              process.exit(1);
+            }
+            console.log('TMDB credential embedded');
+          "
 
       - name: Publish to npm
         run: pnpm publish --no-git-checks --access public

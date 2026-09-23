@@ -32,8 +32,11 @@ const skillFile = `${skillDir}/SKILL.md`;
  *
  * 열쇠는 빌드마다 새로 만들어 같은 번들에 함께 넣습니다. 번들을 가진 사람은 언제든
  * 열 수 있으므로 이것은 암호화가 아니라 난독화입니다 — 키가 평문 문자열로 남지
- * 않을 뿐입니다. 자격 증명을 심은 빌드는 npm에 올리지 않습니다.
- * `.github/workflows/ci.yml`과 `release.yml`의 빌드 단계는 그래서 이 값을 비워 둡니다.
+ * 않을 뿐입니다.
+ *
+ * `.github/workflows/release.yml`의 빌드 단계는 저장소 시크릿을 넘깁니다. 즉 npm에
+ * 올라간 패키지에는 자격 증명이 들어 있고, 설치한 사람은 누구나 꺼낼 수 있습니다.
+ * 그 자리에 쓰는 키는 공개를 전제로 한 전용 키여야 합니다.
  */
 function embeddedCredentials(): Record<string, string> {
   try {

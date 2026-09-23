@@ -196,9 +196,12 @@ also exercises the tests that call TMDB for real; without it those tests skip an
 suite still passes. Pull requests opened from a fork never receive secrets, so they take the skip
 path. Set `SKIP_TMDB_LIVE_TESTS=1` to skip them even when a credential is available.
 
-The `Build` step in both workflows deliberately gets no credential. A key handed to the build is
-written into the bundle, and that bundle is what `pnpm publish` uploads — every install would carry
-your key.
+The `Build` steps in both workflows receive the same two secrets, because a credential handed to
+the build is written into the bundle. In `release.yml` that is deliberate: the package published to
+npm carries the credential, so `npx @julong/mcp-kit` needs nothing in the client config. The
+consequence is that every install can recover the key — see
+[Build-Time TMDB Credentials](02-tech-stack.md#build-time-tmdb-credentials) for what that means for
+which key belongs in the secret.
 
 > An MCP client spawns the server with a working directory you do not control, so `.env` is only
 > reliable when you start the server yourself. For a client config, use its `env` block.
