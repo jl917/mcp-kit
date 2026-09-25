@@ -40,7 +40,7 @@
 - `playwright`만 **external** — 런타임에 자기 패키지 디렉터리에서 브라우저 드라이버를 찾으므로 번들링 불가
 - ESM 출력에는 `require` 심이 배너로 들어갑니다 (`esbuildOptions`) — 아래 참고
 - Minify 활성화 (`"minify": true`)
-- `define`으로 빌드 환경의 TMDB 자격 증명을 번들에 심습니다 (아래 참고)
+- `define`으로 `package.json`의 `version`(`src/common/constants.ts`가 읽어 MCP `initialize` 응답에 실림)과 빌드 환경의 TMDB 자격 증명을 심습니다 (아래 참고)
 - 엔트리 포인트 3개: `src/index.ts`, `src/server.ts`, `src/cli.ts`
 - 빌드 후처리: `server`/`cli` 번들에 shebang 추가, 빈 청크 제거, `dev`에서는 `skills/<bin>/SKILL.md`와 README 재생성
 

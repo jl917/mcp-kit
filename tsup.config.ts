@@ -110,7 +110,11 @@ export default defineConfig([
     // `returnawait ...`로 붙여 놓아 `dist/*.cjs`가 통째로 파싱되지 않습니다.
     treeshake: true,
     esbuildOptions: esmRequireShim,
-    define: embeddedCredentials(),
+    define: {
+      // 손으로 맞추면 릴리스마다 어긋납니다. release-please는 package.json만 올립니다.
+      __PKG_VERSION__: JSON.stringify(pkg.version),
+      ...embeddedCredentials(),
+    },
     entry: {
       index: 'src/index.ts',
       server: 'src/server.ts',
