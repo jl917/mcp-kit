@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.4.1](https://github.com/jl917/mcp-kit/compare/v2.4.0...v2.4.1) (2026-09-25)
+
+
+### Bug Fixes
+
+* **common:** report the real version in MCP initialize ([#57](https://github.com/jl917/mcp-kit/issues/57)) ([65b76be](https://github.com/jl917/mcp-kit/commit/65b76be00f613df9c6d137523da72209d43a10f3)), closes [#56](https://github.com/jl917/mcp-kit/issues/56)
+* **deps:** move systeminformation to devDependencies ([#61](https://github.com/jl917/mcp-kit/issues/61)) ([04c1ae2](https://github.com/jl917/mcp-kit/commit/04c1ae2f146240076f1e7237ad804f2994697d89))
+
 ## [2.4.0](https://github.com/jl917/mcp-kit/compare/v2.3.0...v2.4.0) (2026-09-25)
 
 
