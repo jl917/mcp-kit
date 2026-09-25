@@ -43,8 +43,7 @@
     "docs:build": "rspress build"
   },
   "dependencies": {
-    "playwright": "^1.50.0",
-    "systeminformation": "^5.33.13"
+    "playwright": "^1.50.0"
   },
   "devDependencies": {
     "@langchain/core": "^1.2.12",
@@ -64,6 +63,7 @@
     "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
     "rspress-plugin-mermaid": "^1.0.1",
+    "systeminformation": "^5.33.13",
     "tsup": "^8.5.1",
     "typescript": "^5.6.3",
     "zod": "^4.4.2"
