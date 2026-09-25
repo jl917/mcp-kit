@@ -37,6 +37,12 @@ git commit -m "<type>(<scope>): <subject>"
 git push -u origin <branch>
 ```
 
+## 결정 기록
+
+도구·의존성·빌드 설정을 건드렸거나, 문서가 정해 주지 않은 설계 선택을 했거나, 물어본 것에 답을 받지 못한 채 가정을 세우고 진행했으면 `.claude/decisions/YYYY-MM-DD-<slug>.md`에 기록을 남기고 **기능 커밋에 함께 포함합니다**. 무엇을 어떤 순서로 쓰는지는 [.claude/decision-log.md](.claude/decision-log.md)에 있습니다.
+
+리뷰어는 이 기록으로 "무엇을 물었고, 무엇을 답 없이 정했고, 어디를 되돌릴 수 있는지"를 봅니다. 코드만으로는 드러나지 않는 부분입니다.
+
 ## Pull Request
 
 ```sh

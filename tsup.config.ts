@@ -64,6 +64,29 @@ function embeddedCredentials(): Record<string, string> {
   };
 }
 
+/**
+ * ESM 출력에 `require`를 만들어 둡니다.
+ *
+ * 인라인되는 의존성 중 CJS로 배포된 것(`systeminformation`)은 자기 안에서
+ * `require('os')` 같은 내장 모듈을 부릅니다. esbuild는 이 호출을 "런타임에
+ * `require`가 있으면 쓰고 없으면 던진다"는 형태로 남기는데, ESM에는 `require`가
+ * 없어 번들을 불러오는 순간 `Dynamic require of "os" is not supported`로 죽습니다.
+ * `import` 문만 있는 CJS는 이 자리를 건드릴 수 없으므로 ESM에만 넣습니다.
+ */
+function esmRequireShim(options: { banner?: Record<string, string> }, context: { format: string }) {
+  if (context.format !== 'esm') return;
+  options.banner = {
+    ...options.banner,
+    js: [
+      options.banner?.js,
+      "import { createRequire as __createRequire } from 'node:module';",
+      'const require = __createRequire(import.meta.url);',
+    ]
+      .filter(Boolean)
+      .join('\n'),
+  };
+}
+
 function addShebang(path: string): void {
   if (!existsSync(path)) return;
   const content = readFileSync(path, 'utf-8');
@@ -86,6 +109,7 @@ export default defineConfig([
     // sucrase를 한 번 더 돌려 CJS로 바꾸는데, 그 변환이 `return(await x)?.y ?? z`를
     // `returnawait ...`로 붙여 놓아 `dist/*.cjs`가 통째로 파싱되지 않습니다.
     treeshake: true,
+    esbuildOptions: esmRequireShim,
     define: embeddedCredentials(),
     entry: {
       index: 'src/index.ts',

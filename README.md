@@ -1,6 +1,6 @@
 # @julong/mcp-kit
 
-Use this skill to fetch KRW exchange rates and TMDB movie listings via the mcp-kit CLI. Scrapes Naver, Google, and Daum with Playwright for USD, CNY, JPY, and EUR rates, and reads now playing, upcoming, and recommended movies from the TMDB v3 API.
+Use this skill to fetch KRW exchange rates, TMDB movie listings, and local system metrics via the mcp-kit CLI. Scrapes Naver, Google, and Daum with Playwright for USD, CNY, JPY, and EUR rates, reads now playing, upcoming, and recommended movies from the TMDB v3 API, and reports battery, memory, CPU, and disk usage of the machine it runs on.
 
 ## MCP Server
 
@@ -270,4 +270,207 @@ mcp-kit-cli movieRecommendationsTool "인터스텔라"
 ```sh
 mcp-kit-cli movieRecommendationsTool null null "액션"
 # → {"kind":"discover","basedOn":null,"page":1,...}
+```
+
+### `system_battery(timeoutMs)`
+
+**Signature**
+
+```typescript
+function system_battery(timeoutMs?: number): BatteryInfo | null
+```
+
+배터리 잔량과 전원 상태를 JSON으로 반환합니다. { percent, isCharging, powerSource, timeRemainingMin, cycleCount, healthPercent, type, model } 형태이고, 배터리가 없는 기계면 null입니다.
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `timeoutMs` | `number` | 항목 하나를 읽는 데 허용할 시간(ms) (default: `5000`) |
+
+
+**Returns**
+
+`BatteryInfo | null` — 배터리 상태 JSON. 배터리가 없으면 null
+
+
+**CLI**
+
+```sh
+mcp-kit-cli systemBatteryTool [timeoutMs]
+```
+
+
+
+**Examples**
+
+```sh
+mcp-kit-cli systemBatteryTool
+# → {"percent":100,"isCharging":false,"powerSource":"battery","timeRemainingMin":555,...}
+```
+
+### `system_memory(timeoutMs)`
+
+**Signature**
+
+```typescript
+function system_memory(timeoutMs?: number): MemoryInfo
+```
+
+물리 메모리와 스왑 사용량을 JSON으로 반환합니다. { totalBytes, usedBytes, availableBytes, usedPercent, cachedBytes, swap } 형태이고, usedBytes는 캐시를 뺀 실제 사용량입니다.
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `timeoutMs` | `number` | 항목 하나를 읽는 데 허용할 시간(ms) (default: `5000`) |
+
+
+**Returns**
+
+`MemoryInfo` — 메모리 사용량 JSON. 스왑을 쓰지 않으면 swap은 null
+
+
+**CLI**
+
+```sh
+mcp-kit-cli systemMemoryTool [timeoutMs]
+```
+
+
+
+**Examples**
+
+```sh
+mcp-kit-cli systemMemoryTool
+# → {"totalBytes":34359738368,"usedBytes":24105795584,"usedPercent":70.2,...}
+```
+
+### `system_cpu(sampleMs, timeoutMs)`
+
+**Signature**
+
+```typescript
+function system_cpu(sampleMs?: number, timeoutMs?: number): CpuLoadInfo
+```
+
+표본 구간 동안의 CPU 사용률을 JSON으로 반환합니다. { usagePercent, userPercent, systemPercent, cores, perCorePercent, loadAveragePerCore, sampleMs } 형태이고, 코어별 사용률이 perCorePercent에 담깁니다.
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `sampleMs` | `number` | CPU 사용률을 재는 표본 구간(ms). 200ms 미만은 받지 않음 (default: `300`) |
+| `timeoutMs` | `number` | 항목 하나를 읽는 데 허용할 시간(ms) (default: `5000`) |
+
+
+**Returns**
+
+`CpuLoadInfo` — CPU 사용률 JSON. 실제로 잰 표본 구간은 sampleMs
+
+
+**CLI**
+
+```sh
+mcp-kit-cli systemCpuTool [sampleMs] [timeoutMs]
+```
+
+
+
+**Examples**
+
+```sh
+mcp-kit-cli systemCpuTool 500
+# → {"usagePercent":28.5,"userPercent":18.9,"cores":10,"sampleMs":500,...}
+```
+
+### `system_disk(allDisks, timeoutMs)`
+
+**Signature**
+
+```typescript
+function system_disk(allDisks?: boolean, timeoutMs?: number): DiskUsage[]
+```
+
+파일 시스템 용량을 JSON 배열로 반환합니다. 항목 하나는 { mount, fs, type, totalBytes, usedBytes, availableBytes, usedPercent } 형태이고, 기본은 용량 질문에 답하는 볼륨 하나입니다.
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `allDisks` | `boolean` | true면 마운트된 파일 시스템 전부, false면 기본 디스크 하나만 (default: `false`) |
+| `timeoutMs` | `number` | 항목 하나를 읽는 데 허용할 시간(ms) (default: `5000`) |
+
+
+**Returns**
+
+`DiskUsage[]` — 파일 시스템별 용량 JSON 배열. 읽을 볼륨이 없으면 빈 배열
+
+
+**CLI**
+
+```sh
+mcp-kit-cli systemDiskTool [allDisks] [timeoutMs]
+```
+
+
+
+**Examples**
+
+```sh
+mcp-kit-cli systemDiskTool
+# → [{"mount":"/System/Volumes/Data","totalBytes":994662584320,"availableBytes":442990383104,"usedPercent":53.8,...}]
+```
+```sh
+mcp-kit-cli systemDiskTool true
+# → [{"mount":"/",...},{"mount":"/Volumes/Backup",...}]
+```
+
+### `system_info(sections, sampleMs, allDisks, timeoutMs)`
+
+**Signature**
+
+```typescript
+function system_info(sections?: ("battery" | "memory" | "cpu" | "disk")[], sampleMs?: number, allDisks?: boolean, timeoutMs?: number): { collectedAt: string, battery?: BatteryInfo | null, memory?: MemoryInfo | null, cpu?: CpuLoadInfo | null, disks?: DiskUsage[] | null, errors?: Record<string, string> }
+```
+
+배터리·메모리·CPU·디스크 가운데 요청한 항목을 한 번에 읽어 JSON으로 반환합니다. { collectedAt, battery, memory, cpu, disks, errors } 형태이고, 요청하지 않은 항목은 필드째 빠집니다.
+
+
+**Parameters**
+
+| Name | Type | Description |
+|------|------|-------------|
+| `sections` | `("battery" \| "memory" \| "cpu" \| "disk")[]` | 읽을 항목 목록 (default: `battery,memory,cpu,disk`) |
+| `sampleMs` | `number` | CPU 사용률을 재는 표본 구간(ms). 200ms 미만은 받지 않음 (default: `300`) |
+| `allDisks` | `boolean` | true면 마운트된 파일 시스템 전부, false면 기본 디스크 하나만 (default: `false`) |
+| `timeoutMs` | `number` | 항목 하나를 읽는 데 허용할 시간(ms) (default: `5000`) |
+
+
+**Returns**
+
+`{ collectedAt: string, battery?: BatteryInfo | null, memory?: MemoryInfo | null, cpu?: CpuLoadInfo | null, disks?: DiskUsage[] | null, errors?: Record<string, string> }` — 요청한 항목만 담긴 JSON. 읽지 못한 항목은 null이고 이유가 errors에 담김
+
+
+**CLI**
+
+```sh
+mcp-kit-cli systemInfoTool [sections] [sampleMs] [allDisks] [timeoutMs]
+```
+
+
+
+**Examples**
+
+```sh
+mcp-kit-cli systemInfoTool '["cpu","memory"]'
+# → {"collectedAt":"2026-09-25T01:15:00.000Z","memory":{...},"cpu":{...}}
+```
+```sh
+mcp-kit-cli systemInfoTool '["battery"]'
+# → {"collectedAt":"2026-09-25T01:15:00.000Z","battery":{"percent":100,...}}
 ```

@@ -1,6 +1,6 @@
 ---
 name: mcp-kit-cli
-description: Use this skill to fetch KRW exchange rates and TMDB movie listings via the mcp-kit CLI. Scrapes Naver, Google, and Daum with Playwright for USD, CNY, JPY, and EUR rates, and reads now playing, upcoming, and recommended movies from the TMDB v3 API.
+description: Use this skill to fetch KRW exchange rates, TMDB movie listings, and local system metrics via the mcp-kit CLI. Scrapes Naver, Google, and Daum with Playwright for USD, CNY, JPY, and EUR rates, reads now playing, upcoming, and recommended movies from the TMDB v3 API, and reports battery, memory, CPU, and disk usage of the machine it runs on.
 ---
 
 # mcp-kit-cli
@@ -67,6 +67,51 @@ TMDB에서 추천 영화 목록을 가져와 JSON으로 반환합니다. 기준 
 | `page` | Type: number — 조회할 페이지 번호 — default: `1` |
 | `timeoutMs` | Type: number — 요청 하나에 허용할 시간(ms) — default: `10000` |
 
+### systemBatteryTool
+
+배터리 잔량과 전원 상태를 JSON으로 반환합니다. { percent, isCharging, powerSource, timeRemainingMin, cycleCount, healthPercent, type, model } 형태이고, 배터리가 없는 기계면 null입니다
+
+| arg | description |
+|-----|-------------|
+| `timeoutMs` | Type: number — 항목 하나를 읽는 데 허용할 시간(ms) — default: `5000` |
+
+### systemMemoryTool
+
+물리 메모리와 스왑 사용량을 JSON으로 반환합니다. { totalBytes, usedBytes, availableBytes, usedPercent, cachedBytes, swap } 형태이고, usedBytes는 캐시를 뺀 실제 사용량입니다
+
+| arg | description |
+|-----|-------------|
+| `timeoutMs` | Type: number — 항목 하나를 읽는 데 허용할 시간(ms) — default: `5000` |
+
+### systemCpuTool
+
+표본 구간 동안의 CPU 사용률을 JSON으로 반환합니다. { usagePercent, userPercent, systemPercent, cores, perCorePercent, loadAveragePerCore, sampleMs } 형태이고, 코어별 사용률이 perCorePercent에 담깁니다
+
+| arg | description |
+|-----|-------------|
+| `sampleMs` | Type: number — CPU 사용률을 재는 표본 구간(ms). 200ms 미만은 받지 않음 — default: `300` |
+| `timeoutMs` | Type: number — 항목 하나를 읽는 데 허용할 시간(ms) — default: `5000` |
+
+### systemDiskTool
+
+파일 시스템 용량을 JSON 배열로 반환합니다. 항목 하나는 { mount, fs, type, totalBytes, usedBytes, availableBytes, usedPercent } 형태이고, 기본은 용량 질문에 답하는 볼륨 하나입니다
+
+| arg | description |
+|-----|-------------|
+| `allDisks` | Type: boolean — true면 마운트된 파일 시스템 전부, false면 기본 디스크 하나만 — default: `false` |
+| `timeoutMs` | Type: number — 항목 하나를 읽는 데 허용할 시간(ms) — default: `5000` |
+
+### systemInfoTool
+
+배터리·메모리·CPU·디스크 가운데 요청한 항목을 한 번에 읽어 JSON으로 반환합니다. { collectedAt, battery, memory, cpu, disks, errors } 형태이고, 요청하지 않은 항목은 필드째 빠집니다
+
+| arg | description |
+|-----|-------------|
+| `sections` | Type: ("battery" \| "memory" \| "cpu" \| "disk")[] — 읽을 항목 목록 — default: `battery,memory,cpu,disk` |
+| `sampleMs` | Type: number — CPU 사용률을 재는 표본 구간(ms). 200ms 미만은 받지 않음 — default: `300` |
+| `allDisks` | Type: boolean — true면 마운트된 파일 시스템 전부, false면 기본 디스크 하나만 — default: `false` |
+| `timeoutMs` | Type: number — 항목 하나를 읽는 데 허용할 시간(ms) — default: `5000` |
+
 ## Examples
 
 - `mcp-kit-cli exchangeRatesTool '["naver"]' '["USD"]'` => `{"naver":{"USD":{"currency":"USD","base":"KRW","rate":1358.7,...},"CNY":null,"JPY":null,"EUR":null},"google":null,"daum":null}`
@@ -75,6 +120,13 @@ TMDB에서 추천 영화 목록을 가져와 JSON으로 반환합니다. 기준 
 - `mcp-kit-cli upcomingMoviesTool ko-KR KR` => `{"kind":"upcoming","language":"ko-KR","region":"KR","page":1,...}`
 - `mcp-kit-cli movieRecommendationsTool "인터스텔라"` => `{"kind":"similar","basedOn":{"id":157336,"title":"인터스텔라"},...}`
 - `mcp-kit-cli movieRecommendationsTool null null "액션"` => `{"kind":"discover","basedOn":null,"page":1,...}`
+- `mcp-kit-cli systemBatteryTool` => `{"percent":100,"isCharging":false,"powerSource":"battery","timeRemainingMin":555,...}`
+- `mcp-kit-cli systemMemoryTool` => `{"totalBytes":34359738368,"usedBytes":24105795584,"usedPercent":70.2,...}`
+- `mcp-kit-cli systemCpuTool 500` => `{"usagePercent":28.5,"userPercent":18.9,"cores":10,"sampleMs":500,...}`
+- `mcp-kit-cli systemDiskTool` => `[{"mount":"/System/Volumes/Data","totalBytes":994662584320,"availableBytes":442990383104,"usedPercent":53.8,...}]`
+- `mcp-kit-cli systemDiskTool true` => `[{"mount":"/",...},{"mount":"/Volumes/Backup",...}]`
+- `mcp-kit-cli systemInfoTool '["cpu","memory"]'` => `{"collectedAt":"2026-09-25T01:15:00.000Z","memory":{...},"cpu":{...}}`
+- `mcp-kit-cli systemInfoTool '["battery"]'` => `{"collectedAt":"2026-09-25T01:15:00.000Z","battery":{"percent":100,...}}`
 
 ## Guidelines
 
@@ -96,4 +148,21 @@ TMDB에서 추천 영화 목록을 가져와 JSON으로 반환합니다. 기준 
 - 인증 실패·조회 실패는 예외 대신 "Error: ..." 한 줄로 돌아옵니다.
 - title과 movieId를 모두 비우면 기준 없이 이미 개봉한 인기작을 돌려줍니다.
 - genre는 기준 영화가 없을 때만 적용됩니다. 기준 영화를 주면 TMDB 추천 목록을 그대로 씁니다.
+- 크기는 모두 바이트, 비율은 모두 퍼센트(0~100)입니다.
+- 읽지 못하면 예외 대신 "Error: ..." 한 줄로 돌아옵니다.
+- 항목이 하나만 필요하면 항목별 도구를, 둘 이상 필요하면 system_info에 sections를 넘겨 한 번에 받습니다.
+- 배터리가 없는 기계면 null입니다.
+- powerSource는 어댑터에 꽂혀 있는지, isCharging은 실제로 충전되고 있는지입니다. 완충 상태로 꽂아 두면 powerSource는 "ac", isCharging은 false입니다.
+- timeRemainingMin은 배터리로 쓰는 동안만 값이 있고 충전 중에는 null입니다.
+- usedBytes는 캐시·버퍼를 뺀 값이라 운영체제 도구가 보여 주는 "사용 중"보다 작습니다. 회수 가능한 몫은 cachedBytes에 있습니다.
+- swap은 스왑을 쓰지 않는 환경에서 null입니다.
+- usagePercent는 표본 구간(sampleMs, 기본 300ms) 동안의 평균이며 순간값이 아닙니다.
+- sampleMs를 늘리면 값이 안정되는 대신 호출이 그만큼 늦어집니다.
+- loadAveragePerCore는 부하 평균을 내지 않는 Windows에서 null입니다.
+- 기본은 용량 질문에 답하는 볼륨 하나입니다. macOS는 사용자 데이터 볼륨(/System/Volumes/Data), 그 밖의 환경은 루트(/)를 고릅니다.
+- allDisks를 주면 외장 디스크와 시스템 볼륨까지 나옵니다. macOS APFS는 볼륨 여러 개가 컨테이너 하나를 나눠 쓰므로 availableBytes가 서로 겹칩니다.
+- usedPercent는 df와 같은 기준(usedBytes / (usedBytes + availableBytes))이므로 usedBytes / totalBytes와 다를 수 있습니다.
+- sections에 넣은 항목만 응답에 들어갑니다. 넣지 않은 항목은 필드째 빠집니다.
+- 항목은 동시에 읽습니다. 네 항목을 다 물어도 CPU 하나를 물을 때와 걸리는 시간이 비슷합니다.
+- 읽지 못한 항목은 null이 되고 이유가 errors에 담깁니다. errors에 없는 null 배터리는 배터리가 없는 기계입니다.
 - Run `mcp-kit-cli` with no args to list all available skills

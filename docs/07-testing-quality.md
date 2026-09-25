@@ -7,6 +7,9 @@ The test runner is **Rstest** (`@rstest/core`), configured by a single root `rst
 ```
 src/exchange/parse.test.ts      # Parsing / quoted-unit normalization unit tests
 src/tools/exchange.test.ts      # Tool handler tests
+src/system/normalize.test.ts    # Host metric conversion / primary disk selection unit tests
+src/system/collect.test.ts      # Section selection, concurrency, and timeouts (systeminformation mocked)
+src/tools/system.test.ts        # Tool handler tests against the real machine
 src/common/kit/server.test.ts   # Tool registration filters, process guards, stderr-only logging
 src/common/agent/log.test.ts    # Log serialization / redaction tests
 src/agent.test.ts               # Real LLM + real portals (excluded from the default run)
@@ -103,6 +106,7 @@ A change is complete when all of the following hold:
 - [ ] `pnpm test` passes
 - [ ] `pnpm build` completes successfully
 - [ ] README.md updated via `pnpm readme` when a new tool is added
+- [ ] A decision log lands in `.claude/decisions/` when the change touched a tool, a dependency, or the build config, made a design choice the docs do not dictate, or proceeded on an assumption because a question went unanswered — format in [.claude/decision-log.md](https://github.com/jl917/mcp-kit/blob/main/.claude/decision-log.md)
 - [ ] Commit message follows Conventional Commits
 - [ ] No unnecessary files (dist, node_modules, etc.) included in the commit
 - [ ] When `src/common/` changes, all three consumers (MCP server, CLI, doc generation) are verified
