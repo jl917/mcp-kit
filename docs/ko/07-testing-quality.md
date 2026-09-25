@@ -106,6 +106,7 @@ pnpm build           # tsup
 - [ ] `pnpm test` 통과
 - [ ] `pnpm build` 정상 완료
 - [ ] 새 도구를 추가한 경우 `pnpm readme`로 README.md 업데이트
+- [ ] 도구·의존성·빌드 설정을 건드렸거나, 문서가 정해 주지 않은 선택을 했거나, 답을 받지 못한 질문에 가정을 세웠으면 `.claude/decisions/`에 결정 기록 작성 — 형식은 [.claude/decision-log.md](https://github.com/jl917/mcp-kit/blob/main/.claude/decision-log.md)
 - [ ] Conventional Commits 형식의 커밋 메시지 작성
 - [ ] 불필요한 파일(dist, node_modules 등)이 커밋에 포함되지 않음
 - [ ] `src/common/` 변경 시 MCP 서버·CLI·문서 생성 세 경로 모두 확인

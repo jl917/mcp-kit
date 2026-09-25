@@ -106,6 +106,7 @@ A change is complete when all of the following hold:
 - [ ] `pnpm test` passes
 - [ ] `pnpm build` completes successfully
 - [ ] README.md updated via `pnpm readme` when a new tool is added
+- [ ] A decision log lands in `.claude/decisions/` when the change touched a tool, a dependency, or the build config, made a design choice the docs do not dictate, or proceeded on an assumption because a question went unanswered — format in [.claude/decision-log.md](https://github.com/jl917/mcp-kit/blob/main/.claude/decision-log.md)
 - [ ] Commit message follows Conventional Commits
 - [ ] No unnecessary files (dist, node_modules, etc.) included in the commit
 - [ ] When `src/common/` changes, all three consumers (MCP server, CLI, doc generation) are verified
