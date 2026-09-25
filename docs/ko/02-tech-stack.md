@@ -15,6 +15,7 @@
 | `@modelcontextprotocol/sdk` | `^1.29.0` | MCP 서버 구현 (Server, StdioServerTransport, CallToolResult 등) |
 | `zod` | `^4.4.2` | 도구 입력 스키마 정의 및 런타임 검증 |
 | `playwright` | `^1.50.0` | 포털 페이지를 실제로 열어 환율을 읽는 스크레이핑 엔진 |
+| `systeminformation` | `^5.33.13` | 실행 중인 기계의 배터리·메모리·CPU 부하·파일 시스템 용량을 읽는 수집기 |
 
 ## 문서 사이트
 
@@ -37,6 +38,7 @@
 - 코드 분할 (`"splitting": true`)과 `"treeshake": true` — CJS 변환을 rollup이 맡습니다
 - `playwright`를 제외한 **모든 의존성을 번들에 인라인** (`noExternal: [/^(?!playwright)/]`)
 - `playwright`만 **external** — 런타임에 자기 패키지 디렉터리에서 브라우저 드라이버를 찾으므로 번들링 불가
+- ESM 출력에는 `require` 심이 배너로 들어갑니다 (`esbuildOptions`) — 아래 참고
 - Minify 활성화 (`"minify": true`)
 - `define`으로 `package.json`의 `version`(`src/common/constants.ts`가 읽어 MCP `initialize` 응답에 실림)과 빌드 환경의 TMDB 자격 증명을 심습니다 (아래 참고)
 - 엔트리 포인트 3개: `src/index.ts`, `src/server.ts`, `src/cli.ts`
@@ -49,6 +51,23 @@ minify가 만들어 내는 `return(await x)?.y ?? z` 형태를 sucrase가 `retur
 공백 없이 붙여 놓아서, `dist/*.cjs` 전체가 파싱되지 않습니다. `treeshake: true`를 켜면 CJS 코드 분할을
 rollup이 맡고 sucrase 단계는 아예 돌지 않습니다. CI의 `Smoke test the built bundles` 단계가 빌드 결과를
 직접 로드하므로 같은 문제가 조용히 배포되지 않습니다.
+
+### ESM 출력에 `require` 심이 필요한 이유
+
+`noExternal`이 모든 의존성을 인라인하는데, 그중 일부는 CommonJS로 배포됩니다 —
+`systeminformation`은 자기 모듈 안에서 `require('os')`, `require('child_process')`를 부릅니다.
+esbuild는 이 호출을 "런타임에 `require`가 있으면 쓰고 없으면 던진다"는 형태로 남기고, ESM에는
+`require`가 없어서 도구를 하나도 부르기 전에 `Dynamic require of "os" is not supported`로 죽습니다.
+`esbuildOptions`가 **ESM 형식에만** 배너를 붙여 `node:module`로 `require`를 만들어 둡니다.
+
+```js
+import { createRequire as __createRequire } from 'node:module';
+const require = __createRequire(import.meta.url);
+```
+
+CJS 출력에는 이미 진짜 `require`가 있고 하나 더 선언하면 충돌하므로, 배너는 `context.format`을
+보고 갈립니다. 내장 모듈을 `external`로 돌리는 방법은 통하지 않습니다 —
+`noExternal: [/^(?!playwright)/]`는 `os` 같은 맨 이름까지 잡고 `external`보다 우선합니다.
 
 ### 빌드 시점 TMDB 자격 증명
 

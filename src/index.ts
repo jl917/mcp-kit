@@ -19,4 +19,19 @@ export type {
   RecommendationMode,
   TmdbAuth,
 } from '@/tmdb/index';
+export { readBattery, readCpu, readDisks, readMemory, readSnapshot } from '@/system/collect';
+export { SECTIONS } from '@/system/index';
+export type {
+  BatteryInfo,
+  CpuLoadInfo,
+  CpuReadOptions,
+  DiskReadOptions,
+  DiskUsage,
+  MemoryInfo,
+  ReadOptions,
+  SnapshotOptions,
+  SwapInfo,
+  SystemSection,
+  SystemSnapshot,
+} from '@/system/index';
 export { generateSkillMarkdown, generateReadmeSkills } from '@/common';

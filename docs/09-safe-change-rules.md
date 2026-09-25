@@ -11,6 +11,7 @@
 | `zod` version | All tool schema definitions depend on it |
 | `tsup.config.ts` `external`/`noExternal` settings | Directly affects bundling results (`playwright` must stay external) |
 | `tsup.config.ts` `treeshake: true` | Removing it puts sucrase back in the CJS path, which emits `returnawait` and makes every `dist/*.cjs` unparseable |
+| `tsup.config.ts` ESM `require` shim (`esbuildOptions`) | Inlined CommonJS dependencies (`systeminformation`) `require` Node builtins; without the banner every `dist/*.js` dies on import with `Dynamic require of "os" is not supported` |
 | `release-please-config.json` / `.release-please-manifest.json` | Directly affects version management policy and the tracked version |
 | Tool `name` fields in `src/tools/` | Tool identifiers exposed via MCP protocol — changes break client compatibility |
 

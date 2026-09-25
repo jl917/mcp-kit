@@ -30,6 +30,7 @@ pnpm 기반 단일 저장소. KRW 환율을 조회하는 MCP(Model Context Proto
 | 공개 API·빌드 설정·릴리스 설정 변경, 구조 변경 | [09-safe-change-rules](docs/09-safe-change-rules.md) |
 | 명령어 실행, MCP 서버·CLI 구동, 배포 절차 | [10-commands](docs/10-commands.md) |
 | 커밋 메시지 작성 | [.claude/rules.md](.claude/rules.md) |
+| 작업을 마무리할 때 질문·결정 기록 남기기 | [.claude/decision-log.md](.claude/decision-log.md) |
 | 브랜치 생성, PR, 병합 절차 | [CONTRIBUTING.md](CONTRIBUTING.md) |
 
 > `docs/*.md`가 기준 문서이고 `docs/ko/*.md`는 한국어 미러입니다. 한쪽을 고치면 **반드시 다른 쪽도 함께** 고칩니다.
@@ -48,7 +49,8 @@ pnpm 기반 단일 저장소. KRW 환율을 조회하는 MCP(Model Context Proto
 **설계 불변식** — 03-architecture
 - `@/common`은 `agent/`를 재노출하지 않습니다. 에이전트 키트는 `@/common/agent`로만 가져오며, 배포 번들(`dist/`)에 langchain·deepagents가 들어가면 안 됩니다.
 - 진입점(`src/server.ts`, `src/cli.ts`)은 도구를 `createMcpServer()` / `runCli()`에 넘기기만 하는 얇은 레이어로 유지합니다.
-- 도메인 로직은 `src/exchange/`, MCP 노출 인터페이스는 `src/tools/`, 공용 로직은 `src/common/kit/`에 둡니다.
+- 도메인 로직은 `src/exchange/`·`src/tmdb/`·`src/system/`, MCP 노출 인터페이스는 `src/tools/`, 공용 로직은 `src/common/kit/`에 둡니다.
+- `tsup.config.ts`의 ESM `require` 심(`esbuildOptions`)은 유지합니다. CJS로 배포된 인라인 의존성(`systeminformation`)이 내장 모듈을 `require`하므로, 이 배너를 빼면 ESM 번들이 불러오는 순간 죽습니다.
 
 **코드 규칙** — 04-coding-rules
 - import는 `@/*` 별칭(`@/*` → `src/*`), 파일 확장자는 생략, default export 금지
@@ -64,6 +66,7 @@ pnpm 기반 단일 저장소. KRW 환율을 조회하는 MCP(Model Context Proto
 - `pnpm lint` → `format:check` → `typecheck` → `test` → `build` 전부 통과해야 완료입니다 (CI와 동일한 순서).
 - 도구를 추가·변경했으면 `pnpm readme`로 README.md를 재생성합니다.
 - 커밋 메시지는 Conventional Commits를 따릅니다.
+- **주고받은 질문과 내린 결정을 `.claude/decisions/YYYY-MM-DD-<slug>.md`에 남깁니다.** 도구·의존성·빌드 설정을 건드렸거나, 문서가 정해 주지 않은 선택을 했거나, 물어본 것에 답을 받지 못한 채 가정을 세웠으면 필수입니다. 형식은 [.claude/decision-log.md](.claude/decision-log.md)에 있습니다.
 - 작업은 짧은 수명의 브랜치에서 하고 `main`을 대상으로 PR을 엽니다. `main`에 직접 push하지 않습니다.
 
 ## 디렉토리 구조
@@ -76,6 +79,7 @@ src/
 ├── tools/          # MCP 도구 정의
 ├── exchange/       # 환율 스크레이핑 도메인
 ├── tmdb/           # TMDB 영화 조회 도메인 (TMDB_API_KEY 또는 TMDB_ACCESS_TOKEN 필요)
+├── system/         # 기계 상태 도메인 (배터리·메모리·CPU·디스크, systeminformation)
 └── common/         # 공용 kit(tool/server/cli/skill) · agent
 docs/               # 문서 사이트 콘텐츠 (rspress, en + ko)
 scripts/            # README 생성, 문서 플러그인

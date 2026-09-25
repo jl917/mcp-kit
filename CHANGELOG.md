@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/jl917/mcp-kit/compare/v2.3.0...v2.4.0) (2026-09-25)
+
+
+### Features
+
+* **system:** add battery, memory, cpu, and disk tools ([#58](https://github.com/jl917/mcp-kit/issues/58)) ([81c53d9](https://github.com/jl917/mcp-kit/commit/81c53d90b475a6859906004fbe3a62be75241e03))
+
 ## [2.3.0](https://github.com/jl917/mcp-kit/compare/v2.2.1...v2.3.0) (2026-09-23)
 
 

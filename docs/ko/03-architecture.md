@@ -12,6 +12,7 @@ mcp-kit/
 │   ├── tools/          # MCP 도구 정의
 │   ├── exchange/       # 환율 스크레이핑 도메인
 │   ├── tmdb/           # TMDB 영화 조회 도메인
+│   ├── system/         # 기계 상태 도메인 (배터리 / 메모리 / CPU / 디스크)
 │   └── common/         # 공유 키트 (별도 배포 없음, 번들에 인라인)
 ├── docs/               # Rspress 문서 사이트 콘텐츠
 ├── scripts/            # README 생성, Rspress 플러그인
@@ -69,7 +70,9 @@ src/tools/
 ├── exchange.ts     # exchangeRatesTool, exchangeRateTool 정의
 ├── exchange.test.ts
 ├── movie.ts        # nowPlayingMoviesTool, upcomingMoviesTool, movieRecommendationsTool 정의
-└── movie.test.ts
+├── movie.test.ts
+├── system.ts       # systemBatteryTool, systemMemoryTool, systemCpuTool, systemDiskTool, systemInfoTool 정의
+└── system.test.ts
 ```
 
 ### `src/exchange/` — 환율 스크레이핑 도메인
@@ -101,6 +104,26 @@ src/tmdb/
 ```
 
 인증은 환경 변수에서 읽습니다. `TMDB_API_KEY`(v3 API 키)는 쿼리 문자열로, `TMDB_ACCESS_TOKEN`(읽기 액세스 토큰)은 Bearer 헤더로 보냅니다. 둘 다 있으면 토큰을 써서 비밀값이 URL에 남지 않게 합니다.
+
+### `src/system/` — 기계 상태 도메인
+
+서버가 돌고 있는 기계를 [`systeminformation`](https://systeminformation.io)으로 읽습니다. 네트워크도 자격 증명도 브라우저도 쓰지 않지만, 이 패키지는 플랫폼 명령(`ioreg`, `vm_stat`, `df` 등)을 실행하므로 읽기마다 제한 시간을 걸어 둡니다.
+
+```
+src/system/
+├── index.ts        # 도메인 진입점 (재노출)
+├── types.ts        # SECTIONS, BatteryInfo / MemoryInfo / CpuLoadInfo / DiskUsage / SystemSnapshot, 기본값
+├── normalize.ts    # systeminformation 원본 → 위 타입으로 정리, pickPrimaryDisk()
+└── collect.ts      # readBattery / readMemory / readCpu / readDisks / readSnapshot, 제한 시간
+```
+
+이 도메인의 결정 세 가지는 원본 수치가 질문과 다른 답을 주기 때문에 있습니다.
+
+- **CPU 부하는 표본을 두 번 뜹니다.** `currentLoad()`는 앞선 호출과의 차이를 돌려주므로 프로세스의 첫 호출은 부팅 이후 평균입니다. `readCpu()`는 한 번 눌러 기준점을 잡고 `sampleMs`(최소 200ms — 그보다 짧으면 `systeminformation`이 캐시된 값을 돌려줍니다)를 기다린 뒤 다시 읽습니다.
+- **메모리는 `used`가 아니라 `active`를 셉니다.** macOS·Linux의 `used`는 캐시와 버퍼를 포함해 한가한 기계도 90%대로 만듭니다. 회수 가능한 몫은 `cachedBytes`로 따로 담습니다.
+- **디스크는 전부가 아니라 하나를 고릅니다.** macOS는 APFS 컨테이너 하나를 여러 볼륨으로 쪼개고 `/`에 읽기 전용 시스템 스냅샷을 올려 사용률이 3% 남짓으로 나옵니다. `pickPrimaryDisk()`는 darwin에서 `/System/Volumes/Data`, Windows에서 작업 디렉터리가 놓인 드라이브, 그 밖에서는 `/`를 고릅니다. `allDisks`를 주면 마운트된 것을 모두 돌려줍니다.
+
+`readSnapshot()`은 요청한 항목을 동시에 읽으므로 네 항목을 다 물어도 CPU 하나를 물을 때와 비용이 비슷합니다. 실패한 항목은 `null`이 되고 이유가 `errors`에 담기는데, 이것이 "배터리를 읽지 못했다"와 "배터리가 없는 기계다"를 가릅니다.
 
 ### `docs/` + `rspress.config.ts` — Rspress 문서 사이트
 
@@ -145,7 +168,8 @@ graph TD
         Agent["src/common/agent — @/common/agent<br/>llm · log · runner (테스트 전용)"]
         Exchange["src/exchange<br/>네이버 / 구글 / 다음 스크레이퍼"]
         Tmdb["src/tmdb<br/>TMDB v3 REST 클라이언트"]
-        Tools["src/tools<br/>exchange_rates · exchange_rate<br/>movies_now_playing · movies_upcoming · movie_recommendations"]
+        System["src/system<br/>systeminformation 수집기"]
+        Tools["src/tools<br/>exchange_rates · exchange_rate<br/>movies_now_playing · movies_upcoming · movie_recommendations<br/>system_battery · system_memory · system_cpu · system_disk · system_info"]
         Entries["src/index.ts · server.ts · cli.ts"]
         Site["docs + rspress.config.ts<br/>Rspress 문서 사이트"]
     end
@@ -153,6 +177,7 @@ graph TD
     Common --> Tools
     Exchange --> Tools
     Tmdb --> Tools
+    System --> Tools
     Tools --> Entries
     Agent -.->|"agent.test.ts에서만 사용<br/>(dist에 미포함)"| Entries
     Entries -.->|"README → /api 페이지"| Site
@@ -212,7 +237,7 @@ flowchart LR
 ## 관심사 분리 원칙
 
 1. **도구 정의는 `src/tools/`** 에서 담당 — MCP에 노출할 인터페이스는 여기에만 위치
-2. **도메인 로직은 `src/exchange/`** 에서 담당 — 스크레이핑·파싱·타임아웃 처리
+2. **도메인 로직은 `src/exchange/`, `src/tmdb/`, `src/system/`** 에서 담당 — 스크레이핑·파싱·타임아웃 처리
 3. **MCP 서버/CLI 공통 로직은 `src/common/kit/`** 에서 담당 — 서버 생성, CLI 파싱, 에러 처리 등
 4. **`src/server.ts`** 는 도구 객체를 `createMcpServer()`에 전달하는 역할만 수행 (매우 얇은 레이어)
 5. **`src/cli.ts`** 는 도구 객체를 `runCli()`에 전달하는 역할만 수행 (매우 얇은 레이어)
@@ -222,5 +247,6 @@ flowchart LR
 - **새 도구 추가**: `src/tools/` 하위에 파일 추가 (또는 기존 파일에 추가) 후 `src/tools/index.ts`에 집계
 - **새 포털/통화 추가**: `src/exchange/providers/`에 스크레이퍼 추가, `src/exchange/types.ts`에 상수 추가
 - **새 TMDB 엔드포인트 추가**: `src/tmdb/movies.ts`에 호출 추가, `src/tmdb/types.ts`에 응답 타입 추가
+- **새 기계 상태 항목 추가**: `src/system/types.ts`의 `SECTIONS`에 항목 이름, `src/system/normalize.ts`에 정리 함수, `src/system/collect.ts`에 읽기 함수 추가
 - **공통 기능 추가**: `src/common/kit/`에 모듈 추가
 - **빌드 설정 변경**: 루트 `tsup.config.ts` 수정

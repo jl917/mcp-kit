@@ -1,7 +1,7 @@
 {
   "name": "@julong/mcp-kit",
-  "version": "2.3.0",
-  "description": "Use this skill to fetch KRW exchange rates and TMDB movie listings via the mcp-kit CLI. Scrapes Naver, Google, and Daum with Playwright for USD, CNY, JPY, and EUR rates, and reads now playing, upcoming, and recommended movies from the TMDB v3 API.",
+  "version": "2.4.0",
+  "description": "Use this skill to fetch KRW exchange rates, TMDB movie listings, and local system metrics via the mcp-kit CLI. Scrapes Naver, Google, and Daum with Playwright for USD, CNY, JPY, and EUR rates, reads now playing, upcoming, and recommended movies from the TMDB v3 API, and reports battery, memory, CPU, and disk usage of the machine it runs on.",
   "license": "ISC",
   "type": "module",
   "packageManager": "pnpm@9.12.1",
@@ -43,7 +43,8 @@
     "docs:build": "rspress build"
   },
   "dependencies": {
-    "playwright": "^1.50.0"
+    "playwright": "^1.50.0",
+    "systeminformation": "^5.33.13"
   },
   "devDependencies": {
     "@langchain/core": "^1.2.12",
