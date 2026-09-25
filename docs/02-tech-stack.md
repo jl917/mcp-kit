@@ -17,6 +17,12 @@
 | `playwright` | `^1.50.0` | Scraping engine that opens each portal page to read rates |
 | `systeminformation` | `^5.33.13` | Reads battery, memory, CPU load, and filesystem usage of the host |
 
+> **Which `package.json` field a new package goes in.** Everything here except `playwright` is
+> bundled, so it is only needed to build — it belongs in `devDependencies`. `dependencies` is
+> reserved for packages that stay `external` in `tsup.config.ts` and therefore have to be installed
+> alongside the published bundle; `playwright` is the only one. Putting a bundled package in
+> `dependencies` still works, but every consumer then downloads a copy they never load.
+
 ## Documentation Site
 
 | Tool | Version | Purpose |

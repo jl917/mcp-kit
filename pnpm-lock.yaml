@@ -11,9 +11,6 @@ importers:
       playwright:
         specifier: ^1.50.0
         version: 1.63.0
-      systeminformation:
-        specifier: ^5.33.13
-        version: 5.33.13
     devDependencies:
       '@langchain/core':
         specifier: ^1.2.12
@@ -66,6 +63,9 @@ importers:
       rspress-plugin-mermaid:
         specifier: ^1.0.1
         version: 1.0.1(@rspress/core@2.0.12(@rspack/core@2.0.5(@swc/helpers@0.5.23))(@types/mdast@4.0.4)(@types/react@19.2.15)(core-js@3.42.0)(micromark-util-types@2.0.2)(micromark@4.0.2))
+      systeminformation:
+        specifier: ^5.33.13
+        version: 5.33.13
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(typescript@5.9.3)(yaml@2.9.0)
