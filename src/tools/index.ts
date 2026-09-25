@@ -1,8 +1,16 @@
 import { tools as exchangeTools } from './exchange';
 import { tools as movieTools } from './movie';
+import { tools as systemTools } from './system';
 
 export { exchangeRatesTool, exchangeRateTool } from './exchange';
 export { nowPlayingMoviesTool, upcomingMoviesTool, movieRecommendationsTool } from './movie';
+export {
+  systemBatteryTool,
+  systemMemoryTool,
+  systemCpuTool,
+  systemDiskTool,
+  systemInfoTool,
+} from './system';
 
 /**
  * MCP 클라이언트 설정에 실어 줘야 하는 환경 변수.
@@ -13,4 +21,4 @@ export { nowPlayingMoviesTool, upcomingMoviesTool, movieRecommendationsTool } fr
  */
 export const UTILS_ENV_KEYS = ['TMDB_API_KEY'] as const;
 
-export const tools = { ...exchangeTools, ...movieTools };
+export const tools = { ...exchangeTools, ...movieTools, ...systemTools };

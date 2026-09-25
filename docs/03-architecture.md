@@ -12,6 +12,7 @@ mcp-kit/
 │   ├── tools/          # MCP tool definitions
 │   ├── exchange/       # Exchange-rate scraping domain
 │   ├── tmdb/           # TMDB movie lookup domain
+│   ├── system/         # Host metrics domain (battery / memory / CPU / disk)
 │   └── common/         # Shared kit (never published separately, inlined into the bundle)
 ├── docs/               # Rspress documentation site content
 ├── scripts/            # README generation, Rspress plugin
@@ -70,7 +71,9 @@ src/tools/
 ├── exchange.ts     # exchangeRatesTool, exchangeRateTool definitions
 ├── exchange.test.ts
 ├── movie.ts        # nowPlayingMoviesTool, upcomingMoviesTool, movieRecommendationsTool definitions
-└── movie.test.ts
+├── movie.test.ts
+├── system.ts       # systemBatteryTool, systemMemoryTool, systemCpuTool, systemDiskTool, systemInfoTool definitions
+└── system.test.ts
 ```
 
 ### `src/exchange/` — Exchange-Rate Scraping Domain
@@ -102,6 +105,26 @@ src/tmdb/
 ```
 
 Authentication comes from the environment: `TMDB_API_KEY` (v3 API key, sent as a query parameter) or `TMDB_ACCESS_TOKEN` (read access token, sent as a bearer header). When both are set the token wins, so the secret never lands in a URL.
+
+### `src/system/` — Host Metrics Domain
+
+Reads the machine the server runs on through [`systeminformation`](https://systeminformation.io). No network, no credential, and no browser — the package shells out to platform commands (`ioreg`, `vm_stat`, `df`, …), so every read is wrapped in a timeout.
+
+```
+src/system/
+├── index.ts        # Domain entry point (re-exports)
+├── types.ts        # SECTIONS, BatteryInfo / MemoryInfo / CpuLoadInfo / DiskUsage / SystemSnapshot, defaults
+├── normalize.ts    # Raw systeminformation payload → the types above, plus pickPrimaryDisk()
+└── collect.ts      # readBattery / readMemory / readCpu / readDisks / readSnapshot, timeouts
+```
+
+Three decisions in this domain exist because the raw numbers answer the wrong question:
+
+- **CPU load is sampled twice.** `currentLoad()` reports the delta since the previous call, so the first call in a process is the average since boot. `readCpu()` primes it, waits `sampleMs` (at least 200ms — below that `systeminformation` returns its cached reading), then reads again.
+- **Memory counts `active`, not `used`.** On macOS and Linux `used` includes cache and buffers, which puts an idle machine in the 90s. The reclaimable part is reported separately as `cachedBytes`.
+- **One disk is chosen, not all of them.** macOS splits a single APFS container into several volumes and mounts a read-only system snapshot at `/`, which reports about 3% usage. `pickPrimaryDisk()` prefers `/System/Volumes/Data` on darwin, the working directory's drive on Windows, and `/` elsewhere. `allDisks` returns every mount instead.
+
+`readSnapshot()` reads the requested sections concurrently, so asking for all four costs about as much as asking for CPU alone. A section that fails becomes `null` and the reason lands in `errors`, which is what separates "could not read the battery" from "this machine has no battery".
 
 ### `docs/` + `rspress.config.ts` — Rspress Documentation Site
 
@@ -146,7 +169,8 @@ graph TD
         Agent["src/common/agent — @/common/agent<br/>llm · log · runner (test-only)"]
         Exchange["src/exchange<br/>Naver / Google / Daum scrapers"]
         Tmdb["src/tmdb<br/>TMDB v3 REST client"]
-        Tools["src/tools<br/>exchange_rates · exchange_rate<br/>movies_now_playing · movies_upcoming · movie_recommendations"]
+        System["src/system<br/>systeminformation collectors"]
+        Tools["src/tools<br/>exchange_rates · exchange_rate<br/>movies_now_playing · movies_upcoming · movie_recommendations<br/>system_battery · system_memory · system_cpu · system_disk · system_info"]
         Entries["src/index.ts · server.ts · cli.ts"]
         Site["docs + rspress.config.ts<br/>Rspress documentation site"]
     end
@@ -154,6 +178,7 @@ graph TD
     Common --> Tools
     Exchange --> Tools
     Tmdb --> Tools
+    System --> Tools
     Tools --> Entries
     Agent -.->|"used only by agent.test.ts<br/>(not in dist)"| Entries
     Entries -.->|"README → /api page"| Site
@@ -213,7 +238,7 @@ flowchart LR
 ## Separation of Concerns
 
 1. **Tool definitions live in `src/tools/`** — the MCP-facing interface belongs only here
-2. **Domain logic lives in `src/exchange/`** — scraping, parsing, timeout handling
+2. **Domain logic lives in `src/exchange/`, `src/tmdb/`, `src/system/`** — scraping, parsing, timeout handling
 3. **Shared MCP server/CLI logic lives in `src/common/kit/`** — server creation, CLI parsing, error handling
 4. **`src/server.ts`** only passes the tool objects to `createMcpServer()` (a very thin layer)
 5. **`src/cli.ts`** only passes the tool objects to `runCli()` (a very thin layer)
@@ -223,5 +248,6 @@ flowchart LR
 - **New tool**: add a file under `src/tools/` (or extend an existing one) and aggregate it in `src/tools/index.ts`
 - **New portal/currency**: add a scraper under `src/exchange/providers/` and the constant in `src/exchange/types.ts`
 - **New TMDB endpoint**: add the call in `src/tmdb/movies.ts` and the response type in `src/tmdb/types.ts`
+- **New host metric**: add the section name to `SECTIONS` in `src/system/types.ts`, the conversion in `src/system/normalize.ts`, and the reader in `src/system/collect.ts`
 - **New shared capability**: add a module under `src/common/kit/`
 - **Build config changes**: edit the root `tsup.config.ts`

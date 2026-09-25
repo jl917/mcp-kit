@@ -15,6 +15,7 @@
 | `@modelcontextprotocol/sdk` | `^1.29.0` | MCP server implementation (Server, StdioServerTransport, CallToolResult, etc.) |
 | `zod` | `^4.4.2` | Tool input schema definition and runtime validation |
 | `playwright` | `^1.50.0` | Scraping engine that opens each portal page to read rates |
+| `systeminformation` | `^5.33.13` | Reads battery, memory, CPU load, and filesystem usage of the host |
 
 ## Documentation Site
 
@@ -37,6 +38,7 @@ Bundling config (`tsup.config.ts`):
 - Code splitting with `splitting: true`, and `treeshake: true` so rollup performs the CJS conversion
 - Every dependency is inlined except `playwright` (`noExternal: [/^(?!playwright)/]`)
 - `playwright` stays **external** — it resolves browser drivers from its own package directory at runtime and cannot be bundled
+- The ESM output carries a `require` shim in its banner (`esbuildOptions`) — see below
 - Minify enabled
 - `define` injects the build environment's TMDB credentials into the bundle (see below)
 - 3 entry points: `src/index.ts`, `src/server.ts`, `src/cli.ts`
@@ -49,6 +51,23 @@ bundle. Sucrase rewrites `return(await x)?.y ?? z` — the shape minification pr
 `returnawait _asyncNullishCoalesce(...)`, with the space dropped, and every `dist/*.cjs` fails to
 parse. `treeshake: true` hands CJS code splitting to rollup instead and the sucrase pass never
 runs. The `Smoke test the built bundles` step in CI loads the output so this cannot ship unnoticed.
+
+### Why the ESM Output Needs a `require` Shim
+
+`noExternal` inlines every dependency, and some of them ship as CommonJS — `systeminformation`
+calls `require('os')` and `require('child_process')` inside its own modules. esbuild leaves those
+calls as "use `require` if the runtime has one, otherwise throw", and ESM has none, so importing the
+bundle died on `Dynamic require of "os" is not supported` before any tool ran. `esbuildOptions` adds
+a banner to the **ESM format only** that builds a `require` from `node:module`:
+
+```js
+import { createRequire as __createRequire } from 'node:module';
+const require = __createRequire(import.meta.url);
+```
+
+The CJS output already has a real `require`, and declaring another one there would collide, which is
+why the banner is keyed off `context.format`. Marking the builtins `external` does not help —
+`noExternal: [/^(?!playwright)/]` matches bare names like `os` too and wins over `external`.
 
 ### Build-Time TMDB Credentials
 

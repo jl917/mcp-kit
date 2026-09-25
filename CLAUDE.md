@@ -48,7 +48,8 @@ pnpm 기반 단일 저장소. KRW 환율을 조회하는 MCP(Model Context Proto
 **설계 불변식** — 03-architecture
 - `@/common`은 `agent/`를 재노출하지 않습니다. 에이전트 키트는 `@/common/agent`로만 가져오며, 배포 번들(`dist/`)에 langchain·deepagents가 들어가면 안 됩니다.
 - 진입점(`src/server.ts`, `src/cli.ts`)은 도구를 `createMcpServer()` / `runCli()`에 넘기기만 하는 얇은 레이어로 유지합니다.
-- 도메인 로직은 `src/exchange/`, MCP 노출 인터페이스는 `src/tools/`, 공용 로직은 `src/common/kit/`에 둡니다.
+- 도메인 로직은 `src/exchange/`·`src/tmdb/`·`src/system/`, MCP 노출 인터페이스는 `src/tools/`, 공용 로직은 `src/common/kit/`에 둡니다.
+- `tsup.config.ts`의 ESM `require` 심(`esbuildOptions`)은 유지합니다. CJS로 배포된 인라인 의존성(`systeminformation`)이 내장 모듈을 `require`하므로, 이 배너를 빼면 ESM 번들이 불러오는 순간 죽습니다.
 
 **코드 규칙** — 04-coding-rules
 - import는 `@/*` 별칭(`@/*` → `src/*`), 파일 확장자는 생략, default export 금지
@@ -76,6 +77,7 @@ src/
 ├── tools/          # MCP 도구 정의
 ├── exchange/       # 환율 스크레이핑 도메인
 ├── tmdb/           # TMDB 영화 조회 도메인 (TMDB_API_KEY 또는 TMDB_ACCESS_TOKEN 필요)
+├── system/         # 기계 상태 도메인 (배터리·메모리·CPU·디스크, systeminformation)
 └── common/         # 공용 kit(tool/server/cli/skill) · agent
 docs/               # 문서 사이트 콘텐츠 (rspress, en + ko)
 scripts/            # README 생성, 문서 플러그인

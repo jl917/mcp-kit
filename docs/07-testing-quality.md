@@ -7,6 +7,9 @@ The test runner is **Rstest** (`@rstest/core`), configured by a single root `rst
 ```
 src/exchange/parse.test.ts      # Parsing / quoted-unit normalization unit tests
 src/tools/exchange.test.ts      # Tool handler tests
+src/system/normalize.test.ts    # Host metric conversion / primary disk selection unit tests
+src/system/collect.test.ts      # Section selection, concurrency, and timeouts (systeminformation mocked)
+src/tools/system.test.ts        # Tool handler tests against the real machine
 src/common/kit/server.test.ts   # Tool registration filters, process guards, stderr-only logging
 src/common/agent/log.test.ts    # Log serialization / redaction tests
 src/agent.test.ts               # Real LLM + real portals (excluded from the default run)
