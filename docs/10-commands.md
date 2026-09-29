@@ -22,7 +22,7 @@ pnpm install --frozen-lockfile   # CI
 # Build (tsup — 3 entries: index / server / cli)
 pnpm build
 
-# Dev mode (watch + regenerate SKILL.md and README)
+# Dev mode (watch)
 pnpm dev
 
 # Clean (remove dist, coverage, doc_build, node_modules)
@@ -42,12 +42,11 @@ pnpm format:check
 pnpm typecheck        # tsc --noEmit
 ```
 
-## Documentation Generation
+## Documentation
 
-```bash
-# Regenerate README.md (needs bun; no build required — imports the TS source directly)
-pnpm readme
-```
+`README.md` and `skills/<bin>/SKILL.md` are hand-written — there is no generation
+command. Editing a tool means editing both files by hand. See
+[08-file-creation-rules](08-file-creation-rules.md) for the checklist.
 
 ## Documentation Site (Rspress)
 
@@ -359,7 +358,7 @@ gh pr create --base main
 # Inspect the built bundle
 ls dist/
 
-# Inspect the generated skill docs
+# Inspect the skill docs
 ls skills/
 
 # Inspect the docs site build output

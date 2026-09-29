@@ -22,7 +22,7 @@ pnpm install --frozen-lockfile   # CI 환경
 # 빌드 (tsup — index / server / cli 3개 엔트리)
 pnpm build
 
-# 개발 모드 (파일 변경 감시 + SKILL.md·README 재생성)
+# 개발 모드 (파일 변경 감시)
 pnpm dev
 
 # 클린 (dist, coverage, doc_build, node_modules 제거)
@@ -42,12 +42,11 @@ pnpm format:check
 pnpm typecheck        # tsc --noEmit
 ```
 
-## 문서 생성
+## 문서
 
-```bash
-# README.md 재생성 (bun 필요, build 불필요 — TS 소스를 직접 import)
-pnpm readme
-```
+`README.md`와 `skills/<bin>/SKILL.md`는 손으로 씁니다. 생성 명령은 없습니다. 도구를
+고치면 두 파일을 함께 고칩니다. 체크리스트는
+[08-file-creation-rules](08-file-creation-rules.md)에 있습니다.
 
 ## 문서 사이트 (Rspress)
 
@@ -353,7 +352,7 @@ gh pr create --base main
 # 빌드된 번들 내용 확인
 ls dist/
 
-# 생성된 스킬 문서 확인
+# 스킬 문서 확인
 ls skills/
 
 # 문서 사이트 빌드 결과 확인

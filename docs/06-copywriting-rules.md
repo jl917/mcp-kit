@@ -4,7 +4,7 @@
 
 These rules apply to:
 - Package `description` field (package.json)
-- Each tool's `description` and `guidelines`
+- Each tool's `description` and each `.describe()` on an `inputSchema` field
 - README.md content
 - CHANGELOG.md (auto-generated)
 - CLI output messages

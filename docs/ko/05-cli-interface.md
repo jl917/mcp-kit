@@ -37,7 +37,7 @@ CLI는 `runCli()`를 통해 다음과 같은 형식으로 출력됩니다:
 
 ## 컴포넌트 재사용 주의사항
 
-- **`src/common/kit/`의 함수는 MCP 서버·CLI·문서 생성기가 모두 재사용**함. 변경 시 세 경로 모두에 영향이 가므로 주의
-- **동일한 도구 정의가 `scripts/update-readme.mjs`와 `src/tools/*.ts`에 중복되지 않도록** 관리 — bun이 TS 소스를 직접 import하므로 중복 파일 생성 금지
-- 빌드 설정(`tsup.config.ts`)은 번들·shebang·스킬/README 생성을 모두 좌우하므로, 변경 전 세 가지 영향을 함께 확인
-- 문서 생성 헬퍼(`skill.ts`의 `generateReadmeApiDocs()`)는 `typeLabels`, `typeDefs`, `returnType`, `returnDescription` 필드를 사용하여 풍부한 API 문서를 생성함. 도구 정의 시 이 필드들을 함께 작성할 것
+- **`src/common/kit/`의 함수는 MCP 서버와 CLI가 함께 재사용**함. 변경 시 두 경로 모두에 영향이 가므로 주의
+- **모든 필드가 required이고 `null`이 "기본값을 쓰라"는 뜻입니다.** `runCli()`가 생략된 위치 인자를 `null`로 채우므로 명령줄에서는 선택 인자처럼 동작합니다. 이유는 [04-coding-rules](04-coding-rules.md)에 있습니다
+- 빌드 설정(`tsup.config.ts`)은 번들과 shebang을 좌우합니다. 이제 문서는 쓰지 않습니다
+- **인자 문서는 손으로 씁니다.** 인자 표·기본값·범위·반환 형태는 `README.md`와 `SKILL.md`에 있습니다. 도구 정의에서 생성되는 것은 없습니다

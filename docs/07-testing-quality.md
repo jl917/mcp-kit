@@ -39,13 +39,13 @@ pnpm test:agent      # Runs agent.test.ts with RUN_AGENT_TESTS=1
 | 🔴 High | Exchange rate parsing | Quoted-unit normalization (e.g. per-100-JPY), comma/whitespace handling, `null` for unreadable values |
 | 🟡 Medium | MCP server registration | Whether `createMcpServer()` registers all tools correctly |
 | 🟡 Medium | CLI parsing | `runCli()` argument parsing (including automatic JSON parsing) |
-| 🟢 Low | Doc generation | `generateReadmeApiDocs()` output format |
+| 🔴 High | Tool schemas | OpenAI tool guide conformance (`src/tools/openai-schema.test.ts`) |
 
 ## Testing Rules for New Code
 
 1. **Whenever a new tool is added**, write a unit test for its handler
 2. Add validation tests when parameter Zod schemas are added/changed
-3. Verify that `examples` actually work
+3. Verify that the commands written in `README.md` and `SKILL.md` actually work
 4. Gate tests that need network or a browser behind `describe.skipIf` so the default run stays fast
 
 ## Quality Verification
@@ -105,8 +105,8 @@ A change is complete when all of the following hold:
 - [ ] `pnpm typecheck` passes
 - [ ] `pnpm test` passes
 - [ ] `pnpm build` completes successfully
-- [ ] README.md updated via `pnpm readme` when a new tool is added
+- [ ] `README.md` and `skills/<bin>/SKILL.md` updated by hand when a tool is added or changed
 - [ ] A decision log lands in `.claude/decisions/` when the change touched a tool, a dependency, or the build config, made a design choice the docs do not dictate, or proceeded on an assumption because a question went unanswered — format in [.claude/decision-log.md](https://github.com/jl917/mcp-kit/blob/main/.claude/decision-log.md)
 - [ ] Commit message follows Conventional Commits
 - [ ] No unnecessary files (dist, node_modules, etc.) included in the commit
-- [ ] When `src/common/` changes, all three consumers (MCP server, CLI, doc generation) are verified
+- [ ] When `src/common/` changes, both consumers (MCP server, CLI) are verified

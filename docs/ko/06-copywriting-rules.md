@@ -4,7 +4,7 @@
 
 이 규칙은 다음에 적용됩니다:
 - 패키지 `description` 필드 (package.json)
-- 각 도구의 `description` 및 `guidelines`
+- 각 도구의 `description`과 `inputSchema` 각 필드의 `.describe()`
 - README.md 내용
 - CHANGELOG.md (자동 생성)
 - CLI 출력 메시지

@@ -48,7 +48,7 @@
 - Minify 활성화 (`"minify": true`)
 - `define`으로 `package.json`의 `version`(`src/common/constants.ts`가 읽어 MCP `initialize` 응답에 실림)과 빌드 환경의 TMDB 자격 증명을 심습니다 (아래 참고)
 - 엔트리 포인트 3개: `src/index.ts`, `src/server.ts`, `src/cli.ts`
-- 빌드 후처리: `server`/`cli` 번들에 shebang 추가, 빈 청크 제거, `dev`에서는 `skills/<bin>/SKILL.md`와 README 재생성
+- 빌드 후처리: `server`/`cli` 번들에 shebang 추가, 빈 청크 제거. 빌드는 `README.md`와 `skills/<bin>/SKILL.md`를 건드리지 않습니다 — 둘 다 손으로 씁니다
 
 ### `treeshake: true`를 뺄 수 없는 이유
 
@@ -108,7 +108,6 @@ PR에는 시크릿이 내려오지 않아 심지 않은 빌드가 나오는 것�
 | **Rslint** (`@rslint/core`) | `^0.5.3` | 린트 (`rslint.config.ts`) |
 | **Prettier** | `^3.5.3` | 포매팅 (`.prettierrc`) |
 | **Rstest** (`@rstest/core`) | `^0.10.3` | 테스트 러너 + v8 커버리지 (`rstest.config.ts`) |
-| **Bun** | `^1.2.0` | `scripts/update-readme.mjs`가 TypeScript를 직접 import하기 위해 사용 |
 
 ## 에이전트 테스트 (선택)
 
