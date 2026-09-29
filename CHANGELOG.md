@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/jl917/mcp-kit/compare/v2.4.1...v3.0.0) (2026-09-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* generateSkillMarkdown and generateReadmeSkills are no longer exported from @julong/mcp-kit. The `exports` and `bin` paths are unchanged.
+
+### Code Refactoring
+
+* hand-write the docs and follow the OpenAI tool guide ([#63](https://github.com/jl917/mcp-kit/issues/63)) ([69d7a1d](https://github.com/jl917/mcp-kit/commit/69d7a1da1b6d19d1943c90104cb74f0166ad07d5))
+
 ## [2.4.1](https://github.com/jl917/mcp-kit/compare/v2.4.0...v2.4.1) (2026-09-25)
 
 
