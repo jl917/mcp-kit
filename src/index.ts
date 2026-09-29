@@ -34,4 +34,3 @@ export type {
   SystemSection,
   SystemSnapshot,
 } from '@/system/index';
-export { generateSkillMarkdown, generateReadmeSkills } from '@/common';

@@ -1,27 +1,10 @@
 import { defineConfig } from 'tsup';
-import { execSync } from 'node:child_process';
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  unlinkSync,
-  writeFileSync,
-} from 'node:fs';
+import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
 // 봉인 형식을 한 곳에만 두려고 런타임이 읽는 모듈에서 그대로 가져옵니다.
 import { createSealSecret, sealCredential } from './src/tmdb/embedded';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
-
-// The skill/README generators key off the CLI bin name, so it is derived from
-// package.json rather than hard-coded — renaming the bin renames the skill.
-const binName = Object.entries(pkg.bin ?? {}).find(([, v]) => String(v).endsWith('cli.js'))?.[0];
-if (!binName) throw new Error('No CLI bin (./dist/cli.js) entry found in package.json');
-
-const skillDir = `skills/${binName}`;
-const skillFile = `${skillDir}/SKILL.md`;
 
 /**
  * 빌드 환경의 TMDB 자격 증명을 번들에 심을 값으로 바꿉니다.
@@ -136,21 +119,6 @@ export default defineConfig([
         if (content.length === 0 || content === '"use strict";') {
           unlinkSync(`./dist/${file}`);
         }
-      }
-
-      // Generate skill markdown (dev only)
-      if (process.env.npm_lifecycle_event === 'dev') {
-        const distUrl = pathToFileURL(resolve('./dist/index.js')).href;
-        const { tools, generateSkillMarkdown } = await import(distUrl);
-        const content = generateSkillMarkdown({
-          binName,
-          description: pkg.description,
-          tools,
-        });
-        mkdirSync(skillDir, { recursive: true });
-        writeFileSync(skillFile, content);
-        console.log(`Skills generated: ${skillFile}`);
-        execSync('bun scripts/update-readme.mjs', { stdio: 'inherit' });
       }
     },
   },

@@ -2,8 +2,8 @@ import { join } from 'node:path';
 import type { RspressPlugin } from '@rspress/core';
 
 /**
- * Serves the generated root README.md — the tool API reference produced by
- * `pnpm readme` — as an `/api` page, mirrored under every configured locale.
+ * Serves the hand-written root README.md — the tool API reference — as an `/api`
+ * page, mirrored under every configured locale.
  *
  * The README is single-language and shared as-is across locales.
  */
