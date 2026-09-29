@@ -24,9 +24,15 @@ export async function runCli(tools: CliTools): Promise<void> {
   const fieldNames = Object.keys(tool.inputSchema);
   const rawInput: Record<string, unknown> = {};
 
+  // 도구 스키마는 OpenAI 도구 가이드를 따라 모든 필드를 `required`로 두고, 값을
+  // 비우는 뜻을 `null`로만 나타냅니다. 그래서 생략된 자리는 빼지 않고 `null`로
+  // 채웁니다 — 빼면 필수 필드 누락으로 검증에서 걸립니다.
   for (let i = 0; i < fieldNames.length; i++) {
     const raw = rawArgs[i];
-    if (raw === undefined) continue;
+    if (raw === undefined) {
+      rawInput[fieldNames[i]] = null;
+      continue;
+    }
     try {
       rawInput[fieldNames[i]] = JSON.parse(raw);
     } catch {

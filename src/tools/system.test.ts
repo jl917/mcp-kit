@@ -9,16 +9,21 @@ import {
   systemMemoryTool,
   tools,
 } from '@/tools/system';
-import {
-  DEFAULT_CPU_SAMPLE_MS,
-  DEFAULT_TIMEOUT_MS,
-  MIN_CPU_SAMPLE_MS,
-  SECTIONS,
-} from '@/system/index';
+import { MAX_CPU_SAMPLE_MS, MIN_CPU_SAMPLE_MS, readCpu } from '@/system/index';
+
+/**
+ * 모든 필드를 `null`로 채운 입력.
+ *
+ * 스키마가 필드 생략을 허용하지 않으므로(OpenAI 도구 가이드), 아무 값도 주지
+ * 않는다는 뜻은 전부 `null`로 씁니다. CLI가 생략된 자리에 채우는 값과 같습니다.
+ */
+function nulls(tool: { inputSchema: z.ZodRawShape }): Record<string, null> {
+  return Object.fromEntries(Object.keys(tool.inputSchema).map((key) => [key, null]));
+}
 
 /** 기본값으로 도구를 돌리고 JSON을 돌려준다. */
 async function run(tool: typeof systemCpuTool, input: Record<string, unknown> = {}) {
-  const parsed = z.object(tool.inputSchema).parse(input);
+  const parsed = z.object(tool.inputSchema).parse({ ...nulls(tool), ...input });
   return JSON.parse(textOf(await tool.handler(parsed)));
 }
 
@@ -38,41 +43,39 @@ describe('tool definitions', () => {
     expect(systemInfoTool.name).toBe('system_info');
   });
 
-  it('should run with no arguments at all', () => {
-    for (const tool of [systemBatteryTool, systemMemoryTool, systemCpuTool, systemDiskTool]) {
-      expect(z.object(tool.inputSchema).parse({})).toMatchObject({
-        timeoutMs: DEFAULT_TIMEOUT_MS,
-      });
+  // OpenAI 도구 가이드는 모든 필드를 `required`로 요구하므로 생략은 못 하고
+  // `null`로만 비웁니다. 기본값을 채우는 일은 스키마가 아니라 `@/system`이 합니다.
+  it('should take null for every field instead of omitting it', () => {
+    for (const tool of [
+      systemBatteryTool,
+      systemMemoryTool,
+      systemCpuTool,
+      systemDiskTool,
+      systemInfoTool,
+    ]) {
+      expect(z.object(tool.inputSchema).parse(nulls(tool))).toEqual(nulls(tool));
+      expect(() => z.object(tool.inputSchema).parse({})).toThrow();
     }
   });
 
-  it('should default the combined tool to every section', () => {
-    expect(z.object(systemInfoTool.inputSchema).parse({})).toMatchObject({
-      sections: [...SECTIONS],
-      sampleMs: DEFAULT_CPU_SAMPLE_MS,
-      allDisks: false,
-      timeoutMs: DEFAULT_TIMEOUT_MS,
-    });
-  });
-
-  // 하한보다 짧은 구간은 부팅 이후 평균을 돌려주므로 스키마에서 막는다.
-  it('should reject a sample window below the floor', () => {
+  it('should still reject values of the wrong type', () => {
     const schema = z.object(systemCpuTool.inputSchema);
-    expect(() => schema.parse({ sampleMs: MIN_CPU_SAMPLE_MS - 1 })).toThrow();
-    expect(() => schema.parse({ sampleMs: 250.5 })).toThrow();
-    expect(schema.parse({ sampleMs: MIN_CPU_SAMPLE_MS }).sampleMs).toBe(MIN_CPU_SAMPLE_MS);
+    expect(() => schema.parse({ sampleMs: '300', timeoutMs: null })).toThrow();
+    expect(() =>
+      z.object(systemInfoTool.inputSchema).parse({ ...nulls(systemInfoTool), sections: ['gpu'] }),
+    ).toThrow();
+  });
+});
+
+// 범위 키워드(minimum/maximum)는 OpenAI 스키마에서 빠졌으므로 도메인이 메운다.
+describe('sample window clamping', () => {
+  it('should raise a window below the floor', async () => {
+    expect((await readCpu({ sampleMs: 10 })).sampleMs).toBe(MIN_CPU_SAMPLE_MS);
   });
 
-  it('should reject a timeout that is not a positive integer', () => {
-    const schema = z.object(systemMemoryTool.inputSchema);
-    expect(() => schema.parse({ timeoutMs: 0 })).toThrow();
-    expect(() => schema.parse({ timeoutMs: -1 })).toThrow();
-  });
-
-  it('should reject an unknown section', () => {
-    const schema = z.object(systemInfoTool.inputSchema);
-    expect(() => schema.parse({ sections: ['gpu'] })).toThrow();
-  });
+  it('should cut a window above the ceiling', async () => {
+    expect((await readCpu({ sampleMs: 600_000 })).sampleMs).toBe(MAX_CPU_SAMPLE_MS);
+  }, 10_000);
 });
 
 // 이 기계에서 바로 읽는다. 네트워크도 브라우저도 타지 않으므로 기본 실행에 둔다.
@@ -136,7 +139,9 @@ describe('handlers', () => {
 
   // 도구 호출 하나가 읽기에 실패해도 예외 대신 한 줄이 돌아와야 한다.
   it('should answer with an Error line when a read cannot finish', async () => {
-    const parsed = z.object(systemDiskTool.inputSchema).parse({ timeoutMs: 1 });
+    const parsed = z
+      .object(systemDiskTool.inputSchema)
+      .parse({ ...nulls(systemDiskTool), timeoutMs: 1 });
     const output = textOf(await systemDiskTool.handler(parsed));
 
     if (output.startsWith('Error: ')) {

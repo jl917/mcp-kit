@@ -19,6 +19,16 @@ export const DEFAULT_CPU_SAMPLE_MS = 300;
  */
 export const MIN_CPU_SAMPLE_MS = 200;
 
+/**
+ * 표본 구간의 상한.
+ *
+ * 구간을 기다리는 동안 도구 호출은 아무 답도 하지 않습니다. MCP 클라이언트는
+ * 요청 하나를 기본 60초까지만 기다리므로, 표본 구간이 그 선에 가까워지면 호출
+ * 쪽은 결과 대신 연결 오류를 받습니다. 값을 거절하는 대신 여기서 끊습니다 —
+ * OpenAI 도구 스키마는 `maximum`을 받지 않아 상한을 스키마에 둘 수 없습니다.
+ */
+export const MAX_CPU_SAMPLE_MS = 5_000;
+
 /** 항목 하나를 읽는 데 허용할 기본 시간(ms). */
 export const DEFAULT_TIMEOUT_MS = 5_000;
 

@@ -12,19 +12,32 @@ describe('tool definitions', () => {
     expect(exchangeRateTool.name).toBe('exchange_rate');
   });
 
-  it('should default exchange_rates to every provider and currency', () => {
-    const parsed = z.object(exchangeRatesTool.inputSchema).parse({});
-    expect(parsed).toMatchObject({
-      providers: [...PROVIDERS],
-      currencies: [...CURRENCIES],
-    });
-    expect(parsed.timeoutMs).toBeGreaterThan(0);
+  // OpenAI 도구 가이드는 모든 필드를 `required`로 요구하므로 생략은 못 하고
+  // `null`로만 비웁니다. 기본값을 채우는 일은 스키마가 아니라 도메인이 합니다.
+  it('should take null for every optional field instead of omitting it', () => {
+    const parsed = z
+      .object(exchangeRatesTool.inputSchema)
+      .parse({ providers: null, currencies: null, timeoutMs: null });
+    expect(parsed).toEqual({ providers: null, currencies: null, timeoutMs: null });
+
+    expect(() => z.object(exchangeRatesTool.inputSchema).parse({})).toThrow();
   });
 
   it('should reject unsupported providers and currencies', () => {
     const schema = z.object(exchangeRateTool.inputSchema);
-    expect(() => schema.parse({ provider: 'bing', currency: 'CNY' })).toThrow();
-    expect(() => schema.parse({ provider: 'naver', currency: 'GBP' })).toThrow();
+    expect(() => schema.parse({ provider: 'bing', currency: 'CNY', timeoutMs: null })).toThrow();
+    expect(() => schema.parse({ provider: 'naver', currency: 'GBP', timeoutMs: null })).toThrow();
+  });
+
+  // 기본값은 도메인이 메우므로, null을 그대로 넘겨도 전 포털·전 통화를 읽어야 한다.
+  it('should fall back to every provider and currency when given null', async () => {
+    const result = await fetchExchangeRates({
+      providers: undefined,
+      currencies: [],
+      timeoutMs: undefined,
+    });
+    expect(Object.keys(result)).toEqual([...PROVIDERS]);
+    expect(CURRENCIES.length).toBeGreaterThan(0);
   });
 });
 
@@ -58,6 +71,17 @@ describe('exchange_rates handler', () => {
       providers: [],
       currencies: [],
       timeoutMs: 1000,
+    });
+    expect(result.content[0].type).toBe('text');
+    expect(JSON.parse(textOf(result))).toEqual({ naver: null, google: null, daum: null });
+  });
+
+  // 생략한 자리를 CLI가 null로 채우므로, null만 받아도 도메인 기본값으로 돌아야 한다.
+  it('should accept null for every field', async () => {
+    const result = await exchangeRatesTool.handler({
+      providers: [],
+      currencies: [],
+      timeoutMs: null,
     });
     expect(result.content[0].type).toBe('text');
     expect(JSON.parse(textOf(result))).toEqual({ naver: null, google: null, daum: null });

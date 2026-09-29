@@ -9,6 +9,7 @@ import {
 import {
   DEFAULT_CPU_SAMPLE_MS,
   DEFAULT_TIMEOUT_MS,
+  MAX_CPU_SAMPLE_MS,
   MIN_CPU_SAMPLE_MS,
   SECTIONS,
   type BatteryInfo,
@@ -61,7 +62,10 @@ export async function readMemory(options: ReadOptions = {}): Promise<MemoryInfo>
  * "지금 몇 %"에 답하는 값이 나옵니다.
  */
 export async function readCpu(options: CpuReadOptions = {}): Promise<CpuLoadInfo> {
-  const sampleMs = Math.max(options.sampleMs ?? DEFAULT_CPU_SAMPLE_MS, MIN_CPU_SAMPLE_MS);
+  const sampleMs = Math.min(
+    Math.max(options.sampleMs ?? DEFAULT_CPU_SAMPLE_MS, MIN_CPU_SAMPLE_MS),
+    MAX_CPU_SAMPLE_MS,
+  );
   const timeoutMs = timeoutOf(options);
 
   await withTimeout(si.currentLoad(), timeoutMs, 'cpu');

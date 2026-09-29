@@ -10,7 +10,13 @@ export {
   toMemoryInfo,
   toPercent,
 } from './normalize';
-export { DEFAULT_CPU_SAMPLE_MS, DEFAULT_TIMEOUT_MS, MIN_CPU_SAMPLE_MS, SECTIONS } from './types';
+export {
+  DEFAULT_CPU_SAMPLE_MS,
+  DEFAULT_TIMEOUT_MS,
+  MAX_CPU_SAMPLE_MS,
+  MIN_CPU_SAMPLE_MS,
+  SECTIONS,
+} from './types';
 export type {
   BatteryInfo,
   CpuLoadInfo,
