@@ -48,7 +48,7 @@ Bundling config (`tsup.config.ts`):
 - Minify enabled
 - `define` injects `package.json`'s `version` (read by `src/common/constants.ts`, reported in the MCP `initialize` response) and the build environment's TMDB credentials (see below)
 - 3 entry points: `src/index.ts`, `src/server.ts`, `src/cli.ts`
-- Post-build: shebangs added to the `server`/`cli` bundles, empty chunks removed, and in `dev` the `skills/<bin>/SKILL.md` and README are regenerated
+- Post-build: shebangs added to the `server`/`cli` bundles and empty chunks removed. The build never touches `README.md` or `skills/<bin>/SKILL.md` — those are hand-written
 
 ### Why `treeshake: true` Is Not Optional
 
@@ -112,7 +112,6 @@ nothing — pull requests from a fork receive no secrets and correctly produce a
 | **Rslint** (`@rslint/core`) | `^0.5.3` | Linting (`rslint.config.ts`) |
 | **Prettier** | `^3.5.3` | Formatting (`.prettierrc`) |
 | **Rstest** (`@rstest/core`) | `^0.10.3` | Test runner + v8 coverage (`rstest.config.ts`) |
-| **Bun** | `^1.2.0` | Lets `scripts/update-readme.mjs` import TypeScript directly |
 
 ## Agent Tests (optional)
 

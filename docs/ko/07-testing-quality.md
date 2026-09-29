@@ -39,13 +39,13 @@ pnpm test:agent      # RUN_AGENT_TESTS=1 로 agent.test.ts만 실행
 | 🔴 상 | 환율 파싱 | 고시 단위(100엔 등) 역산, 쉼표·공백 처리, 읽지 못한 값의 `null` 처리 |
 | 🟡 중 | MCP 서버 등록 | `createMcpServer()`가 모든 도구를 올바르게 등록하는지 |
 | 🟡 중 | CLI 파싱 | `runCli()`의 인자 파싱(JSON 자동 파싱 포함) |
-| 🟢 하 | 문서 생성 | `generateReadmeApiDocs()` 출력 포맷 |
+| 🔴 상 | 도구 스키마 | OpenAI 도구 가이드 준수 (`src/tools/openai-schema.test.ts`) |
 
 ## 신규 코드 작성 시 테스트 규칙
 
 1. **새 도구를 추가할 때마다** 해당 도구의 핸들러 단위 테스트를 함께 작성
 2. **파라미터 Zod 스키마**가 추가/변경될 때 검증 테스트 추가
-3. **예제(examples)** 가 실제로 동작하는지 확인
+3. `README.md`와 `SKILL.md`에 적은 명령이 실제로 동작하는지 확인
 4. 네트워크·브라우저가 필요한 테스트는 `describe.skipIf`로 기본 실행에서 제외
 
 ## 품질 검증 방식
@@ -105,8 +105,8 @@ pnpm build           # tsup
 - [ ] `pnpm typecheck` 통과
 - [ ] `pnpm test` 통과
 - [ ] `pnpm build` 정상 완료
-- [ ] 새 도구를 추가한 경우 `pnpm readme`로 README.md 업데이트
+- [ ] 도구를 추가·변경한 경우 `README.md`와 `skills/<bin>/SKILL.md`를 손으로 갱신
 - [ ] 도구·의존성·빌드 설정을 건드렸거나, 문서가 정해 주지 않은 선택을 했거나, 답을 받지 못한 질문에 가정을 세웠으면 `.claude/decisions/`에 결정 기록 작성 — 형식은 [.claude/decision-log.md](https://github.com/jl917/mcp-kit/blob/main/.claude/decision-log.md)
 - [ ] Conventional Commits 형식의 커밋 메시지 작성
 - [ ] 불필요한 파일(dist, node_modules 등)이 커밋에 포함되지 않음
-- [ ] `src/common/` 변경 시 MCP 서버·CLI·문서 생성 세 경로 모두 확인
+- [ ] `src/common/` 변경 시 MCP 서버·CLI 두 경로 모두 확인

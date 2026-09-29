@@ -9,11 +9,21 @@ import {
   tools,
   upcomingMoviesTool,
 } from '@/tools/movie';
-import { clearGenreCache, DEFAULT_LANGUAGE, DEFAULT_REGION, TMDB_ENV_KEYS } from '@/tmdb/index';
+import { clearGenreCache, DEFAULT_REGION, TMDB_ENV_KEYS } from '@/tmdb/index';
 
 // rstest는 .env를 읽지 않는다. CI는 워크플로에서 시크릿을 환경 변수로 넣어 주고,
 // 로컬에서는 이 한 줄이 저장소 루트의 .env를 읽어 같은 자리를 채운다.
 loadDotEnv(resolve(dirname(fileURLToPath(import.meta.url)), '../..'));
+
+/**
+ * 모든 필드를 `null`로 채운 입력.
+ *
+ * 스키마가 필드 생략을 허용하지 않으므로(OpenAI 도구 가이드), 아무 값도 주지
+ * 않는다는 뜻은 전부 `null`로 씁니다. CLI가 생략된 자리에 채우는 값과 같습니다.
+ */
+function nulls(tool: { inputSchema: z.ZodRawShape }): Record<string, null> {
+  return Object.fromEntries(Object.keys(tool.inputSchema).map((key) => [key, null]));
+}
 
 // 자격 증명이 잡히면 실제 TMDB까지 확인한다. 오프라인이거나 호출을 아끼고 싶으면
 // SKIP_TMDB_LIVE_TESTS=1로 이 묶음만 끈다.
@@ -33,42 +43,39 @@ describe('tool definitions', () => {
     expect(movieRecommendationsTool.name).toBe('movie_recommendations');
   });
 
-  it('should default the list tools to Korean language and region', () => {
+  // OpenAI 도구 가이드는 모든 필드를 `required`로 요구하므로 생략은 못 하고
+  // `null`로만 비웁니다. 기본값을 채우는 일은 스키마가 아니라 `@/tmdb`가 합니다.
+  it('should take null for every field instead of omitting it', () => {
     for (const tool of [nowPlayingMoviesTool, upcomingMoviesTool]) {
-      expect(z.object(tool.inputSchema).parse({})).toMatchObject({
-        language: DEFAULT_LANGUAGE,
-        region: DEFAULT_REGION,
-        page: 1,
+      expect(z.object(tool.inputSchema).parse(nulls(tool))).toEqual({
+        language: null,
+        region: null,
+        page: null,
+        timeoutMs: null,
       });
+      expect(() => z.object(tool.inputSchema).parse({})).toThrow();
     }
-  });
-
-  it('should leave every reference field empty when recommendations are called bare', () => {
-    const parsed = z.object(movieRecommendationsTool.inputSchema).parse({});
-    expect(parsed.title).toBeUndefined();
-    expect(parsed.movieId).toBeUndefined();
-    expect(parsed.genre).toBeUndefined();
   });
 
   // CLI는 인자를 자리로 받으므로, 앞 인자를 비우려면 null을 넘길 수 있어야 한다.
   it('should accept null for the reference fields so a later argument can be positional', () => {
     const parsed = z
       .object(movieRecommendationsTool.inputSchema)
-      .parse({ title: null, movieId: null, genre: '액션' });
+      .parse({ ...nulls(movieRecommendationsTool), genre: '액션' });
     expect(parsed).toMatchObject({ title: null, movieId: null, genre: '액션' });
   });
 
-  it('should reject page numbers that are not positive integers', () => {
-    const schema = z.object(nowPlayingMoviesTool.inputSchema);
-    expect(() => schema.parse({ page: 0 })).toThrow();
-    expect(() => schema.parse({ page: 1.5 })).toThrow();
-    expect(() => schema.parse({ page: -1 })).toThrow();
+  it('should still reject values of the wrong type', () => {
+    const schema = z.object(movieRecommendationsTool.inputSchema);
+    const base = nulls(movieRecommendationsTool);
+    expect(() => schema.parse({ ...base, movieId: 'tt0816692' })).toThrow();
+    expect(() => schema.parse({ ...base, page: 'first' })).toThrow();
   });
 
-  it('should reject a movieId that is not a positive integer', () => {
-    const schema = z.object(movieRecommendationsTool.inputSchema);
-    expect(() => schema.parse({ movieId: 0 })).toThrow();
-    expect(() => schema.parse({ movieId: 'tt0816692' })).toThrow();
+  // 범위 키워드는 OpenAI 스키마에서 빠졌으므로 도메인이 메워야 한다.
+  it('should clamp a page below one in the domain rather than the schema', () => {
+    const schema = z.object(nowPlayingMoviesTool.inputSchema);
+    expect(schema.parse({ ...nulls(nowPlayingMoviesTool), page: 0 }).page).toBe(0);
   });
 });
 
@@ -97,7 +104,7 @@ describe('handlers without credentials', () => {
     ['movies_upcoming', upcomingMoviesTool],
     ['movie_recommendations', movieRecommendationsTool],
   ])('should return an Error line naming the env vars for %s', async (_name, tool) => {
-    const parsed = z.object(tool.inputSchema).parse({});
+    const parsed = z.object(tool.inputSchema).parse(nulls(tool));
     const output = textOf(await tool.handler(parsed));
     expect(output).toMatch(/^Error: /);
     expect(output).toContain('TMDB_API_KEY');
@@ -105,7 +112,9 @@ describe('handlers without credentials', () => {
 
   // 장르 표를 받지 못한 것을 조용히 넘기면 인증 오류가 "모르는 장르"로 둔갑한다.
   it('should blame the missing credential, not the genre, when filtering by genre name', async () => {
-    const parsed = z.object(movieRecommendationsTool.inputSchema).parse({ genre: '액션' });
+    const parsed = z
+      .object(movieRecommendationsTool.inputSchema)
+      .parse({ ...nulls(movieRecommendationsTool), genre: '액션' });
     const output = textOf(await movieRecommendationsTool.handler(parsed));
     expect(output).toContain('TMDB_API_KEY');
     expect(output).not.toContain('Unknown genre');
@@ -115,7 +124,7 @@ describe('handlers without credentials', () => {
 // 실제 TMDB 호출. 자격 증명이 없으면 건너뛰므로 기본 테스트 실행은 네트워크를 타지 않는다.
 describe.skipIf(!HAS_CREDENTIALS)('live TMDB lookups', () => {
   it('should return now playing movies for the Korean region', async () => {
-    const parsed = z.object(nowPlayingMoviesTool.inputSchema).parse({});
+    const parsed = z.object(nowPlayingMoviesTool.inputSchema).parse(nulls(nowPlayingMoviesTool));
     const body = JSON.parse(textOf(await nowPlayingMoviesTool.handler(parsed)));
 
     expect(body.kind).toBe('now_playing');
@@ -130,7 +139,7 @@ describe.skipIf(!HAS_CREDENTIALS)('live TMDB lookups', () => {
   it('should recommend movies from a reference title', async () => {
     const parsed = z
       .object(movieRecommendationsTool.inputSchema)
-      .parse({ title: 'Interstellar', language: 'en-US' });
+      .parse({ ...nulls(movieRecommendationsTool), title: 'Interstellar', language: 'en-US' });
     const body = JSON.parse(textOf(await movieRecommendationsTool.handler(parsed)));
 
     expect(body.kind).toBe('similar');

@@ -2,10 +2,10 @@
 
 ## File Naming
 
-- **File names**: Use `kebab-case` (e.g., `update-readme.mjs`, `case-convert.ts`)
+- **File names**: Use `kebab-case` (e.g., `readme-docs-plugin.ts`, `case-convert.ts`)
 - **Interface/type files**: Use `kebab-case`
 - **Test files**: Use the `*.test.ts` convention, placed next to the file under test (e.g., `src/exchange/parse.test.ts`)
-- **Build/generation scripts**: Located under `scripts/` (`update-readme.mjs`, `readme-docs-plugin.ts`)
+- **Build scripts**: Located under `scripts/` (`readme-docs-plugin.ts`)
 
 ## TypeScript Strong Typing Rules
 
@@ -28,27 +28,14 @@ export const tools = {
     description: "Description",          // One-sentence tool description
     inputSchema: {
       param1: z.string().describe("Parameter description"),
-      param2: z.number().optional().describe("Optional parameter"),
-      param3: z.enum(["a", "b"]).default("a").describe("Choices"),
+      // Every field is required; `null` is the only way to say "no value".
+      param2: z.number().nullable().describe("Optional parameter. null means 10"),
+      param3: z.enum(["a", "b"]).describe("Choices"),
     },
     handler: async ({ param1, param2, param3 }) => {
-      // Async handler
-      return text(`result: ${param1}`);
+      // Map `null` to `undefined` so the domain layer applies its default.
+      return text(`result: ${param1} ${param2 ?? undefined}`);
     },
-    examples: [                          // Examples shown in README/Skill docs
-      { args: ['"hello"'], result: "result: hello" },
-    ],
-    guidelines: [                        // Guidelines shown in CLI/Skill docs
-      "Use this tool when ...",
-    ],
-    typeLabels: {                        // (Optional) Override type labels in README/API docs
-      param1: "MyCustomType",
-    },
-    typeDefs: {                          // (Optional) TypeScript type definitions for complex types
-      param1: "type MyCustomType = string | number",
-    },
-    returnType: "string",                // (Optional) Return type (for API docs)
-    returnDescription: "Transformed result string",
   }),
 };
 ```
@@ -57,22 +44,49 @@ export const tools = {
 - **`defineTool()`**: Casts to `AnyToolDef` type (used when converting to arrays in server.ts)
 - **`text()`**: MCP ToolResult helper producing `{ content: [{ type: "text", text: content }] }`
 
+`AnyToolDef` also carries the optional `examples`, `guidelines`, `typeLabels`,
+`typeDefs`, `returnType`, and `returnDescription` fields. Nothing reads them any
+more — the documentation is hand-written — so leave them unset. The fields stay on
+the type because the `toolDef()` / `defineTool()` signature is frozen
+(see [09-safe-change-rules](09-safe-change-rules.md)).
+
+## Input Schema Rules (OpenAI Tool Guide)
+
+Tool schemas are consumed by OpenAI-compatible endpoints (the agent kit wires MCP
+tools into `ChatOpenAI`), so they follow the
+[OpenAI function calling guide](https://developers.openai.com/api/docs/guides/function-calling).
+Strict mode rejects the whole request when an unsupported keyword survives, so the
+following are banned in `inputSchema`:
+
+| Banned | Emitted keyword | Use instead |
+|--------|-----------------|-------------|
+| `.default(x)` | `default` | `.nullable()`, and document the default in `.describe()` |
+| `.optional()` / `.nullish()` | drops the field from `required` | `.nullable()` |
+| `.positive()` / `.min()` / `.max()` | `exclusiveMinimum`, `minimum`, `maximum` | Clamp in the domain layer, and document the range in `.describe()` |
+| `.int()` | `minimum` / `maximum` (zod 4 safe-integer bounds) | Plain `z.number()` |
+| `.length()` / `.regex()` | `minLength`, `maxLength`, `pattern` | Validate in the handler or domain layer |
+
+Consequences to keep in mind:
+
+- **Every field is `required`.** The guide states "All fields in `properties` must be
+  marked as `required`." Callers cannot omit a field; they pass `null`.
+- **`null` means "use the default."** Handlers map `null` to `undefined` so the
+  domain layer (`src/exchange/`, `src/tmdb/`, `src/system/`) applies the default.
+- **Defaults and ranges live in `.describe()`**, which is the only place the model
+  reads them, and are repeated in `README.md` and `SKILL.md`.
+- **`src/tools/openai-schema.test.ts` enforces all of this** against the JSON Schema
+  the MCP SDK actually emits. Add no tool that fails it.
+
 ## Maximum File Length
 
 - **Tool definition files**: Maximum 200 lines recommended (split into separate files when too many tools)
 - **Handler logic**: Inline within tool definition files when possible. Extract shared logic into separate utility functions.
 
-## Documentation Helpers
+## Documentation
 
-`src/common/kit/skill.ts` provides 3 helpers for generating README and Skill documents:
-
-| Function | Purpose |
-|----------|---------|
-| `generateSkillMarkdown()` | Called in tsup's `onSuccess`, creates `skills/<binName>/SKILL.md` |
-| `generateReadmeSkills()` | Displays brief tool list in README (deprecated) |
-| `generateReadmeApiDocs()` | Generates detailed TypeDoc/API-style tool documentation in README (currently used) |
-
-`scripts/update-readme.mjs` uses `generateReadmeApiDocs()` to generate API docs in README.md with tool signatures, parameters, return types, type definitions, CLI usage, and examples.
+`README.md` and `skills/<bin>/SKILL.md` are hand-written. There is no generator and
+no `pnpm readme` command — adding or changing a tool means editing both files by hand,
+including the defaults and ranges that no longer live in the schema.
 
 ## Import/Export Rules
 
@@ -86,10 +100,10 @@ export const tools = {
 
 ## Comment Guidelines
 
-- **Tool descriptions**: Write concisely in the `description` field (rendered directly in README/Skill docs)
-- **Zod describe**: Add `.describe()` for each parameter (displayed in README tables)
+- **Tool descriptions**: Write concisely in the `description` field
+- **Zod describe**: Add `.describe()` for every parameter. It is mandatory — with `default` and range keywords banned from the schema, `.describe()` is the only place the model learns them
 - **Code comments**: Only use when explaining essential reasoning (always include a reason for `eslint-disable` comments)
-- **Guidelines**: Add usage notes to the `guidelines` array as strings
+- **Usage notes**: Write them in `README.md` and `SKILL.md`, not in the tool definition
 
 ## Async Handling
 

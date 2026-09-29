@@ -44,7 +44,7 @@ MCP 클라이언트(Claude Desktop, Cursor 등)가 `npx @julong/mcp-kit`으로 �
 
 저장소 루트에서 Rspress 기반 문서 사이트가 운영됩니다:
 
-- **README 자동 연동**: `readme-docs-plugin`이 `pnpm readme`로 생성된 루트 `README.md`를 `/api` 페이지로 렌더링
+- **README 자동 연동**: `readme-docs-plugin`이 손으로 쓴 루트 `README.md`를 `/api` 페이지로 렌더링
 - **static docs**: `docs/`의 마크다운 파일이 정적 문서 페이지로 제공
 - **llms.txt 자동 생성**: `@rspress/plugin-llms` 플러그인으로 LLM 친화적 사이트맵(llms.txt, llms-full.txt) 자동 생성
 - **배포**: Netlify (`netlify.toml` 설정)로 배포

@@ -2,10 +2,10 @@
 
 ## 파일명 규칙
 
-- **파일명**: `kebab-case` 사용 (예: `update-readme.mjs`, `case-convert.ts`)
+- **파일명**: `kebab-case` 사용 (예: `readme-docs-plugin.ts`, `case-convert.ts`)
 - **인터페이스/타입 파일**: `kebab-case`로 통일
 - **테스트 파일**: 대상 파일 옆에 `*.test.ts`로 배치 (예: `src/exchange/parse.test.ts`)
-- **빌드/생성 스크립트**: `scripts/` 하위에 위치 (`update-readme.mjs`, `readme-docs-plugin.ts`)
+- **빌드 스크립트**: `scripts/` 하위에 위치 (`readme-docs-plugin.ts`)
 
 ## TypeScript 강타입 규칙
 
@@ -28,27 +28,14 @@ export const tools = {
     description: "설명",                 // 도구 설명 (한 문장)
     inputSchema: {
       param1: z.string().describe("파라미터 설명"),  // Zod 스키마 + describe
-      param2: z.number().optional().describe("선택적 파라미터"),
-      param3: z.enum(["a", "b"]).default("a").describe("선택지"),
+      // 모든 필드는 required입니다. 값을 비우는 뜻은 `null` 하나뿐입니다.
+      param2: z.number().nullable().describe("선택적 파라미터. null이면 10"),
+      param3: z.enum(["a", "b"]).describe("선택지"),
     },
     handler: async ({ param1, param2, param3 }) => {
-      // 비동기 핸들러
-      return text(`result: ${param1}`);
+      // `null`을 `undefined`로 바꿔 도메인 계층이 기본값을 적용하게 합니다.
+      return text(`result: ${param1} ${param2 ?? undefined}`);
     },
-    examples: [                          // README/Skill 문서에 표시될 예제
-      { args: ['"hello"'], result: "result: hello" },
-    ],
-    guidelines: [                        // CLI/Skill 문서에 표시될 가이드라인
-      "이 도구는 ~할 때 사용합니다",
-    ],
-    typeLabels: {                        // (선택) README/API 문서의 타입 레이블 오버라이드
-      param1: "MyCustomType",
-    },
-    typeDefs: {                          // (선택) 복잡한 타입의 TypeScript 정의
-      param1: "type MyCustomType = string | number",
-    },
-    returnType: "string",                // (선택) 반환 타입 (API 문서용)
-    returnDescription: "변환된 결과 문자열",  // (선택) 반환값 설명 (API 문서용)
   }),
 };
 ```
@@ -57,22 +44,48 @@ export const tools = {
 - **`defineTool()`**: `AnyToolDef` 타입으로 캐스팅 (server.ts에서 배열로 변환 시 사용)
 - **`text()`**: `{ content: [{ type: "text", text: content }] }` 형태의 MCP ToolResult 생성 헬퍼
 
+`AnyToolDef`에는 `examples`, `guidelines`, `typeLabels`, `typeDefs`, `returnType`,
+`returnDescription` 필드도 남아 있습니다. 문서를 손으로 쓰게 되어 이제 아무도 읽지
+않으므로 채우지 않습니다. `toolDef()` / `defineTool()` 시그니처가 변경 금지 대상이라
+타입에만 남겨 둡니다 ([09-safe-change-rules](09-safe-change-rules.md) 참고).
+
+## 입력 스키마 규칙 (OpenAI 도구 가이드)
+
+도구 스키마는 OpenAI 호환 엔드포인트가 그대로 소비합니다(에이전트 키트가 MCP 도구를
+`ChatOpenAI`에 연결합니다). 그래서
+[OpenAI 함수 호출 가이드](https://developers.openai.com/api/docs/guides/function-calling)를
+따릅니다. strict 모드는 지원하지 않는 키워드가 하나라도 남으면 요청 전체를 거절하므로,
+`inputSchema`에서 아래를 쓰지 않습니다.
+
+| 금지 | 만들어지는 키워드 | 대신 |
+|------|-------------------|------|
+| `.default(x)` | `default` | `.nullable()`, 기본값은 `.describe()`에 적음 |
+| `.optional()` / `.nullish()` | 필드가 `required`에서 빠짐 | `.nullable()` |
+| `.positive()` / `.min()` / `.max()` | `exclusiveMinimum`, `minimum`, `maximum` | 도메인 계층에서 범위로 끊고, 범위는 `.describe()`에 적음 |
+| `.int()` | `minimum` / `maximum` (zod 4의 안전 정수 경계) | 그냥 `z.number()` |
+| `.length()` / `.regex()` | `minLength`, `maxLength`, `pattern` | 핸들러나 도메인 계층에서 검사 |
+
+따라오는 결과
+
+- **모든 필드가 `required`입니다.** 가이드가 "All fields in `properties` must be marked
+  as `required`"를 요구합니다. 호출 쪽은 필드를 생략할 수 없고 `null`을 넘깁니다.
+- **`null`은 "기본값을 쓰라"는 뜻입니다.** 핸들러가 `null`을 `undefined`로 바꿔
+  도메인 계층(`src/exchange/`·`src/tmdb/`·`src/system/`)이 기본값을 적용합니다.
+- **기본값과 범위는 `.describe()`에 둡니다.** 모델이 읽을 수 있는 자리는 여기뿐이고,
+  같은 내용을 `README.md`와 `SKILL.md`에 다시 적습니다.
+- **`src/tools/openai-schema.test.ts`가 이 규칙을 강제합니다.** MCP SDK가 실제로
+  내보내는 JSON Schema를 검사하므로, 이 테스트를 통과하지 못하는 도구는 추가하지 않습니다.
+
 ## 단일 파일 최대 길이 제한
 
 - **도구 정의 파일**: 최대 200줄 권장 (도구가 많아지면 별도 파일로 분리)
 - **핸들러 로직**: 가능한 한 도구 정의 파일 내에 인라인으로 작성. 공통 로직이 필요하면 별도 유틸리티 함수로 추출
 
-## 문서 생성 헬퍼
+## 문서
 
-`src/common/kit/skill.ts`는 README와 Skill 문서를 생성하는 3가지 헬퍼를 제공합니다:
-
-| 함수 | 용도 |
-|------|------|
-| `generateSkillMarkdown()` | tsup의 `onSuccess`에서 호출, `skills/<binName>/SKILL.md` 생성 |
-| `generateReadmeSkills()` | README에 간략한 도구 목록 표시 (더 이상 사용되지 않음) |
-| `generateReadmeApiDocs()` | README에 TypeDoc/API 문서 스타일의 상세 도구 문서 생성 (현재 사용) |
-
-`scripts/update-readme.mjs`는 `generateReadmeApiDocs()`를 사용하여 각 도구의 시그니처, 파라미터, 반환 타입, 타입 정의, CLI 사용법, 예제를 포함한 API 문서를 README.md에 생성합니다.
+`README.md`와 `skills/<bin>/SKILL.md`는 손으로 씁니다. 생성기도 `pnpm readme` 명령도
+없습니다. 도구를 추가·변경하면 두 파일을 손으로 고치며, 스키마에서 빠진 기본값과
+범위도 여기에 함께 적습니다.
 
 ## import/export 규칙
 
@@ -86,10 +99,10 @@ export const tools = {
 
 ## 주석 작성 규칙
 
-- **도구 설명**: `description` 필드에 한글로 간결하게 작성 (README/Skill 문서에 그대로 렌더링됨)
-- **Zod describe**: 각 파라미터에 `.describe()`로 설명 추가 (README 테이블에 표시됨)
+- **도구 설명**: `description` 필드에 한글로 간결하게 작성
+- **Zod describe**: 모든 파라미터에 `.describe()`를 붙입니다. 선택이 아니라 필수입니다 — `default`와 범위 키워드를 스키마에서 빼는 대신 `.describe()`가 모델이 그것을 읽는 유일한 자리입니다
 - **코드 주석**: 필수적인 이유를 설명할 때만 사용 (특히 `eslint-disable` 주석에는 반드시 이유 명시)
-- **가이드라인**: `guidelines` 배열에 도구 사용 시 주의사항을 문자열로 추가
+- **사용 시 주의사항**: 도구 정의가 아니라 `README.md`와 `SKILL.md`에 적습니다
 
 ## 비동기 처리 방식
 

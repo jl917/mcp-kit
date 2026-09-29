@@ -19,9 +19,9 @@
 
 | 대상 | 주의사항 |
 |------|----------|
-| `src/common/kit/`의 함수 시그니처 변경 | MCP 서버·CLI·문서 생성이 모두 사용하므로 일괄 수정 필요 |
+| `src/common/kit/`의 함수 시그니처 변경 | MCP 서버와 CLI가 모두 사용하므로 일괄 수정 필요 |
 | `package.json`의 `exports` / `bin` 필드 | 패키지 소비자의 import 경로와 `npx` 실행 이름에 영향 |
-| `scripts/update-readme.mjs`의 템플릿 | README 포맷 전체에 적용 |
+| `README.md` / `skills/<bin>/SKILL.md` | 손으로 쓰는 패키지의 얼굴 — `src/tools/`와 어긋나지 않게 유지 |
 | `tsconfig.json`의 `paths` | `@/*` 별칭을 쓰는 모든 import에 영향 (`rstest.config.ts`도 함께 수정) |
 
 ## 공용 API 경로 변경 금지

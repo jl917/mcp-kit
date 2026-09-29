@@ -37,7 +37,7 @@ CLI output via `runCli()` follows these formats:
 
 ## Component Reuse Notes
 
-- **Functions in `src/common/kit/` are reused by the server, the CLI, and the doc generators** — a change there affects all three
-- **Avoid duplicating tool definitions** between `scripts/update-readme.mjs` and `src/tools/*.ts` — bun imports TS source directly, so no duplicate files
-- **Build config (`tsup.config.ts`)** drives the bundle, the shebangs, and skill/README generation — check all three before modifying
-- **Documentation helpers** (`generateReadmeApiDocs()` in `skill.ts`) use `typeLabels`, `typeDefs`, `returnType`, `returnDescription` fields to generate rich API docs. Include these fields when defining tools.
+- **Functions in `src/common/kit/` are reused by both the server and the CLI** — a change there affects both
+- **Every field is required, and `null` means "use the default".** `runCli()` fills an omitted positional argument with `null`, so the command line behaves as if the field were optional. See [04-coding-rules](04-coding-rules.md) for why
+- **Build config (`tsup.config.ts`)** drives the bundle and the shebangs. It no longer writes any documentation
+- **Document arguments by hand.** `README.md` and `SKILL.md` carry the argument tables, defaults, ranges and return shapes. Nothing generates them from the tool definition.

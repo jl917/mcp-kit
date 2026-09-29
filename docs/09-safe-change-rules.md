@@ -19,9 +19,9 @@
 
 | Target | Notes |
 |--------|-------|
-| Function signature changes in `src/common/kit/` | Used by the MCP server, the CLI, and doc generation — batch update required |
+| Function signature changes in `src/common/kit/` | Used by both the MCP server and the CLI — batch update required |
 | `exports` / `bin` fields in `package.json` | Affects consumer import paths and the `npx` command names |
-| Templates in `scripts/update-readme.mjs` | Applied to the whole README format |
+| `README.md` / `skills/<bin>/SKILL.md` | Hand-written and the public face of the package — keep them in step with `src/tools/` |
 | `paths` in `tsconfig.json` | Affects every `@/*` import (update `rstest.config.ts` alongside it) |
 
 ## Public API Path Freeze
@@ -43,7 +43,7 @@ Since this repository is published to npm, public API paths exposed via the `exp
 }
 ```
 
-> Renaming a `bin` entry also changes the `skills/<bin>/SKILL.md` path and the CLI usage in the generated README.
+> Renaming a `bin` entry also changes the `skills/<bin>/SKILL.md` directory name and every CLI command written in `README.md` and `SKILL.md`.
 
 ## Unauthorized Database Schema Changes
 

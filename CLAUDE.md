@@ -56,7 +56,8 @@ pnpm 기반 단일 저장소. KRW 환율을 조회하는 MCP(Model Context Proto
 - import는 `@/*` 별칭(`@/*` → `src/*`), 파일 확장자는 생략, default export 금지
 - 도구는 `toolDef()`로 정의하고 `inputSchema`는 Zod로만, 핸들러는 전부 `async`
 - `any` 금지 (`src/common/kit/tool.ts`의 MCP SDK 호환 부분만 예외)
-- 새 도구를 추가하면 `src/tools/index.ts` 집계 + `*.test.ts` + `pnpm readme`까지 한 세트
+- **`inputSchema`는 OpenAI 도구 가이드를 따릅니다.** 모든 필드는 `.nullable()`이고, `.default()`·`.optional()`·`.nullish()`·`.int()`·`.min()`·`.max()`·`.positive()`는 금지입니다. 기본값과 범위는 `.describe()`에 적고 적용은 도메인 계층이 합니다. `src/tools/openai-schema.test.ts`가 이를 강제합니다.
+- 새 도구를 추가하면 `src/tools/index.ts` 집계 + `*.test.ts` + `openai-schema.test.ts` 개수 + `README.md`·`SKILL.md` 수동 갱신까지 한 세트
 
 **문구 규칙** — 06-copywriting-rules
 - "very", "simply", "powerful" 같은 강조·마케팅 표현과 이모지 금지
@@ -64,7 +65,7 @@ pnpm 기반 단일 저장소. KRW 환율을 조회하는 MCP(Model Context Proto
 
 **작업 완료 기준** — 07-testing-quality
 - `pnpm lint` → `format:check` → `typecheck` → `test` → `build` 전부 통과해야 완료입니다 (CI와 동일한 순서).
-- 도구를 추가·변경했으면 `pnpm readme`로 README.md를 재생성합니다.
+- **README.md와 `skills/*/SKILL.md`는 손으로 씁니다.** 생성기도 `pnpm readme`도 없습니다. 도구를 추가·변경했으면 두 파일을 직접 고칩니다.
 - 커밋 메시지는 Conventional Commits를 따릅니다.
 - **주고받은 질문과 내린 결정을 `.claude/decisions/YYYY-MM-DD-<slug>.md`에 남깁니다.** 도구·의존성·빌드 설정을 건드렸거나, 문서가 정해 주지 않은 선택을 했거나, 물어본 것에 답을 받지 못한 채 가정을 세웠으면 필수입니다. 형식은 [.claude/decision-log.md](.claude/decision-log.md)에 있습니다.
 - 작업은 짧은 수명의 브랜치에서 하고 `main`을 대상으로 PR을 엽니다. `main`에 직접 push하지 않습니다.
@@ -98,7 +99,6 @@ pnpm lint           # 린트 (rslint)
 pnpm format:check   # 포맷 검사 (prettier)
 pnpm typecheck      # 타입 검사
 pnpm test           # 테스트 (rstest)
-pnpm readme         # README 업데이트 (bun 필요)
 pnpm docs:dev       # 문서 사이트 로컬 개발 서버 실행
 pnpm docs:build     # 문서 사이트 정적 빌드
 pnpm clean          # 캐시/dist 제거

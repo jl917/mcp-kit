@@ -15,8 +15,8 @@ mcp-kit/
 │   ├── system/         # 기계 상태 도메인 (배터리 / 메모리 / CPU / 디스크)
 │   └── common/         # 공유 키트 (별도 배포 없음, 번들에 인라인)
 ├── docs/               # Rspress 문서 사이트 콘텐츠
-├── scripts/            # README 생성, Rspress 플러그인
-├── skills/             # 생성된 SKILL.md
+├── scripts/            # Rspress 플러그인
+├── skills/             # 손으로 쓴 SKILL.md
 ├── .github/workflows/  # CI/CD 파이프라인
 ├── package.json        # 단일 패키지 설정 (@julong/mcp-kit)
 ├── tsconfig.json       # TypeScript 설정 (@/* → src/*)
@@ -42,7 +42,6 @@ src/common/
 │   ├── tool.ts     # 도구 정의: toolDef(), defineTool(), AnyToolDef 타입, text() 헬퍼
 │   ├── server.ts   # MCP 서버: createMcpServer(), startServer(), installProcessGuards()
 │   ├── cli.ts      # CLI 실행: runCli(), handleCliError()
-│   └── skill.ts    # 문서 생성: generateSkillMarkdown(), generateReadmeSkills()
 ├── agent/
 │   ├── llm.ts      # createChatModel() — 환경 변수로 OpenAI 호환 채팅 모델 생성
 │   ├── log.ts      # FileLogCallback, appendLog() — taskId별 .log 파일 기록
@@ -139,7 +138,7 @@ rspress.config.ts            # Rspress 설정 (sidebar, nav, plugins)
 netlify.toml                 # Netlify 배포 설정
 ```
 
-`readme-docs-plugin`이 `pnpm readme`로 생성된 루트 `README.md`를 `/api`(및 `/ko/api`) 라우트에 렌더링합니다.
+`readme-docs-plugin`이 손으로 쓴 루트 `README.md`를 `/api`(및 `/ko/api`) 라우트에 렌더링합니다.
 
 ## 전체 데이터 흐름
 
@@ -150,9 +149,8 @@ netlify.toml                 # Netlify 배포 설정
   ├──→ src/server.ts       ─→ tsup build ─→ dist/server.js  (MCP 서버)
   └──→ src/cli.ts          ─→ tsup build ─→ dist/cli.js     (CLI)
 
-src/tools/*.ts
-  ├──→ README.md (bun scripts/update-readme.mjs → tools 소스 직접 import)
-  └──→ skills/<bin>/SKILL.md (tsup onSuccess → dist/index.js import)
+문서는 도구에서 생성되지 않습니다. README.md와 skills/<bin>/SKILL.md는 손으로 쓰며,
+src/tools/*.ts를 고칠 때 함께 고칩니다.
 ```
 
 **tsconfig path alias**: `@/*` → `./src/*` (루트 `tsconfig.json`, `rstest.config.ts`가 동일 별칭을 미러링)
@@ -164,7 +162,7 @@ src/tools/*.ts
 ```mermaid
 graph TD
     subgraph Repo["mcp-kit (pnpm 단일 저장소)"]
-        Common["src/common — @/common (공유 키트, SSOT)<br/>tool.ts · server.ts · cli.ts · skill.ts"]
+        Common["src/common — @/common (공유 키트, SSOT)<br/>tool.ts · server.ts · cli.ts"]
         Agent["src/common/agent — @/common/agent<br/>llm · log · runner (테스트 전용)"]
         Exchange["src/exchange<br/>네이버 / 구글 / 다음 스크레이퍼"]
         Tmdb["src/tmdb<br/>TMDB v3 REST 클라이언트"]
@@ -190,11 +188,11 @@ graph TD
 ```mermaid
 graph LR
     subgraph pkg["src"]
-        Tools["tools/*.ts<br/>toolDef({ name, description,<br/>inputSchema (zod), handler,<br/>examples, typeLabels })"]
+        Tools["tools/*.ts<br/>toolDef({ name, description,<br/>inputSchema (zod), handler })"]
         Idx["tools/index.ts<br/>(도구 집계)"]
         SrvE["server.ts → createMcpServer"]
         CliE["cli.ts → runCli"]
-        IndexE["index.ts<br/>tools + generateSkillMarkdown"]
+        IndexE["index.ts<br/>(라이브러리 진입점)"]
     end
 
     Tools --> Idx
@@ -204,21 +202,18 @@ graph LR
 
     SrvE -->|StdioServerTransport| MCP["MCP 클라이언트 (AI 에이전트)"]
     CliE -->|"argv → zod 검증"| Term["터미널 stdout"]
-    IndexE -->|빌드 시점| Gen["SKILL.md / README.md"]
+    IndexE -->|import| Lib["라이브러리 소비자"]
 ```
 
-하나의 `tools` 정의가 세 가지로 소비됩니다: MCP 서버(stdio), CLI 실행기, 문서/스킬 생성.
+하나의 `tools` 정의가 세 가지로 소비됩니다: MCP 서버(stdio), CLI 실행기, 라이브러리 진입점. 문서는 네 번째 소비처이고 손으로 씁니다.
 
-### 빌드 및 문서 생성 흐름
+### 빌드 흐름
 
 ```mermaid
 flowchart TD
     A["pnpm dev / build"] --> B["tsup (tsup.config.ts)"]
     B --> C["dist/index.js · server.js · cli.js<br/>(shebang 추가, 빈 청크 정리)"]
-    C --> D{"npm_lifecycle_event<br/>== 'dev' ?"}
-    D -->|yes| E["generateSkillMarkdown(tools)<br/>→ skills/&lt;bin&gt;/SKILL.md"]
-    E --> F["scripts/update-readme.mjs<br/>→ README.md"]
-    D -->|no| G["빌드만 수행"]
+    C --> D["README.md / SKILL.md<br/>(손으로 쓰며 빌드가 건드리지 않음)"]
 ```
 
 ### 릴리스 파이프라인 (.github/workflows/release.yml)

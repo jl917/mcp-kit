@@ -43,7 +43,7 @@ In this repo, the transport plumbing is handled by `StdioServerTransport` from `
 
 The documentation site built with Rspress lives at the repository root:
 
-- **Auto-linked README**: The `readme-docs-plugin` renders the generated root `README.md` (produced by `pnpm readme`) on the `/api` page
+- **Auto-linked README**: The `readme-docs-plugin` renders the hand-written root `README.md` on the `/api` page
 - **Static docs**: Markdown files under `docs/` serve as static documentation pages
 - **Auto-generated llms.txt**: The `@rspress/plugin-llms` plugin generates LLM-friendly sitemaps (llms.txt, llms-full.txt)
 - **Deployment**: Hosted on Netlify (configured via `netlify.toml`)
